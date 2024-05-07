@@ -1,5 +1,31 @@
 return {
   {
+    "f-person/auto-dark-mode.nvim",
+    enabled = false,
+    lazy = false,
+    config = function()
+      require("auto-dark-mode").setup {
+        update_interval = 1000,
+        set_dark_mode = function()
+          vim.g.nvchad_theme = "gruvbox"
+          vim.g.transparency = false
+          require("nvchad.utils").replace_word('theme = "gruvbox_light"', 'theme = "gruvbox"')
+        end,
+        set_light_mode = function()
+          vim.g.nvchad_theme = "gruvbox_light"
+          require("nvchad.utils").replace_word('theme = "gruvbox"', 'theme = "gruvbox_light"')
+          vim.g.transparency = true
+        end,
+      }
+    end,
+  },
+  {
+    -- log highlight colours
+    "MTDL9/vim-log-highlighting",
+    event = "VeryLazy",
+    ft = "log",
+  },
+  {
     "dgox16/oldworld.nvim",
     enabled = false,
     lazy = false,

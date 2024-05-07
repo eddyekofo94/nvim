@@ -138,6 +138,14 @@ return {
     end,
   },
 
+  {
+    "olimorris/persisted.nvim",
+    lazy = false,
+    enabled = true,
+    config = function()
+      require "plugins.configs.persisted"
+    end,
+  },
   -- {
   --   "lewis6991/gitsigns.nvim",
   --   event = "BufReadPre",
