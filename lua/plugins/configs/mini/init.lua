@@ -10,15 +10,43 @@ return {
       --  - ci'  - [C]hange [I]nside [']quote
       require("mini.ai").setup { n_lines = 500 }
 
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
-      --
-      -- - saiw - [S]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - sd'   - [S]urround [D]elete [']quotes
-      -- - sr)'  - [S]urround [R]eplace [)] [']
-      require("mini.surround").setup()
+      require("mini.bufremove").setup()
+
+      require("mini.trailspace").setup()
+
+      require("mini.comment").setup()
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
+    end,
+  },
+  {
+    "echasnovski/mini.surround",
+    enabled = false,
+    event = "BufReadPre",
+    opts = {
+      search_method = "cover_or_next",
+      highlight_duration = 2000,
+      mappings = {
+        add = "ys",
+        delete = "ds",
+        replace = "cs",
+        highlight = "",
+        find = "",
+        find_left = "",
+        update_n_lines = "",
+      },
+      custom_surroundings = {
+        ["("] = { output = { left = "( ", right = " )" } },
+        ["["] = { output = { left = "[ ", right = " ]" } },
+        ["{"] = { output = { left = "{ ", right = " }" } },
+        ["<"] = { output = { left = "<", right = ">" } },
+        ["|"] = { output = { left = "|", right = "|" } },
+        ["%"] = { output = { left = "<% ", right = " %>" } },
+      },
+    },
+    config = function(_, opts)
+      require("mini.surround").setup(opts)
     end,
   },
   {
@@ -43,21 +71,6 @@ return {
         open = { enable = true },
         close = { enable = false },
       }
-    end,
-  },
-  {
-    "echasnovski/mini.trailspace",
-    version = "*",
-    event = "BufEnter",
-    config = function()
-      require("mini.trailspace").setup()
-    end,
-  },
-  {
-    "echasnovski/mini.comment",
-    version = "*",
-    config = function()
-      require("mini.comment").setup()
     end,
   },
 }
