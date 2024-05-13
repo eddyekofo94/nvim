@@ -1,6 +1,6 @@
 return {
   "catppuccin/nvim",
-  enabled = false,
+  enabled = true,
   name = "catppuccin",
   config = function()
     require("catppuccin").setup {
@@ -103,6 +103,9 @@ return {
             hints = { "italic" },
             warnings = { "italic" },
             information = { "italic" },
+          },
+          mini = {
+            enabled = true,
           },
           underlines = {
             errors = { "undercurl" },

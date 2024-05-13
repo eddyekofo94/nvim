@@ -289,7 +289,7 @@ cmp.setup {
     { name = "calc" },
   },
   view = {
-    entries = { name = "custom", selection_order = "near_cursor" },
+    entries = { follow_cursor = true, name = "custom", selection_order = "near_cursor" },
     docs = {
       auto_open = false,
     },
@@ -352,11 +352,15 @@ cmp.setup {
     fields = { "kind", "abbr", "menu" },
     format = function(entry, vim_item)
       local kind = lspkind.cmp_format { mode = "symbol_text", maxwidth = 50 }(entry, vim_item)
-
       local strings = vim.split(kind.kind, "%s", { trimempty = true })
-
       kind.kind = " " .. (strings[1] or "") .. " "
-      kind.menu = "    (" .. (strings[2] or "") .. ")"
+      kind.menu = "    [" .. (strings[2] or "") .. "]"
+
+      -- append source name to menu
+      if entry.completion_item.detail ~= nil and entry.completion_item.detail ~= "" then
+        kind.menu = kind.menu .. "    (" .. entry.completion_item.detail .. ")"
+      end
+
       return kind
     end,
   },

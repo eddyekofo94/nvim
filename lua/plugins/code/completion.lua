@@ -27,6 +27,14 @@ return {
       { "hrsh7th/cmp-cmdline" },
       { "ray-x/cmp-treesitter" },
       { "dmitmel/cmp-cmdline-history" },
+      { "hrsh7th/cmp-nvim-lsp" },
+      "saadparwaiz1/cmp_luasnip",
+
+      -- Adds other completion capabilities.
+      --  nvim-cmp does not ship with all sources by default. They are split
+      --  into multiple repos for maintenance purposes.
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-path",
       {
         "tzachar/cmp-fuzzy-path",
         dependencies = { "tzachar/fuzzy.nvim" },

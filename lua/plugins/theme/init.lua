@@ -134,7 +134,7 @@ return {
   },
   {
     "sam4llis/nvim-tundra",
-    enabled = true,
+    enabled = false,
     priority = 1000,
     config = function()
       require("nvim-tundra").setup {

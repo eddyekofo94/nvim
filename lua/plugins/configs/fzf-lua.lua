@@ -266,6 +266,8 @@ fzf.setup {
     ]],
     on_create = function()
       vim.keymap.set("t", "<C-r>", [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']], { expr = true, buffer = true })
+      vim.keymap.set("t", "<C-j>", "<Down>", { silent = true, buffer = true })
+      vim.keymap.set("t", "<C-k>", "<Up>", { silent = true, buffer = true })
     end,
     on_close = function()
       ---@param name string
@@ -356,6 +358,7 @@ fzf.setup {
     actions = {
       ["ctrl-]"] = actions.switch_provider,
     },
+    formatter = "path.filename_first",
   },
   args = {
     files_only = false,
@@ -450,6 +453,8 @@ fzf.setup {
     },
   },
   files = {
+    git_icons = true, -- show git icons?
+    multiprocess = true, -- run command in a separate process
     actions = {
       ["alt-c"] = actions.switch_cwd,
       ["ctrl-g"] = actions.toggle_ignore,
@@ -523,21 +528,11 @@ fzf.setup {
 }
 
 local keymap = require("utils.keymaps").set_keymap
-keymap("n", "<Leader>.", fzf.files, "[Fzf] Files")
-keymap("n", "<Leader>'", fzf.resume, "[Fzf] Resume")
-keymap("n", "<Leader>,", fzf.buffers, "[Fzf] Buffers")
--- keymap("n", "<Leader>/", fzf.live_grep, "[Fzf] Live Grep")
-keymap("n", "<Leader>?", fzf.help_tags)
 keymap("n", "<Leader>fg*", fzf.grep_cword)
 keymap("x", "<Leader>fg*", fzf.grep_visual)
-keymap("n", "<Leader>#", fzf.grep_cword)
-keymap("x", "<Leader>#", fzf.grep_visual)
-keymap("n", '<Leader>"', fzf.registers)
-keymap("n", "<Leader>F", fzf.builtin)
-keymap("n", "<Leader>-", fzf.blines)
--- keymap("n", "<Leader>=", fzf.lines)
+keymap("n", "<Leader>F", fzf.builtin, "[Fzf] builtin")
 keymap("n", "<Leader>R", fzf.lsp_finder)
-keymap("n", "<Leader>f", fzf.builtin)
+keymap("n", "<Leader>f", fzf.builtin, "[Fzf] builtin")
 keymap("n", '<Leader>f"', fzf.registers)
 keymap("n", "<Leader>f*", fzf.grep_cword)
 keymap("x", "<Leader>f*", fzf.grep_visual)
@@ -552,8 +547,8 @@ keymap("n", "<Leader>fA", fzf.autocmds)
 keymap("n", "<Leader>fb", fzf.buffers)
 keymap("n", "<Leader>fc", fzf.changes)
 keymap("n", "<Leader>fe", fzf.diagnostics_document)
-keymap("n", "<Leader>ff", fzf.files)
-keymap("n", "<Leader>fa", fzf.args, "[FZF] Files")
+keymap("n", "<Leader>ff", fzf.files, "[Fzf] files")
+keymap("n", "<Leader>fa", fzf.args, "[FZF] args")
 keymap("n", "<Leader>fl", fzf.loclist)
 keymap("n", "<Leader>fq", fzf.quickfix)
 keymap("n", "<Leader>fL", fzf.loclist_stack)
@@ -564,8 +559,8 @@ keymap("n", "<Leader>fgg", fzf.git_status)
 keymap("n", "<Leader>fgc", fzf.git_commits)
 keymap("n", "<Leader>fgl", fzf.git_bcommits)
 keymap("n", "<Leader>fgb", fzf.git_branches)
-keymap("n", "<Leader>fh", fzf.help_tags)
-keymap("n", "<Leader>f?", fzf.help_tags)
+keymap("n", "<Leader>f?", fzf.help_tags, "[Fzf] help_tags")
+keymap("n", "<Leader>fh", fzf.help_tags, "[Fzf] help_tags")
 keymap("n", "<Leader>fk", fzf.keymaps)
 keymap("n", "<Leader>f-", fzf.blines)
 keymap("n", "<Leader>f=", fzf.lines)

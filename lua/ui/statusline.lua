@@ -159,7 +159,7 @@ end
 
 function statusline.file_info()
   local symbols = {}
-  local fname_hl = "MiniStatuslineFilename"
+  local fname_hl = "MiniStatuslineFileinfo"
   local fpath = statusline.filepath()
   local filename = statusline.filename()
   local devicons_present, devicons = pcall(require, "nvim-web-devicons")
@@ -176,7 +176,7 @@ function statusline.file_info()
     if options.file_status then
       if vim.bo.modified then
         table.insert(symbols, options.symbols.modified)
-        fname_hl = "Debug"
+        fname_hl = "MiniStatuslineModified"
       end
       if vim.bo.modifiable == false or vim.bo.readonly == true then
         table.insert(symbols, options.symbols.readonly)
@@ -192,11 +192,11 @@ function statusline.file_info()
   end
 
   if errors > 0 then
-    fname_hl = "ErrorMsg"
+    fname_hl = "MiniStatuslineError"
   end
 
   local file_symbol = (#symbols > 0 and " " .. table.concat(symbols, "") or "")
-  return string.format("%s%s%s", "%#Comment#" .. icon .. fpath, "%#" .. fname_hl .. "#" .. filename, file_symbol)
+  return string.format("%s%s%s", "%#MiniStatuslineInactive#" .. icon .. fpath, "%#" .. fname_hl .. "#" .. filename, file_symbol)
 end
 
 function statusline.macro()

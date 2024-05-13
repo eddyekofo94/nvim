@@ -12,8 +12,8 @@ local hlgroups = {
     reverse = true,
   },
 
-  TelescopeNormal = { link = "Normal" },
-  -- Noice
+  MiniStatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("MiniStatuslineDevinfo", "bg") },
+  MiniStatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("MiniStatuslineDevinfo", "bg") },
 
   CmpSel = { link = "Visual" },
 
@@ -24,6 +24,7 @@ local hlgroups = {
   NeogitDiffDeleteHighlight = {
     link = "Visual",
   },
+
   NeogitGraphRed = { link = "DiffDelete" },
 
   NeogitGraphBoldRed = { link = "DiffDelete", bold = true },

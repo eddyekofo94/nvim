@@ -1,6 +1,7 @@
 return {
   { import = "plugins.configs.mini" },
   { import = "plugins.code" },
+  { import = "plugins.navigation" },
   -- LSP
   {
     "ibhagwan/fzf-lua",
@@ -23,13 +24,13 @@ return {
       "Highlight",
     },
     keys = {
-      "<Leader>.",
-      "<Leader>,",
+      -- "<Leader>.",
+      -- "<Leader>,",
       -- '<Leader>/',
-      "<Leader>?",
-      '<Leader>"',
+      -- "<Leader>?",
+      -- '<Leader>"',
       -- '<Leader>o',
-      "<Leader>'",
+      -- "<Leader>'",
       -- '<Leader>-',
       -- '<Leader>=',
       "<Leader>R",
@@ -150,6 +151,7 @@ return {
   },
   {
     "rcarriga/nvim-notify",
+    enabled = false,
     event = "BufEnter",
     init = function()
       vim.notify = require "notify"
@@ -256,23 +258,6 @@ return {
     },
   },
   {
-    "stevearc/resession.nvim",
-    -- enabled = vim.g.resession_enabled == true,
-    enabled = false,
-    lazy = true,
-    event = "VimEnter",
-    config = true,
-    opts = {
-      buf_filter = function(bufnr)
-        return require("utils.buffer").is_restorable(bufnr)
-      end,
-      tab_buf_filter = function(tabpage, bufnr)
-        return vim.tbl_contains(vim.t[tabpage].bufs, bufnr)
-      end,
-      -- extensions = { astronvim = {} },
-    },
-  },
-  {
     "folke/todo-comments.nvim",
     event = { "BufReadPre", "BufNewFile" },
     keys = {
@@ -289,21 +274,6 @@ return {
       },
     },
     opts = require "plugins.configs.todo-comments",
-  },
-  {
-    "stevearc/conform.nvim",
-    event = "VeryLazy",
-    init = function()
-      vim.o.formatexpr = "v:lua.require('conform').formatexpr()"
-    end,
-    opts = require "plugins.configs.conform",
-    keys = {
-      {
-        "<leader>cf",
-        '<cmd>lua require("conform").format()<cr>',
-        desc = "Format current file",
-      },
-    },
   },
   {
     "ThePrimeagen/harpoon",
@@ -337,15 +307,6 @@ return {
       require("overlength").set_overlength({ "cpp", "bash" }, 80)
       require("overlength").set_overlength({ "rust", "python" }, 100)
     end,
-  },
-  {
-    "folke/which-key.nvim",
-    enabled = true,
-    event = "VeryLazy",
-    opts = {
-      disable = { filetypes = { "TelescopePrompt" } },
-    },
-    config = require "plugins.configs.which-key",
   },
   {
     "ahmedkhalf/project.nvim",
@@ -599,32 +560,7 @@ return {
     config = true,
     opts = require "plugins.configs.early-retirement",
   },
-  {
-    "beauwilliams/focus.nvim",
-    enabled = true,
-    event = "VimEnter",
-    cmd = {
-      "FocusAutoresize",
-    },
-    config = function()
-      require "plugins.configs.focus"
-    end,
-  },
 
-  {
-    "simonmclean/triptych.nvim",
-    event = "VeryLazy",
-    dependencies = {
-      "nvim-lua/plenary.nvim", -- required
-      "nvim-tree/nvim-web-devicons", -- optional
-    },
-    keys = {
-      { "<leader>-", "<cmd>Triptych<CR>", desc = "File explorere [Triptych]" },
-    },
-    config = function()
-      require "plugins.configs.triptych"
-    end,
-  },
   {
     "kylechui/nvim-surround",
     event = "VeryLazy",
