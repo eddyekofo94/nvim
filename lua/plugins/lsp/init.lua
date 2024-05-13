@@ -107,7 +107,7 @@ return { -- LSP Configuration & Plugins
 
     -- Useful status updates for LSP.
     -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-    { "j-hui/fidget.nvim", opts = {} },
+    { "j-hui/fidget.nvim", enabled = false, opts = {} },
 
     -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
     -- used for completion, annotations and signatures of Neovim apis
@@ -162,7 +162,7 @@ return { -- LSP Configuration & Plugins
 
         -- Rename the variable under your cursor.
         --  Most Language Servers support renaming across files, etc.
-        map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
+        map("<leader>lr", vim.lsp.buf.rename, "[Lsp] [r]ename")
 
         -- Execute a code action, usually your cursor needs to be on top of an error
         -- or a suggestion from your LSP for this to activate.

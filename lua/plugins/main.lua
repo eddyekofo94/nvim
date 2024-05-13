@@ -226,12 +226,6 @@ return {
   },
 
   {
-    -- log highlight colours
-    "MTDL9/vim-log-highlighting",
-    event = "VeryLazy",
-    ft = "log",
-  },
-  {
     "williamboman/mason.nvim",
     dependencies = {
       "williamboman/mason-lspconfig.nvim",
@@ -316,17 +310,6 @@ return {
     event = "VeryLazy",
     config = function()
       require "plugins.configs.harpoon"
-    end,
-  },
-  {
-    "ThePrimeagen/refactoring.nvim",
-    dependencies = {
-      { "nvim-lua/plenary.nvim" },
-      { "nvim-treesitter/nvim-treesitter" },
-    },
-    event = "VeryLazy",
-    config = function()
-      require("refactoring").setup {}
     end,
   },
   {
@@ -640,44 +623,6 @@ return {
     },
     config = function()
       require "plugins.configs.triptych"
-    end,
-  },
-  {
-    "echasnovski/mini.surround",
-    enabled = false,
-    event = "BufReadPre",
-    opts = {
-      search_method = "cover_or_next",
-      highlight_duration = 2000,
-      mappings = {
-        add = "ys",
-        delete = "ds",
-        replace = "cs",
-        highlight = "",
-        find = "",
-        find_left = "",
-        update_n_lines = "",
-      },
-      custom_surroundings = {
-        ["("] = { output = { left = "( ", right = " )" } },
-        ["["] = { output = { left = "[ ", right = " ]" } },
-        ["{"] = { output = { left = "{ ", right = " }" } },
-        ["<"] = { output = { left = "<", right = ">" } },
-        ["|"] = { output = { left = "|", right = "|" } },
-        ["%"] = { output = { left = "<% ", right = " %>" } },
-      },
-    },
-    config = function(_, opts)
-      require("mini.surround").setup(opts)
-    end,
-  },
-  {
-    "echasnovski/mini.bufremove",
-    version = "*",
-    -- event = "VeryLazy",
-    lazy = false,
-    config = function()
-      require("mini.bufremove").setup()
     end,
   },
   {

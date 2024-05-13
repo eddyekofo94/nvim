@@ -106,8 +106,8 @@ local function lsp_progress(err, progress, ctx)
     log {
       client = client_name or (cur and cur.client),
       -- title = value.title or (cur and cur.title),
-      message = success_icon .. " - Done",
-      -- message = (value.message or (cur and cur.message)) .. ' - Done',
+      -- message = success_icon .. " - Done",
+      message = (value.message or (cur and cur.message)) .. " " .. success_icon .. " - Done",
     }
     series[token] = nil
     clear()

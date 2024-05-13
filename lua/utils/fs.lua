@@ -28,12 +28,9 @@ function M.get_root()
   if path then
     for _, client in pairs(vim.lsp.get_clients { bufnr = 0 }) do
       local workspace = client.config.workspace_folders
-      local paths = workspace
-          and vim.tbl_map(function(ws)
-            return vim.uri_to_fname(ws.uri)
-          end, workspace)
-        or client.config.root_dir and { client.config.root_dir }
-        or {}
+      local paths = workspace and vim.tbl_map(function(ws)
+        return vim.uri_to_fname(ws.uri)
+      end, workspace) or client.config.root_dir and { client.config.root_dir } or {}
       for _, p in ipairs(paths) do
         local r = vim.loop.fs_realpath(p)
         if path:find(r, 1, true) then
@@ -95,21 +92,23 @@ function M.filename()
   local current = vim.api.nvim_get_current_win()
   local filename = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(current))
   local icon = ""
+  local icon_highlight = ""
 
   if filename ~= "" then
     local devicons_present, devicons = pcall(require, "nvim-web-devicons")
 
     if devicons_present then
-      local ft_icon = devicons.get_icon(filename)
+      local ft_icon, icon_hl = devicons.get_icon(filename)
       icon = (ft_icon ~= nil and ft_icon) or icon
+      icon_highlight = icon_hl
     end
     filename = vim.fn.fnamemodify(filename, ":~:.")
     filename = string.format("%s%s", icon .. " ", filename)
   else
-    filename = icon .. "[No Name]"
+    filename = string.format(" %s%s ", icon, vim.bo.filetype):upper()
   end
 
-  return filename
+  return filename, icon_highlight
 end
 
 -- INFO: returns if there's a git directory
@@ -306,11 +305,7 @@ function M.unique_path(opts)
       end
     end
     return utils.stylise(
-      (
-        opts.max_length > 0
-        and #unique_path > opts.max_length
-        and string.sub(unique_path, 1, opts.max_length - 2) .. get_icon "Ellipsis" .. "/"
-      ) or unique_path,
+      (opts.max_length > 0 and #unique_path > opts.max_length and string.sub(unique_path, 1, opts.max_length - 2) .. get_icon "Ellipsis" .. "/") or unique_path,
       opts
     )
   end

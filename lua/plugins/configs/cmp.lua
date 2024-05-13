@@ -42,9 +42,6 @@ end
 cmp.setup {
   enabled = function()
     local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
-    -- if buftype == "prompt" or "" then
-    --   return false
-    -- end
     if buftype == "prompt" or buftype == "acwrite" then
       return false
     end

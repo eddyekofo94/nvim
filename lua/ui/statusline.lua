@@ -1,6 +1,7 @@
 _G.statusline = {}
 
 local fs = require "utils.fs"
+local Buffer = require "utils.buffer"
 local utils = require "utils"
 local contains = vim.tbl_contains
 
@@ -44,6 +45,7 @@ local options = {
     "󰅚 0 ",
   },
   default_icon = "󰈚 ",
+  hl = {},
   symbols = {
     modified = "● ",
     readonly = "🔒 ",
@@ -59,8 +61,8 @@ local function is_activewin()
   return vim.api.nvim_get_current_win() == vim.g.statusline_winid
 end
 
-local function stbufnr()
-  return vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+local stbufnr = function()
+  return vim.api.nvim_win_get_buf(vim.g.statusline_winid or 0)
 end
 
 local assets = {
@@ -77,12 +79,11 @@ local assets = {
 -- end
 
 function statusline.lsp_progress()
-  local progress = require("configs.lsp.lsp-progress").message()
+  local progress = require("plugins.lsp.lsp-progress").message()
   -- local progress = require("utils.lsp.progress").lsp_progress()
 
   return string.format(
-    "%s %s ",
-    "%#St_LspProgress#",
+    "%s",
     progress
 
     -- require("lsp-progress").progress {
@@ -112,19 +113,6 @@ function statusline.LSP_Diagnostics()
   local diagnostic_icon = (vim.o.columns > 140 and icons or "")
 
   return diagnostic_icon
-end
-
-function statusline.line_percentage()
-  local curr_line = vim.api.nvim_win_get_cursor(0)[1]
-  local lines = vim.api.nvim_buf_line_count(0)
-
-  if curr_line == 1 then
-    return "Top "
-  elseif curr_line == lines then
-    return "Bot "
-  else
-    return string.format("%2d%%%% ", math.ceil(curr_line / lines * 99))
-  end
 end
 
 statusline.lsp_msg = function()
@@ -166,40 +154,49 @@ function statusline.search_count()
     return ""
   end
 
-  return string.format("[%d/%d] ", result.current, math.min(result.total, result.maxcount))
+  return string.format("[%d/%d]", result.current, math.min(result.total, result.maxcount))
 end
 
 function statusline.file_info()
-  local path_separator = package.config:sub(1, 1)
   local symbols = {}
-  local filename = fs.filename()
+  local fname_hl = "MiniStatuslineFilename"
+  local fpath = statusline.filepath()
+  local filename = statusline.filename()
+  local devicons_present, devicons = pcall(require, "nvim-web-devicons")
+  local icon = ""
+
+  local errors = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.ERROR })
+
+  if devicons_present then
+    local ft_icon = devicons.get_icon(filename)
+    icon = (ft_icon ~= nil and ft_icon) or icon
+  end
 
   if filename ~= options.symbols.unnamed then
     if options.file_status then
       if vim.bo.modified then
         table.insert(symbols, options.symbols.modified)
+        fname_hl = "Debug"
       end
       if vim.bo.modifiable == false or vim.bo.readonly == true then
         table.insert(symbols, options.symbols.readonly)
       end
     end
   else
-    filename = options.default_icon .. filename
-  end
-
-  if options.shorting_target ~= 0 then
-    local windwidth = vim.go.columns or vim.fn.winwidth(0)
-    local estimated_space_available = windwidth - options.shorting_target
-
-    filename = fs.shorten_path(filename, path_separator, estimated_space_available)
+    fpath = ""
+    filename = statusline.ft()
   end
 
   if options.newfile_status and fs.is_new_file() then
     table.insert(symbols, options.symbols.newfile)
   end
 
+  if errors > 0 then
+    fname_hl = "ErrorMsg"
+  end
+
   local file_symbol = (#symbols > 0 and " " .. table.concat(symbols, "") or "")
-  return string.format("%s%s%s ", "%#StText# ", filename, file_symbol)
+  return string.format("%s%s%s", "%#Comment#" .. icon .. fpath, "%#" .. fname_hl .. "#" .. filename, file_symbol)
 end
 
 function statusline.macro()
@@ -207,8 +204,33 @@ function statusline.macro()
   if recording_register == "" then
     return ""
   else
-    return " Recording @" .. recording_register .. " "
+    return "Recording @" .. recording_register .. " "
   end
+end
+
+statusline.project_name = function()
+  local fnamemodify = vim.fn.fnamemodify
+  local current_project_folder = fnamemodify(vim.fn.getcwd(), ":t")
+  local parent_project_folder = fnamemodify(vim.fn.getcwd(), ":h:t")
+  -- return parent_project_folder .. "/" .. current_project_folder
+  return current_project_folder
+end
+
+function statusline.filename()
+  local fname = vim.fn.expand "%:t"
+  if fname == "" then
+    return "[No Name]"
+  end
+  return fname
+end
+
+function statusline.filepath()
+  local fpath = vim.fn.fnamemodify(vim.fn.expand "%", ":~:.:h")
+  if fpath == "" or fpath == "." then
+    return " "
+  end
+
+  return string.format(" %%<%s/", fpath)
 end
 
 function statusline.cwd()
@@ -217,6 +239,19 @@ function statusline.cwd()
   name = (name:match "([^/\\]+)[/\\]*$" or name) .. " "
 
   return (vim.o.columns > 85 and ("%#st_mode#" .. icon .. name)) or ""
+end
+
+function statusline.lsp()
+  if rawget(vim, "lsp") then
+    -- local client = vim.lsp.get_client_by_id(ctx.client_id)
+    for _, client in ipairs(vim.lsp.get_clients()) do
+      if client.attached_buffers[stbufnr()] and client.name ~= "null-ls" then
+        return (vim.o.columns > 100 and "   " .. client.name .. " ") or ""
+      end
+    end
+  end
+
+  return ""
 end
 
 ---Get diff stats for current buffer
@@ -237,6 +272,34 @@ function statusline.gitdiff()
     utils.stl.hl(tostring(changed), "StatusLineGitChanged"),
     utils.stl.hl(tostring(removed), "StatusLineGitRemoved")
   )
+end
+
+function statusline.vcs()
+  local git_info = vim.b.gitsigns_status_dict
+  if not git_info or git_info.head == "" then
+    return ""
+  end
+  local added = git_info.added and ("%#GitSignsAdd#+" .. git_info.added .. " ") or ""
+  local changed = git_info.changed and ("%#GitSignsChange#~" .. git_info.changed .. " ") or ""
+  local removed = git_info.removed and ("%#GitSignsDelete#-" .. git_info.removed .. " ") or ""
+  if git_info.added == 0 then
+    added = ""
+  end
+  if git_info.changed == 0 then
+    changed = ""
+  end
+  if git_info.removed == 0 then
+    removed = ""
+  end
+  return table.concat {
+    "%#GitSignsAdd# ",
+    git_info.head,
+    " ",
+    added,
+    changed,
+    removed,
+    " %#Normal#",
+  }
 end
 
 ---Get string representation of current git branch
@@ -264,6 +327,30 @@ function statusline.ft()
   return vim.bo.ft == "" and "" or " " .. vim.bo.ft:gsub("^%l", string.upper) .. " "
 end
 
+function statusline.line_percentage()
+  local curr_line = vim.api.nvim_win_get_cursor(0)[1]
+  local lines = vim.api.nvim_buf_line_count(0)
+
+  if curr_line == 1 then
+    return "Top "
+  elseif curr_line == lines then
+    return "Bot "
+  else
+    return string.format("%2d%%%% ", math.ceil(curr_line / lines * 99))
+  end
+end
+
+statusline.section_location = function()
+  return "%2l:%-2v"
+end
+
+function statusline.lineinfo()
+  if vim.bo.filetype == "alpha" then
+    return ""
+  end
+  return " %l:%c %P "
+end
+
 ---@return string
 function statusline.wordcount()
   local words, wordcount = 0, nil
@@ -276,8 +363,7 @@ function statusline.wordcount()
     vim.b.wc_changedtick = vim.b.changedtick
   end
   local vwords = vim.fn.mode():find "^[vsVS\x16\x13]" and (wordcount or vim.fn.wordcount()).visual_words
-  return words == 0 and ""
-    or (vwords and vwords > 0 and vwords .. "/" or "") .. words .. (words > 1 and " words" or " word")
+  return words == 0 and "" or (vwords and vwords > 0 and vwords .. "/" or "") .. words .. (words > 1 and " words" or " word")
 end
 
 ---Text filetypes
@@ -306,8 +392,9 @@ function statusline.info()
   if ft_text[vim.bo.ft] and not vim.b.bigfile then
     add_section(statusline.wordcount())
   end
-  add_section(statusline.branch())
-  add_section(statusline.gitdiff())
+  -- add_section(statusline.branch())
+  -- add_section(statusline.gitdiff())
+  add_section(statusline.vcs())
   -- add_section(statusline.wordcount())
   add_section(statusline.treesitter_status())
   return vim.tbl_isempty(info) and "" or string.format("(%s) ", table.concat(info, ", "))

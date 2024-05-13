@@ -545,3 +545,8 @@ vim.api.nvim_create_autocmd("QuickFixCmdPost", {
   pattern = { "[^l]*" },
   command = "cwindow",
 })
+
+vim.api.nvim_create_autocmd({ "LspProgress" }, {
+  group = groupid,
+  command = "redrawstatus",
+})
