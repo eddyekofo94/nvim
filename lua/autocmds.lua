@@ -104,7 +104,12 @@ autocmd("CmdLineLeave", {
     if vim.api.nvim_get_mode().mode == "i" then
       return
     end
-    vim.api.nvim_feedkeys("zz", "n", false)
+
+    vim.cmd.normal {
+      "zz",
+      bang = true,
+      mods = { emsg_silent = true },
+    }
   end,
 })
 
@@ -367,8 +372,8 @@ autocmd("TextYankPost", {
   end,
 })
 
--- NOTE: should restore cursor position on the last one
 autocmd("BufReadPost", {
+  desc = "should restore cursor position on the last one",
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
     local lcount = vim.api.nvim_buf_line_count(0)

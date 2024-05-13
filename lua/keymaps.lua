@@ -85,8 +85,20 @@ Keymap.new("n", "<C-u>", "zz<C-u>")
   :bind(Keymap.new("n", "<C-d>", "zz<C-d>"))
   :bind(Keymap.new("n", "{", "zz{"))
   :bind(Keymap.new("n", "}", "zz}"))
-  :bind(Keymap.new("n", "n", "zzn"))
-  :bind(Keymap.new("n", "N", "zzN"))
+  :bind(Keymap.new("n", "n", function()
+    vim.cmd.normal {
+      "zzn",
+      bang = true,
+      mods = { emsg_silent = true },
+    }
+  end))
+  :bind(Keymap.new("n", "N", function()
+    vim.cmd.normal {
+      "zzN",
+      bang = true,
+      mods = { emsg_silent = true },
+    }
+  end))
   :bind(Keymap.new("n", "<C-i>", "zz<C-i>"))
   :bind(Keymap.new("n", "<C-o>", "zz<C-o>"))
   :bind(Keymap.new("n", "%", "zz%"))
@@ -302,6 +314,16 @@ keymap({ "n", "x" }, "$", map_wrapped_eol("$", "g$"), { expr = true })
 keymap({ "n", "x" }, "^", map_wrapped("^", "g^"), { expr = true })
 keymap({ "n", "x" }, "<Home>", map_wrapped("<Home>", "g<Home>"), { expr = true })
 keymap({ "n", "x" }, "<End>", map_wrapped_eol("<End>", "g<End>"), { expr = true })
+
+keymap("n", "vA", "ggVG", "Select All")
+keymap("n", "yA", "ggVGy", "Copy All")
+
+keymap("n", "[e", function()
+  vim.diagnostic.goto_prev { severity = "ERROR" }
+end, "Error")
+keymap("n", "]e", function()
+  vim.diagnostic.goto_next { severity = "ERROR" }
+end, "Error")
 
 maps.n["<leader>bsp"] = {
   function()
