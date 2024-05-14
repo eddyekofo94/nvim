@@ -214,9 +214,13 @@ keymap("!a", "balme", "blame")
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   once = true,
   callback = function()
+    utils.command_abbrev("tel", "Telescope")
     utils.command_abbrev("S", "%s")
     utils.command_abbrev(":", "lua")
     utils.command_abbrev("man", "Man")
+    utils.command_abbrev("Wqa", "wqa")
+    utils.command_abbrev("Wq", "wq")
+    utils.command_abbrev("Wa", "wa")
     utils.command_abbrev("ep", "e%:p:h")
     utils.command_abbrev("vep", "vs%:p:h")
     utils.command_abbrev("sep", "sp%:p:h")
