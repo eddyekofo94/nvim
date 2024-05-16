@@ -141,7 +141,7 @@ return {
   {
     "olimorris/persisted.nvim",
     lazy = false,
-    enabled = true,
+    enabled = false,
     config = function()
       require "plugins.configs.persisted"
     end,

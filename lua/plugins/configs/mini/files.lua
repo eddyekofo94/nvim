@@ -1,5 +1,6 @@
 return {
   "echasnovski/mini.files",
+  enabled = true,
   init = function()
     vim.api.nvim_create_autocmd("User", {
       pattern = "MiniFilesBufferCreate",

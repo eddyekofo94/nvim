@@ -6,8 +6,15 @@ return {
 
       require("mini.trailspace").setup()
 
-      -- require("mini.comment").setup()
+      require("mini.fuzzy").setup()
 
+      local map = require("utils.keymaps").set_keymap
+
+      -- map("n", "<leader>sn", MiniFuzzy.filtersort(word, candidate_array), opts)
+      --  INFO: 2024-05-15 - I already have something set up, maybe remove it and change to
+      -- this in the future?
+      -- require("mini.misc").setup()
+      -- MiniMisc.setup_auto_root { "go.mod", ".git", "Makefile", "cwd", ".obsidian" }
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
@@ -16,7 +23,13 @@ return {
   {
     "echasnovski/mini.comment",
     event = "VeryLazy",
-    opts = {},
+    opts = {
+      options = {
+        custom_commentstring = function()
+          return require("ts_context_commentstring.internal").calculate_commentstring() or vim.bo.commentstring
+        end,
+      },
+    },
   },
 
   {
@@ -102,19 +115,23 @@ return {
       local animate = require "mini.animate"
       local timing = animate.gen_timing.linear { duration = 100, unit = "total" }
       animate.setup {
-        cursor = {
-          timing = animate.gen_timing.linear { duration = 10, unit = "total" },
-        },
-        resize = {
-          enable = false,
-          timing = animate.gen_timing.linear { duration = 10, unit = "total" },
-        },
-        scroll = {
-          timing = timing,
-        },
+        cursor = { timing = animate.gen_timing.linear { duration = 10, unit = "total" } },
+        resize = { enable = false, timing = animate.gen_timing.linear { duration = 10, unit = "total" } },
+        scroll = { timing = timing },
         open = { enable = true },
         close = { enable = false },
       }
     end,
+  },
+  -- Split and join arguments
+  {
+    "echasnovski/mini.splitjoin",
+    keys = {
+      { "sj", "<cmd>lua MiniSplitjoin.join()<CR>", mode = { "n", "x" }, desc = "Join arguments" },
+      { "sk", "<cmd>lua MiniSplitjoin.split()<CR>", mode = { "n", "x" }, desc = "Split arguments" },
+    },
+    opts = {
+      mappings = { toggle = "" },
+    },
   },
 }

@@ -12,22 +12,15 @@ local hlgroups = {
     reverse = true,
   },
 
-  MiniStatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("MiniStatuslineDevinfo", "bg") },
-  MiniStatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("MiniStatuslineDevinfo", "bg") },
+  MiniStatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("StatusLine", "bg") },
+  MiniStatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("StatusLine", "bg") },
+  MiniStatuslineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
+  MiniStatuslineGitChange = { fg = gethl("GitSignsChange", "fg"), bg = gethl("StatusLine", "bg") },
+  MiniStatuslineGitDelete = { fg = gethl("GitSignsDelete", "fg"), bg = gethl("StatusLine", "bg") },
 
-  CmpSel = { link = "Visual" },
+  YankyYanked = { reverse = true },
 
-  -- Neogit
-  NeogitDiffDelete = {
-    link = "DiffDelete",
-  },
-  NeogitDiffDeleteHighlight = {
-    link = "Visual",
-  },
-
-  NeogitGraphRed = { link = "DiffDelete" },
-
-  NeogitGraphBoldRed = { link = "DiffDelete", bold = true },
+  CmpSel = { reverse = true },
 
   -- Navbuddy
   -- NavbuddyFile = { link = "Directory" },

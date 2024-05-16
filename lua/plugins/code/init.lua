@@ -33,7 +33,7 @@ return {
       { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" } },
 
       {
-        "<C-r>",
+        "<leader>sY",
         "<cmd>Telescope yank_history theme=ivy<cr>",
         desc = "[Y]ank History",
         mode = { "i", "n", "x" },

@@ -75,10 +75,7 @@ local get_bufnrs = function()
   -- or all buffers including hidden/unlisted ones (like help/terminal)
   for _, buf in ipairs(api.nvim_list_bufs()) do
     if
-      (
-        cmp_get_bufnrs == "buflisted" and api.nvim_get_option_value("buflisted", { buf = buf })
-        or cmp_get_bufnrs == "all"
-      )
+      (cmp_get_bufnrs == "buflisted" and api.nvim_get_option_value("buflisted", { buf = buf }) or cmp_get_bufnrs == "all")
       and api.nvim_buf_is_loaded(buf)
       and api.nvim_buf_line_count(buf) > 0
     then
@@ -272,7 +269,7 @@ end
 ---@param tabnr number The position of the buffer to navigate to
 function M.nav_to(tabnr)
   if tabnr > #vim.t.bufs or tabnr < 1 then
-    utils.notify(("No tab #%d"):format(tabnr), vim.log.levels.WARN)
+    utils.notify(("No tab #%d"):format(tabnr), "warn")
   else
     vim.cmd.b(vim.t.bufs[tabnr])
   end
@@ -284,10 +281,10 @@ function M.prev()
     if M.last_buf then
       vim.cmd.b(M.last_buf)
     else
-      utils.notify("No previous buffer found", vim.log.levels.WARN)
+      utils.notify("No previous buffer found", "warn")
     end
   else
-    utils.notify("Must be in a main editor window to switch the window buffer", vim.log.levels.ERROR)
+    utils.notify("Must be in a main editor window to switch the window buffer", "error")
   end
 end
 
@@ -341,7 +338,7 @@ function M.close_all_buffers(keep_current, force)
   -- if bufs == nil then
   local bufs = M.get_listed_buffers()
   -- end
-  utils.notify_once("Close all buffers", vim.log.levels.INFO)
+  utils.notify_once "Close all buffers"
 
   for _, bufnr in ipairs(bufs) do
     if not keep_current or bufnr ~= current then
@@ -355,7 +352,7 @@ function M.close_all_empty_buffers()
     return vim.bo[bufnr].buflisted and vim.bo[bufnr].buftype == "" and not vim.bo[bufnr].modified
   end, vim.api.nvim_list_bufs())
 
-  utils.notify_once("Close all empty/hidden buffers", vim.log.levels.INFO)
+  utils.notify_once "Close all empty/hidden buffers"
   for _, bufnr in ipairs(hidden_listed_buffers) do
     M.close_buffer(bufnr)
   end
@@ -363,7 +360,7 @@ end
 
 -- closes all buffers and windows but current
 function M.reset()
-  utils.notify_once("Close all windows & buffers", vim.log.levels.INFO)
+  utils.notify_once "Close all windows & buffers"
   M.close_all_visible_window(false)
   M.close_all_buffers(true)
 end
@@ -372,7 +369,7 @@ function M.hide_window(winid)
   local filename = fs.filename()
 
   if M.is_win_valid(winid) then
-    utils.notify_once("Close hide: " .. filename, vim.log.levels.INFO)
+    utils.notify_once("Close hide: " .. filename)
 
     vim.api.nvim_win_hide(winid)
   end
@@ -387,12 +384,12 @@ function M.close_window(winid, force)
   end
 
   if #M.visible_buffers() == 1 then
-    utils.notify_once("Last window", vim.log.levels.INFO)
+    utils.notify_once "Last window"
     return false
   end
 
   if M.is_win_valid(winid) then
-    utils.notify_once("Close window: " .. filename, vim.log.levels.INFO)
+    utils.notify_once("Close window: " .. filename)
     vim.cmd "FocusAutoresize"
     vim.api.nvim_win_close(winid, force)
   end
@@ -403,7 +400,7 @@ function M.close_all_visible_window(force)
   local winids = vim.api.nvim_tabpage_list_wins(tabpage)
   local current = vim.api.nvim_get_current_win()
 
-  utils.notify_once("Close all windows: [" .. (#winids - 1) .. "]", vim.log.levels.INFO)
+  utils.notify_once("Close all windows: [" .. (#winids - 1) .. "]")
 
   for _, winid in ipairs(winids) do
     if winid ~= current then

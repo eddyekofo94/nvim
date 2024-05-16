@@ -2,6 +2,7 @@ return {
   { import = "plugins.configs.mini" },
   { import = "plugins.code" },
   { import = "plugins.navigation" },
+  { import = "plugins.git" },
   -- LSP
   {
     "ibhagwan/fzf-lua",
@@ -130,6 +131,14 @@ return {
     end),
     config = function()
       require "plugins.configs.fzf-lua"
+    end,
+  },
+  {
+    "NvChad/nvterm",
+    enabled = true,
+    config = function()
+      require("nvterm").setup()
+      require "plugins.configs.terminal"
     end,
   },
   -- Better notifications and messagess
@@ -261,7 +270,7 @@ return {
     "folke/todo-comments.nvim",
     event = { "BufReadPre", "BufNewFile" },
     keys = {
-      { "<leader>T", "<cmd>TodoQuickFix<cr>", desc = "Search TODO" },
+      { "<leader>Tq", "<cmd>TodoQuickFix<cr>", desc = "Search TODO" },
       {
         "]t",
         "<cmd>lua require('todo-comments').jump_next()<cr>",
@@ -277,6 +286,7 @@ return {
   },
   {
     "ThePrimeagen/harpoon",
+    enabled = false,
     event = "VeryLazy",
     config = function()
       require "plugins.configs.harpoon"
@@ -451,7 +461,7 @@ return {
   },
   {
     "NvChad/nvim-colorizer.lua",
-    event = "BufWinEnter",
+    event = { "BufReadPre", "BufNewFile" },
     config = function(_, opts)
       require("colorizer").setup(opts)
 
@@ -461,6 +471,7 @@ return {
       end, 0)
     end,
     opts = {
+      filetypes = { "*", "!help", "!markdown" },
       user_default_options = {
         names = false,
         rgb_fn = true,

@@ -1,5 +1,25 @@
 return {
   "nvim-treesitter/nvim-treesitter",
+  lazy = false,
+  build = ":TSUpdate",
+  cmd = {
+    "TSBufDisable",
+    "TSBufEnable",
+    "TSBufToggle",
+    "TSDisable",
+    "TSEnable",
+    "TSToggle",
+    "TSInstall",
+    "TSInstallInfo",
+    "TSInstallSync",
+    "TSModuleInfo",
+    "TSUninstall",
+    "TSUpdate",
+    "TSUpdateSync",
+  },
+  opts = function()
+    return require "plugins.configs.treesitter"
+  end,
   dependencies = {
     {
       "RRethy/nvim-treesitter-endwise",
@@ -53,25 +73,6 @@ return {
       init = function() end,
     },
   },
-  cmd = {
-    "TSBufDisable",
-    "TSBufEnable",
-    "TSBufToggle",
-    "TSDisable",
-    "TSEnable",
-    "TSToggle",
-    "TSInstall",
-    "TSInstallInfo",
-    "TSInstallSync",
-    "TSModuleInfo",
-    "TSUninstall",
-    "TSUpdate",
-    "TSUpdateSync",
-  },
-  build = ":TSUpdate",
-  opts = function()
-    return require "plugins.configs.treesitter"
-  end,
   config = function(_, opts)
     vim.treesitter.language.register("bash", "zsh")
     -- Prefer git instead of curl in order to improve connectivity in some environments

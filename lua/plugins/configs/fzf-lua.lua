@@ -339,11 +339,11 @@ fzf.setup {
   },
   actions = {
     files = {
-      ["alt-s"] = actions.file_split,
-      ["alt-v"] = actions.file_vsplit,
-      ["alt-t"] = actions.file_tabedit,
-      ["alt-q"] = actions._file_sel_to_qf,
-      ["alt-o"] = actions._file_sel_to_ll,
+      ["ctrl-s"] = actions.file_split,
+      ["ctrl-v"] = actions.file_vsplit,
+      ["ctrl-t"] = actions.file_tabedit,
+      ["ctrl-q"] = actions._file_sel_to_qf,
+      ["ctrl-o"] = actions._file_sel_to_ll,
       ["default"] = actions._file_edit_or_qf,
     },
     buffers = {

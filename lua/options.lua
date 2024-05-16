@@ -34,9 +34,6 @@ vim.opt.clipboard = "unnamedplus"
 -- Enable break indent
 vim.opt.breakindent = true
 
--- Save undo history
-vim.opt.undofile = true
-
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -64,6 +61,21 @@ vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
 
+-- make `:substitute` also notify how many changes were made
+-- works, as `CmdlineLeave` is triggered before the execution of the command
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  callback = function(ctx)
+    if not ctx.match == ":" then
+      return
+    end
+    local cmdline = vim.fn.getcmdline()
+    local isSubstitution = cmdline:find "s ?/.+/.-/%a*$"
+    if isSubstitution then
+      vim.cmd(cmdline .. "ne")
+    end
+  end,
+})
+
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
@@ -72,7 +84,6 @@ vim.opt.scrolloff = 10
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 -- add yours here!
 vim.g.mapleader = " "
@@ -85,6 +96,8 @@ vim.opt.cursorline = true
 o.cursorlineopt = "both" -- to enable cursorline!
 opt.iskeyword:append "-"
 vim.opt.errorbells = false
+
+-- No double spaces with join after a dot
 vim.opt.joinspaces = false
 
 vim.opt.fillchars = {
@@ -130,6 +143,9 @@ vim.opt.shortmess = {
 vim.o.wildmenu = true
 vim.o.wildoptions = "pum"
 
+-- Ignore case when completing file names and directories.
+vim.o.wildignorecase = true
+
 vim.opt.backupcopy = "yes"
 -- vim.opt.undolevels = 1000
 vim.opt.autoread = true
@@ -152,6 +168,21 @@ opt.splitright = true
 opt.splitbelow = true
 vim.o.history = 10000 -- Number of command-lines that are remembered
 
+-- if last command was line-jump, remove it from history to reduce noise
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  callback = function(ctx)
+    if not ctx.match == ":" then
+      return
+    end
+    vim.defer_fn(function()
+      local lineJump = vim.fn.histget(":", -1):match "^%d+$"
+      if lineJump then
+        vim.fn.histdel(":", -1)
+      end
+    end, 100)
+  end,
+})
+
 -- Buffer
 vim.opt.swapfile = false
 vim.opt.fileformat = "unix"
@@ -171,8 +202,25 @@ vim.cmd [[set nowrap]] -- Display long lines as just one line
 
 vim.opt.showmode = false
 
-vim.opt.undodir = vim.fn.stdpath "data" .. "undo"
+-- Save undo history
 vim.opt.undofile = true
+
+-- Set directories for backup/swap/undo files
+vim.opt.directory = vim.fn.stdpath "state" .. "swap"
+vim.opt.backupdir = vim.fn.stdpath "state" .. "backup"
+vim.opt.undodir = vim.fn.stdpath "state" .. "undo"
+
+-- automatically cleanup dirs to prevent bloating.
+-- once a week, on first FocusLost, delete files older than 30/60 days.
+vim.api.nvim_create_autocmd("FocusLost", {
+  once = true,
+  callback = function()
+    if os.date "%a" == "Mon" then
+      vim.fn.system { "find", opt.viewdir:get(), "-mtime", "+60d", "-delete" }
+      vim.fn.system { "find", opt.undodir:get()[1], "-mtime", "+30d", "-delete" }
+    end
+  end,
+})
 vim.opt.wrapscan = true
 
 vim.opt.smoothscroll = true
@@ -270,16 +318,24 @@ vim.cmd [[
 local is_windows = vim.fn.has "win32" ~= 0
 vim.env.PATH = vim.fn.stdpath "data" .. "/mason/bin" .. (is_windows and ";" or ":") .. vim.env.PATH
 
+--  NOTE: 2024-05-14 - Disabled this, using nvterm
 -- term
-vim.api.nvim_create_autocmd("TermOpen", {
-  group = vim.api.nvim_create_augroup("TermSetup", {}),
-  callback = function(info)
-    require("term").setup(info.buf)
-  end,
-})
+-- vim.api.nvim_create_autocmd("TermOpen", {
+--   desc = "Set up terminal config",
+--   group = vim.api.nvim_create_augroup("TermSetup", {}),
+--   callback = function(info)
+--     require("term").setup(info.buf)
+--   end,
+-- })
 
 vim.api.nvim_create_autocmd({ "VimEnter" }, {
   callback = function()
     require "ui.highlights"
   end,
 })
+
+-- Disable some builtin providers
+vim.g.loaded_python_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_node_provider = 0

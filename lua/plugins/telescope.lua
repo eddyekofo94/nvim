@@ -1,31 +1,19 @@
 return {
-
-  {
-    "prochri/telescope-all-recent.nvim",
-    lazy = false,
-    enabled = true,
-    dependencies = {
-      "nvim-telescope/telescope.nvim",
-      "kkharji/sqlite.lua",
-      -- optional, if using telescope for vim.ui.select
-      "stevearc/dressing.nvim",
-    },
-    keys = {
-      {
-        "<leader>ff",
-        function()
-          require("telescope.builtins").find_files()
-        end,
-        desc = "Find files",
-      },
-    },
-    config = true,
-  },
   {
     "nvim-telescope/telescope.nvim",
-    branch = "0.1.x",
     event = "VimEnter",
     dependencies = {
+      {
+        "prochri/telescope-all-recent.nvim",
+        enabled = false,
+        dependencies = {
+          "nvim-telescope/telescope.nvim",
+          "kkharji/sqlite.lua",
+          -- optional, if using telescope for vim.ui.select
+          "stevearc/dressing.nvim",
+        },
+        config = true,
+      },
       "nvim-lua/plenary.nvim",
       { "kyoh86/telescope-windows.nvim" },
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -83,7 +71,7 @@ return {
       local keymap_utils = require "utils.keymaps"
       local map = keymap_utils.set_keymap
 
-      local options = {
+      require("telescope").setup {
         defaults = {
           vimgrep_arguments = {
             "rg",
@@ -140,6 +128,18 @@ return {
               },
             },
             find_files = {
+              find_command = {
+                "rg",
+                "--hidden",
+                "--no-heading",
+                "--with-filename",
+                "--files",
+                "--column",
+                "--smart-case",
+                "--ignore-file",
+                "--iglob",
+                "!.git",
+              },
               mappings = {
                 n = {
                   ["<C-H>"] = Util.send_to_harpoon_action,
@@ -166,9 +166,10 @@ return {
             },
           },
           file_ignore_patterns = { ".git/.*", "node_modules/.*" },
-          file_sorter = require("telescope.sorters").get_fzy_sorter,
-          generic_sorter = require("telescope.sorters").fuzzy_with_index_bias,
+          file_sorter = require("telescope.sorters").get_fuzzy_file,
+          generic_sorter = require("mini.fuzzy").get_telescope_sorter,
           path_display = { "filename_first" },
+          dynamic_preview_title = true,
           winblend = 0,
           border = {},
           borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
@@ -274,23 +275,24 @@ return {
           },
         },
       }
+
       -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set("n", "<leader>/", function()
+      map("n", "<leader>/", function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
         builtin.current_buffer_fuzzy_find(require("telescope.themes").get_dropdown {
           winblend = 10,
           previewer = false,
         })
-      end, { desc = "[/] Fuzzily search in current buffer" })
+      end, "[/] Fuzzily search in current buffer")
 
       -- It's also possible to pass additional configuration options.
       --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set("n", "<leader>s/", function()
+      map("n", "<leader>s/", function()
         builtin.live_grep {
           grep_open_files = true,
           prompt_title = "Live Grep in Open Files",
         }
-      end, { desc = "[S]earch [/] in Open Files" })
+      end, "[S]earch [/] in Open Files")
 
       maps.n["<leader><space>"] = { Telescope.find "files", desc = "Find files" }
 
@@ -336,7 +338,7 @@ return {
         desc = "[Root] List buffers",
       }
 
-      maps.n["<leader>sh"] = { "<cmd> Telescope harpoon marks<CR>", desc = "Harpoon files" }
+      maps.n["<leader>sh"] = { "<cmd> Telescope help_tags<CR>", desc = "tags" }
 
       maps.n["<leader>sk"] = { Telescope.find "keymaps", desc = "Keymaps" }
 
@@ -412,11 +414,6 @@ return {
         desc = "definition",
       }
 
-      maps.n["<leader>dd"] = {
-        Telescope.find "diagnostics",
-        desc = "List diagnostics",
-      }
-
       maps.n["<leader>sc"] = {
         Telescope.config_files(),
         desc = "Search Configs",
@@ -431,7 +428,14 @@ return {
 
       keymap_utils.set_mappings(maps)
 
-      require("telescope").setup(options)
+      -- setup number and wrap for telescope previewer
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "TelescopePreviewerLoaded",
+        callback = function(args)
+          vim.wo.number = true
+          vim.wo.wrap = true
+        end,
+      })
     end,
   },
 }

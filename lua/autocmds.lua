@@ -30,6 +30,8 @@ local smart_close_filetypes = {
   "undotree",
   "noice",
   "man",
+  "Mininotify-history", --  NOTE: 2024-05-14 - Not closing
+  "Mini*",
   "messages",
   "undotree",
   "help",
@@ -458,14 +460,6 @@ autocmd({ "BufEnter" }, {
   end,
 })
 
--- wrap telescope previewwindow
-local telescope_preview_wrap = augroup "WrapTelescopePreviewer"
-autocmd("User", {
-  group = telescope_preview_wrap,
-  pattern = { "TelescopePreviewerLoaded" },
-  command = "setlocal wrap",
-})
-
 autocmd("BufHidden", {
   desc = "Delete [No Name] buffers",
   -- pattern = "VeryLazy",
@@ -554,4 +548,58 @@ vim.api.nvim_create_autocmd("QuickFixCmdPost", {
 vim.api.nvim_create_autocmd({ "LspProgress" }, {
   group = groupid,
   command = "redrawstatus",
+})
+
+-- autocmd({ "ExitPre", "QuitPre", "VimLeavePre" }, {
+--   group = groupid,
+--   callback = function()
+--     local nvterm = require "nvterm.terminal"
+--     nvterm.close_all_terms()
+--     -- for _, buf in ipairs(nvterm.list_active_terms "buf") do
+--     -- for _, buf in ipairs(nvterm.list_terms) do
+--     --   print "Closing Vim"
+--     --   vim.cmd("bd! " .. tostring(buf))
+--     -- end
+--   end,
+-- })
+
+-- AUTO-CLOSE BUFFERS whose files do not exist anymore
+vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "QuickFixCmdPost" }, {
+  -- INFO also trigger on `QuickFixCmdPost`, in case a make command deletes file
+  callback = function(ctx)
+    local bufnr = ctx.buf
+    vim.defer_fn(function()
+      if not vim.api.nvim_buf_is_valid(bufnr) then
+        return
+      end
+
+      local function fileExists(bufpath)
+        return vim.loop.fs_stat(bufpath) ~= nil
+      end
+
+      -- check if buffer was deleted
+      local bufname = vim.api.nvim_buf_get_name(bufnr)
+      local isSpecialBuffer = vim.bo[bufnr].buftype ~= ""
+      local isNewBuffer = bufname == ""
+      -- prevent the temporary buffers from conform.nvim's "injected"
+      -- formatter to be closed by this (filename is like "README.md.5.lua")
+      local conformTempBuf = bufname:find "%.md%.%d+%.%l+$"
+      if fileExists(bufname) or isSpecialBuffer or isNewBuffer or conformTempBuf then
+        return
+      end
+
+      -- open last existing oldfile
+      vim.notify(("%q does not exist anymore."):format(vim.fs.basename(bufname)))
+      for _, oldfile in pairs(vim.v.oldfiles) do
+        if fileExists(oldfile) then
+          -- vim.cmd.edit can still fail, as the fileExistence check
+          -- apparently sometimes uses a cache, where the file still exists
+          local success = pcall(vim.cmd.edit, oldfile)
+          if success then
+            return
+          end
+        end
+      end
+    end, 300)
+  end,
 })

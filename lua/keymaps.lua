@@ -35,16 +35,23 @@ function Keymap:execute()
   self.action()
 end
 
+keymap({ "n", "v" }, "<leader>ll", function()
+  local state = vim.o.number
+  vim.o.number = not state
+  vim.o.relativenumber = state
+end, { desc = "toggle [l]ine number mode" })
+
 -- Diagnostic keymaps
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic message" })
-vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostic [E]rror messages" })
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
-vim.keymap.set({ "x", "n" }, "<C-w>", "<C-w>w")
-vim.keymap.set({ "x", "n" }, "<C-h>", "<C-w>h")
-vim.keymap.set({ "x", "n" }, "<C-j>", "<C-w>j")
-vim.keymap.set({ "x", "n" }, "<C-k>", "<C-w>k")
-vim.keymap.set({ "x", "n" }, "<C-l>", "<C-w>l")
+keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
+keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic message" })
+keymap("n", "<leader>de", vim.diagnostic.open_float, { desc = "Show [d]iagnostic [E]rror messages" })
+keymap("n", "<leader>qf", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uick[f]ix list" })
+
+keymap({ "x", "n" }, "<C-w>", "<C-w>w")
+keymap({ "x", "n" }, "<C-h>", "<C-w>h")
+keymap({ "x", "n" }, "<C-j>", "<C-w>j")
+keymap({ "x", "n" }, "<C-k>", "<C-w>k")
+keymap({ "x", "n" }, "<C-l>", "<C-w>l")
 
 --  INFO: Buffers
 Keymap
@@ -80,6 +87,14 @@ Keymap
   -- },
   :execute()
 
+Keymap.new("i", "<C-b>", "<ESC>^i")
+  :bind(Keymap.new("i", "<C-c>", "<esc>", "CTRL-C doesn't trigger the InsertLeave autocmd . map to <ESC> instead."))
+  :bind(Keymap.new("i", "<C-a>", "<End>"))
+  :bind(Keymap.new("i", "<C-l>", function()
+    return utils.escapePair()
+  end, "move over a closing element in insert mode"))
+  :execute()
+
 -- INFO: Search always center
 Keymap.new("n", "<C-u>", "zz<C-u>")
   :bind(Keymap.new("n", "<C-d>", "zz<C-d>"))
@@ -107,8 +122,7 @@ Keymap.new("n", "<C-u>", "zz<C-u>")
   :execute()
 
 --  INFO: General
-Keymap
-  .new("n", "<leader>hh", "<cmd>nohl<BAR>redraws<cr>", "Clear highlight")
+Keymap.new("n", "<leader>hh", "<cmd>nohl<BAR>redraws<cr>", "Clear highlight")
   :bind(
     -- Clear search, diff update and redraw
     -- taken from runtime/lua/_editor.lua
@@ -125,7 +139,6 @@ Keymap
   :bind(Keymap.new("n", "<leader>ca", ": %y+<CR>", "COPY EVERYTHING/ALL"))
   :bind(Keymap.new("v", "/", '"fy/\\V<C-R>f<CR>'))
   :bind(Keymap.new("v", "*", '"fy/\\V<C-R>f<CR>'))
-  :bind(Keymap.new("i", "<C-c>", "<esc>", "CTRL-C doesn't trigger the InsertLeave autocmd . map to <ESC> instead."))
   :bind(Keymap.new(nxo, "gh", "g^", " move to start of line"))
   :bind(Keymap.new(nxo, "gl", "g$", " move to end of line"))
   :bind(Keymap.new("x", "p", '"_dP', "don't yank on paste"))
@@ -136,16 +149,11 @@ Keymap
   :bind(Keymap.new({ "n", "x" }, "S", '"_S', "Don't save to register"))
   :bind(Keymap.new({ "n", "x" }, "x", '"_x'))
   :bind(Keymap.new("x", "X", '"_c'))
-  :bind(Keymap.new("i", "<C-l>", function()
-    return utils.escapePair()
-  end, "move over a closing element in insert mode"))
   :bind(Keymap.new("n", "<M-l>", function()
     return utils.escapePair()
   end, "move over a closing element in normal mode"))
   :bind(Keymap.new("n", "[q", vim.cmd.cprev, { desc = "Previous quickfix" }))
   :bind(Keymap.new("n", "]q", vim.cmd.cnext, { desc = "Next quickfix" }))
-  -- :bind(Keymap.new())
-  -- :bind(Keymap.new())
   :execute()
 
 -- INFO: using:   "max397574/better-escape.nvim",
@@ -160,23 +168,19 @@ Keymap
 -- keymap({ "n", "x" }, "*", "*N", "Search word or selection")
 
 -- https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
--- keymap("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next search result" })
--- keymap("n", "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev search result" })
--- keymap("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
--- keymap("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
--- keymap("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
--- keymap("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
--- keymap(nxo, "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
--- keymap(nxo, "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
-
--- if vim.lsp.buf.inlay_hint or vim.lsp.inlay_hint then
---   keymap("n", "<leader>uh", function()
---     LazyVim.toggle.inlay_hints()
---   end, { desc = "Toggle Inlay Hints" })
--- end
+keymap("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next search result" })
+keymap("n", "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev search result" })
+keymap("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
+keymap("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
+keymap("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+keymap("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+keymap(nxo, "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
+keymap(nxo, "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
 
 -- highlights under cursor
--- Keymap("n", "<leader>ui", vim.show_pos, { desc = "Inspect Pos" })
+keymap("n", "<leader>ui", vim.show_pos, { desc = "Inspect Pos" })
+
+keymap("t", "<C-x>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true), "Escape terminal mode")
 
 -- quit
 keymap("n", "<leader>qq", "<cmd>qa<cr>", "Quit all")

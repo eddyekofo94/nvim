@@ -84,4 +84,13 @@ local options = {
   end,
 }
 
-return options
+return {
+  "lewis6991/gitsigns.nvim",
+  enabled = true,
+  event = "BufReadPre",
+  dependencies = "nvim-lua/plenary.nvim",
+  opts = options,
+  config = function(_, opts)
+    require("gitsigns").setup(opts)
+  end,
+}

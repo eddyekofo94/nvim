@@ -56,8 +56,7 @@ cmp.setup {
     end
   end,
   completion = {
-    -- completeopt = "menu,menuone,insert", -- INFO: I like this option
-    completeopt = "menu,menuone,noinsert,preview",
+    completeopt = "menu,menuone,noinsert",
     autocomplete = { types.cmp.TriggerEvent.TextChanged },
     keyword_length = 2,
   },
@@ -171,7 +170,6 @@ cmp.setup {
       c = function()
         if cmp.visible() then
           cmp.select_prev_item { behavior = cmp.SelectBehavior.Replace }
-          -- cmp.select_prev_item()
         else
           vim.api.nvim_feedkeys(t "<Up>", "n", true)
         end
@@ -238,7 +236,7 @@ cmp.setup {
       max_item_count = 50,
       keyword_length = 1,
       -- Limits LSP results to specific types based on line context (Fields, Methods, Variables)
-      entry_filter = limit_lsp_types,
+      entry_filter = limit_lsp_types, --  INFO: 2024-05-14 - Maybe remove this
     },
     {
       name = "luasnip",
@@ -253,6 +251,7 @@ cmp.setup {
         return not context.in_treesitter_capture "string" and not context.in_syntax_group "String"
       end,
     },
+
     { name = "nvim_lsp_signature_help" },
     { name = "nvim_lua" },
     {
@@ -261,7 +260,12 @@ cmp.setup {
       max_item_count = 5,
     },
     { name = "neorg" },
-    { name = "path", priority_weight = 100, max_item_count = 40 },
+    {
+      name = "path",
+      priority_weight = 100,
+      max_item_count = 40,
+      keyword_length = 2,
+    },
     {
       name = "fuzzy_path",
       option = { fd_timeout_msec = 1500 },
@@ -312,6 +316,7 @@ cmp.setup {
     priority_weight = 2,
     comparators = {
       compare.recently_used,
+      compare.offset,
       compare.exact,
       function(entry1, entry2) -- sort by compare kind (Variable, Function etc)
         local kind1 = modified_kind(entry1:get_kind())

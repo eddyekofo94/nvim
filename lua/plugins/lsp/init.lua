@@ -1,5 +1,5 @@
 local utils_keymaps = require "utils.keymaps"
-local map = utils_keymaps.set_keymap
+-- local map = utils_keymaps.set_keymap
 local lmap = utils_keymaps.set_leader_keymap
 
 return { -- LSP Configuration & Plugins
@@ -133,7 +133,9 @@ return { -- LSP Configuration & Plugins
       callback = function(event)
         local bufnr = event.buf
         local filetype = vim.api.nvim_buf_get_name(bufnr)
-        local navic = require "nvim-navic"
+        -- local navic = require "nvim-navic"
+        -- Enable rounded borders in :LspInfo window.
+        require("lspconfig.ui.windows").default_options.border = "rounded"
 
         local function opts(desc)
           return { buffer = bufnr, desc = desc }
@@ -144,7 +146,9 @@ return { -- LSP Configuration & Plugins
         -- In this case, we create a function that lets us more easily define mappings specific
         -- for LSP related items. It sets the mode, buffer and description for us each time.
         local map = function(keys, func, desc)
-          vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
+          -- vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
+          local map = require("utils.keymaps").set_n_keymap
+          map(keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
         end
 
         -- Jump to the definition of the word under your cursor.
@@ -204,9 +208,9 @@ return { -- LSP Configuration & Plugins
         -- When you move your cursor, the highlights will be cleared (the second autocommand).
         local client = vim.lsp.get_client_by_id(event.data.client_id)
 
-        if client and client.server_capabilities.documentSymbolProvider then
-          navic.attach(client, bufnr)
-        end
+        -- if client and client.server_capabilities.documentSymbolProvider then
+        --   navic.attach(client, bufnr)
+        -- end
 
         if client and client.server_capabilities.documentHighlightProvider then
           local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
@@ -236,29 +240,50 @@ return { -- LSP Configuration & Plugins
         --
         -- This may be unwanted, since they displace some of your code
         if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
-          map("<leader>th", function()
+          map("<leader>hi", function()
             vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
           end, "[T]oggle Inlay [H]ints")
         end
+
+        if client and client.supports_method "textDocument/codeLens" then
+          vim.lsp.codelens.refresh()
+          --- autocmd BufEnter,CursorHold,InsertLeave <buffer> lua vim.lsp.codelens.refresh()
+          vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
+            buffer = bufnr,
+            callback = vim.lsp.codelens.refresh,
+          })
+        end
+
+        local sign = function(conf)
+          vim.fn.sign_define(conf.name, {
+            texthl = conf.name,
+            text = conf.text,
+            numhl = "",
+          })
+        end
+
+        local small_dot = " "
+
+        vim.cmd.highlight "DiagnosticUnderlineError gui=undercurl" -- use undercurl for error, if supported by terminal
+        vim.cmd.highlight "DiagnosticUnderlineWarn  gui=undercurl" -- use undercurl for warning, if supported by terminal
+        sign { name = "DiagnosticSignError", text = small_dot }
+        sign { name = "DiagnosticSignWarn", text = small_dot }
+        sign { name = "DiagnosticSignHint", text = small_dot }
+        sign { name = "DiagnosticSignInfo", text = small_dot }
+
+        vim.diagnostic.config {
+          virtual_text = false,
+          severity_sort = true,
+          float = {
+            show_header = false,
+            source = "if_many",
+            border = "rounded",
+            focusable = false,
+          },
+        }
       end,
     })
 
-    local sign = function(opts)
-      vim.fn.sign_define(opts.name, {
-        texthl = opts.name,
-        text = opts.text,
-        numhl = "",
-      })
-    end
-
-    local small_dot = " "
-
-    vim.cmd.highlight "DiagnosticUnderlineError gui=undercurl" -- use undercurl for error, if supported by terminal
-    vim.cmd.highlight "DiagnosticUnderlineWarn  gui=undercurl" -- use undercurl for warning, if supported by terminal
-    sign { name = "DiagnosticSignError", text = small_dot }
-    sign { name = "DiagnosticSignWarn", text = small_dot }
-    sign { name = "DiagnosticSignHint", text = small_dot }
-    sign { name = "DiagnosticSignInfo", text = small_dot }
     -- LSP servers and clients are able to communicate to each other what features they support.
     --  By default, Neovim doesn't support everything that is in the LSP specification.
     --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
@@ -295,6 +320,9 @@ return { -- LSP Configuration & Plugins
           clangdFileStatus = true,
         },
       },
+      vimls = {},
+      dockerls = {},
+
       gopls = {
         -- on_init = on_init,
         capabilities = capabilities,
@@ -344,8 +372,7 @@ return { -- LSP Configuration & Plugins
       },
       bashls = {
         -- on_init = custom_init,
-        -- on_attach = custom_attach,
-        -- capabilities = updated_capabilities,
+        capabilities = capabilities,
         filetypes = { "sh", "zsh", "bash", ".zshrc" },
       },
       cmake = {
@@ -353,6 +380,7 @@ return { -- LSP Configuration & Plugins
       },
 
       pylsp = {
+        capabilities = capabilities,
         settings = {
           pylsp = {
             plugins = {
@@ -383,13 +411,15 @@ return { -- LSP Configuration & Plugins
 
       lua_ls = {
         -- cmd = {...},
-        -- filetypes = { ...},
-        -- capabilities = {},
+        filetypes = { "lua" },
+        capabilities = capabilities,
         settings = {
           Lua = {
             completion = {
               autoRequire = true,
-              callSnippet = "Replace",
+              callSnippet = "Replace", -- Replace
+              displayContext = 5,
+              keywordSnippet = "Replace", -- show keyword and snippet in suggestion
             },
             format = {
               enable = true,
@@ -410,7 +440,7 @@ return { -- LSP Configuration & Plugins
               version = "LuaJIT",
             },
             diagnostics = {
-              disable = { "missing-fields" },
+              disable = { "missing-fields", "duplicate-doc-alias" },
               globals = { "vim", "use" },
             },
             workspace = {
@@ -418,6 +448,7 @@ return { -- LSP Configuration & Plugins
               workspace = {
                 library = {
                   [vim.fn.expand "$VIMRUNTIME/lua"] = true,
+                  [vim.fn.expand "$VIMRUNTIME/lua/vim/lsp"] = true,
                   [vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy"] = true,
                 },
                 -- library = vim.api.nvim_get_runtime_file("", true),
@@ -433,13 +464,7 @@ return { -- LSP Configuration & Plugins
               enable = false,
             },
           },
-          -- Lua = {
-          --   completion = {
-          --     callSnippet = "Replace",
-          --   },
-          --   -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-          --   -- diagnostics = { disable = { 'missing-fields' } },
-          -- },
+          codeLens = { enable = true },
         },
       },
     }

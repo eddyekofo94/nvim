@@ -15,8 +15,6 @@ return {
       {
         -- INFO: additional snippets
         "mireq/luasnip-snippets",
-        --  INFO: 2024-02-13 15:29 PM - This is disabled because it uses python which
-        -- is disabled by nvchad
         enabled = true,
         init = function()
           require("luasnip_snippets.common.snip_utils").setup()
@@ -28,18 +26,15 @@ return {
       { "ray-x/cmp-treesitter" },
       { "dmitmel/cmp-cmdline-history" },
       { "hrsh7th/cmp-nvim-lsp" },
-      "saadparwaiz1/cmp_luasnip",
-
-      -- Adds other completion capabilities.
-      --  nvim-cmp does not ship with all sources by default. They are split
-      --  into multiple repos for maintenance purposes.
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-path",
+      { "saadparwaiz1/cmp_luasnip" },
+      { "hrsh7th/cmp-nvim-lsp" },
+      { "hrsh7th/cmp-path" },
+      { "hrsh7th/cmp-nvim-lsp-signature-help" },
+      { "petertriho/cmp-git", dependencies = { "nvim-lua/plenary.nvim" } },
       {
         "tzachar/cmp-fuzzy-path",
         dependencies = { "tzachar/fuzzy.nvim" },
       },
-      { "hrsh7th/cmp-nvim-lsp-signature-help" },
       {
         "onsails/lspkind.nvim",
         lazy = true,

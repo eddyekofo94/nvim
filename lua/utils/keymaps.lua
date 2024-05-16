@@ -61,7 +61,7 @@ function M.set_keymap(modes, input, output, opts)
 end
 
 function M.set_leader_keymap(input, output, options)
-  M.set_keymap("n", "<leader>" .. input, output, options)
+  M.set_keymap({ "n", "x" }, "<leader>" .. input, output, options)
 end
 
 function M.set_n_keymap(key, rhs, opts)
@@ -109,6 +109,7 @@ function M.command_abbrev(trig, command, opts)
     return vim.fn.getcmdcompltype() == "command" and command or trig
   end, vim.tbl_deep_extend("keep", { expr = true }, opts or {}))
 end
+
 ---@class keymap_def_t
 ---@field lhs string
 ---@field lhsraw string
@@ -297,11 +298,11 @@ end
 
 function M.empty_map_table()
   local maps = {}
-  for _, mode in ipairs({ "", "n", "v", "x", "s", "o", "!", "i", "l", "c", "t", "leader" }) do
+  for _, mode in ipairs { "", "n", "v", "x", "s", "o", "!", "i", "l", "c", "t", "leader" } do
     maps[mode] = {}
   end
-  if vim.fn.has("nvim-0.10.0") == 1 then
-    for _, abbr_mode in ipairs({ "ia", "ca", "!a" }) do
+  if vim.fn.has "nvim-0.10.0" == 1 then
+    for _, abbr_mode in ipairs { "ia", "ca", "!a" } do
       maps[abbr_mode] = {}
     end
   end

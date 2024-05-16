@@ -30,5 +30,5 @@ local opts = {
   },
 }
 
-keymap("n", "T", "<cmd>TodoTelescope<cr>", "Search TODO")
+keymap("n", "<leader>Tt", "<cmd>TodoTelescope<cr>", "Search TODO")
 return opts

@@ -12,7 +12,7 @@ end
 ---@return nil
 function M.augroup_autocmd(group, ...)
   local id = groupid(group, {})
-  for _, a in ipairs({ ... }) do
+  for _, a in ipairs { ... } do
     a[2].group = id
     autocmd(unpack(a))
   end
@@ -98,7 +98,7 @@ end
 function M.merge(...)
   -- Eliminate nil values in vararg
   local hl_names = {}
-  for _, hl_name in pairs({ ... }) do
+  for _, hl_name in pairs { ... } do
     if hl_name then
       table.insert(hl_names, hl_name)
     end
@@ -131,7 +131,7 @@ function M.normalize_fg_or_bg(attr_type, fbg, default)
         link = false,
       })[attr_type]
     end
-    if fbg:match("^#%x%x%x%x%x%x$") then
+    if fbg:match "^#%x%x%x%x%x%x$" then
       return fbg
     end
   end
@@ -307,9 +307,9 @@ end
 function M.hl(str, hl, restore)
   restore = restore == nil or restore
   if restore then
-    return table.concat({ "%#", hl or "", "#", str or "", "%*" })
+    return table.concat { "%#", hl or "", "#", str or "", "%*" }
   else
-    return table.concat({ "%#", hl or "", "#", str or "" })
+    return table.concat { "%#", hl or "", "#", str or "" }
   end
 end
 
@@ -393,6 +393,11 @@ function M.tprint_keys(table)
     print(k)
   end
 end
+---runs :normal with bang
+---@param cmdStr string
+function M.normal(cmdStr)
+  vim.cmd.normal { cmdStr, bang = true }
+end
 
 local function escape(str)
   return str:gsub("%%", "%%%%")
@@ -417,7 +422,7 @@ function M.reload(quiet)
   end
   local core_modules = { "plugins", "autocommands", "keymaps" }
   local modules = vim.tbl_filter(function(module)
-    return module:find("^user%.")
+    return module:find "^user%."
   end, vim.tbl_keys(package.loaded))
 
   vim.tbl_map(require("plenary.reload").reload_module, vim.list_extend(modules, core_modules))
@@ -435,12 +440,12 @@ function M.reload(quiet)
   end
   if not quiet then -- if not quiet, then notify of result
     if success then
-      M.notify("Config successfully reloaded", vim.log.levels.INFO)
+      M.notify("Config successfully reloaded", "info")
     else
-      M.notify("Error reloading Config...", vim.log.levels.ERROR)
+      M.notify("Error reloading Config...", "error")
     end
   end
-  vim.cmd.doautocmd("ColorScheme")
+  vim.cmd.doautocmd "ColorScheme"
   return success
 end
 
@@ -511,8 +516,8 @@ function M.get_icon(kind, padding, no_fallback)
   end
   local icon_pack = vim.g.icons_enabled and "icons" or "text_icons"
   if not M[icon_pack] then
-    M.icons = require("utils.static.icons")
-    M.text_icons = require("utils.static.icons._icons_retro")
+    M.icons = require "utils.static.icons"
+    M.text_icons = require "utils.static.icons._icons_retro"
   end
   local icon = M[icon_pack] and M[icon_pack][kind]
   return icon and icon .. string.rep(" ", padding or 0) or ""
@@ -568,21 +573,27 @@ end
 
 --- Serve a notification with a custom title
 ---@param msg string The notification body
----@param type? number The type of the notification (:help vim.log.levels)
+---@param level? string The type of the notification (:help vim.log.levels)
 ---@param opts? table The nvim-notify options to use (:help notify-options)
-function M.notify(msg, type, opts)
+function M.notify(msg, level, opts)
   vim.schedule(function()
-    vim.notify(msg, type, M.extend_tbl({ title = "Custom" }, opts))
+    if not level then
+      level = "info"
+    end
+    vim.notify(msg, vim.log.levels[level:upper()], M.extend_tbl({ title = "Custom" }, opts))
   end)
 end
 
 --- Serve a notification once with a custom title
 ---@param msg string The notification body
----@param type? number The type of the notification (:help vim.log.levels)
+---@param level? string The type of the notification (:help vim.log.levels)
 ---@param opts? table The nvim-notify options to use (:help notify-options)
-function M.notify_once(msg, type, opts)
+function M.notify_once(msg, level, opts)
   vim.schedule(function()
-    vim.notify_once(msg, type, M.extend_tbl({ title = "Custom" }, opts))
+    if not level then
+      level = "info"
+    end
+    vim.notify_once(msg, vim.log.levels[level:upper()], M.extend_tbl({ title = "Custom" }, opts))
   end)
 end
 
@@ -608,17 +619,17 @@ function M.system_open(path)
     return vim.ui.open(path)
   end
   local cmd
-  if vim.fn.has("win32") == 1 and vim.fn.executable("explorer") == 1 then
+  if vim.fn.has "win32" == 1 and vim.fn.executable "explorer" == 1 then
     cmd = { "cmd.exe", "/K", "explorer" }
-  elseif vim.fn.has("unix") == 1 and vim.fn.executable("xdg-open") == 1 then
+  elseif vim.fn.has "unix" == 1 and vim.fn.executable "xdg-open" == 1 then
     cmd = { "xdg-open" }
-  elseif (vim.fn.has("mac") == 1 or vim.fn.has("unix") == 1) and vim.fn.executable("open") == 1 then
+  elseif (vim.fn.has "mac" == 1 or vim.fn.has "unix" == 1) and vim.fn.executable "open" == 1 then
     cmd = { "open" }
   end
   if not cmd then
-    M.notify("Available system opening tool not found!", vim.log.levels.ERROR)
+    M.notify("Available system opening tool not found!", "error")
   end
-  vim.fn.jobstart(vim.fn.extend(cmd, { path or vim.fn.expand("<cfile>") }), { detach = true })
+  vim.fn.jobstart(vim.fn.extend(cmd, { path or vim.fn.expand "<cfile>" }), { detach = true })
 end
 
 --- Create a button entity to use with the alpha dashboard
@@ -689,7 +700,7 @@ function M.load_plugin_with_func(plugin, module, func_names)
     local old_func = module[func]
     module[func] = function(...)
       module[func] = old_func
-      require("lazy").load({ plugins = { plugin } })
+      require("lazy").load { plugins = { plugin } }
       module[func](...)
     end
   end
@@ -707,11 +718,11 @@ function M.cmd(cmd, show_error)
   if type(cmd) == "string" then
     cmd = { cmd }
   end
-  if vim.fn.has("win32") == 1 then
+  if vim.fn.has "win32" == 1 then
     cmd = vim.list_extend({ "cmd.exe", "/C" }, cmd)
   end
   local result = vim.fn.system(cmd)
-  local success = vim.api.nvim_get_vvar("shell_error") == 0
+  local success = vim.api.nvim_get_vvar "shell_error" == 0
   if not success and (show_error == nil or show_error) then
     vim.api.nvim_err_writeln(("Error running command %s\nError message:\n%s"):format(table.concat(cmd, " "), result))
   end
@@ -729,14 +740,14 @@ function M.define_augroups(definitions) -- {{{1
   -- just like how they would normally be defined from Vim itself
   for group_name, definition in pairs(definitions) do
     vim.cmd("augroup " .. group_name)
-    vim.cmd("autocmd!")
+    vim.cmd "autocmd!"
 
     for _, def in pairs(definition) do
-      local command = table.concat(vim.tbl_flatten({ "autocmd", def }), " ")
+      local command = table.concat(vim.tbl_flatten { "autocmd", def }, " ")
       vim.cmd(command)
     end
 
-    vim.cmd("augroup END")
+    vim.cmd "augroup END"
   end
 end
 return M
