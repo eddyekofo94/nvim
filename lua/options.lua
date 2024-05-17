@@ -1,24 +1,29 @@
--- Options are automatically loaded before lazy.nvim startup
--- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
--- Add any additional options here
-
--------------------------------------- highlight ------------------------------------------
 -- Enable faster lua loader using byte-compilation
 -- https://github.com/neovim/neovim/commit/2257ade3dc2daab5ee12d27807c0b3bcf103cd29
 vim.loader.enable()
+
+-- add yours here!
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+local o = vim.o
+local g = vim.g
+local opt = vim.opt
+local env = vim.env
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
--- [[ Setting options ]]
--- See `:help vim.opt`
--- NOTE: You can change these options as you wish!
---  For more options, you can see `:help option-list`
+---Restore 'shada' option and read from shada once
+---@return true
+local function _rshada()
+  vim.cmd.set "shada&"
+  vim.cmd.rshada()
+  return true
+end
 
--- Make line numbers default
-vim.opt.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.shada = ""
+vim.defer_fn(_rshada, 100)
+vim.api.nvim_create_autocmd("BufReadPre", { once = true, callback = _rshada })
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = "a"
@@ -61,21 +66,6 @@ vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
 
--- make `:substitute` also notify how many changes were made
--- works, as `CmdlineLeave` is triggered before the execution of the command
-vim.api.nvim_create_autocmd("CmdlineLeave", {
-  callback = function(ctx)
-    if not ctx.match == ":" then
-      return
-    end
-    local cmdline = vim.fn.getcmdline()
-    local isSubstitution = cmdline:find "s ?/.+/.-/%a*$"
-    if isSubstitution then
-      vim.cmd(cmdline .. "ne")
-    end
-  end,
-})
-
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
@@ -84,12 +74,6 @@ vim.opt.scrolloff = 10
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
-
--- add yours here!
-vim.g.mapleader = " "
-local o = vim.o
-local g = vim.g
-local opt = vim.opt
 
 -- g.has_ui = #vim.api.nvim_list_uis() > 0
 vim.opt.cursorline = true
@@ -125,7 +109,6 @@ vim.opt.listchars = {
   precedes = "«",
   extends = "»",
   eol = "↲",
-  -- nbsp = "␣",
   nbsp = "░",
 }
 
@@ -150,12 +133,10 @@ vim.opt.backupcopy = "yes"
 -- vim.opt.undolevels = 1000
 vim.opt.autoread = true
 
-vim.opt.conceallevel = 0
+vim.opt.conceallevel = 2
 -- Use ripgrep as grep tool
 vim.o.grepprg = "rg --vimgrep --no-heading"
 vim.o.grepformat = "%f:%l:%c:%m,%f:%l:%m"
-
--- Indenting
 
 -- completion
 vim.opt.pumheight = 10 -- Makes popup menu smaller
@@ -164,36 +145,19 @@ vim.opt.pumheight = 10 -- Makes popup menu smaller
 vim.opt.signcolumn = "yes:1"
 vim.opt.inccommand = "split"
 vim.opt.splitkeep = "screen" -- topline
-opt.splitright = true
-opt.splitbelow = true
 vim.o.history = 10000 -- Number of command-lines that are remembered
-
--- if last command was line-jump, remove it from history to reduce noise
-vim.api.nvim_create_autocmd("CmdlineLeave", {
-  callback = function(ctx)
-    if not ctx.match == ":" then
-      return
-    end
-    vim.defer_fn(function()
-      local lineJump = vim.fn.histget(":", -1):match "^%d+$"
-      if lineJump then
-        vim.fn.histdel(":", -1)
-      end
-    end, 100)
-  end,
-})
 
 -- Buffer
 vim.opt.swapfile = false
 vim.opt.fileformat = "unix"
 vim.opt.autochdir = true
 vim.opt.shiftround = true
-
+vim.opt.virtualedit = "block"
 -- opt.colorcolumn = "80"
 opt.autowriteall = true
 opt.mousemoveevent = true
 opt.relativenumber = true
-o.number = true
+opt.number = true
 
 vim.o.lazyredraw = false -- Faster scrolling
 vim.o.redrawtime = 100
@@ -206,21 +170,10 @@ vim.opt.showmode = false
 vim.opt.undofile = true
 
 -- Set directories for backup/swap/undo files
-vim.opt.directory = vim.fn.stdpath "state" .. "swap"
-vim.opt.backupdir = vim.fn.stdpath "state" .. "backup"
-vim.opt.undodir = vim.fn.stdpath "state" .. "undo"
+-- vim.opt.directory = vim.fn.stdpath "state" .. "swap"
+-- vim.opt.backupdir = vim.fn.stdpath "state" .. "backup"
+-- vim.opt.undodir = vim.fn.stdpath "state" .. "undo"
 
--- automatically cleanup dirs to prevent bloating.
--- once a week, on first FocusLost, delete files older than 30/60 days.
-vim.api.nvim_create_autocmd("FocusLost", {
-  once = true,
-  callback = function()
-    if os.date "%a" == "Mon" then
-      vim.fn.system { "find", opt.viewdir:get(), "-mtime", "+60d", "-delete" }
-      vim.fn.system { "find", opt.undodir:get()[1], "-mtime", "+30d", "-delete" }
-    end
-  end,
-})
 vim.opt.wrapscan = true
 
 vim.opt.smoothscroll = true
@@ -231,7 +184,6 @@ opt.formatoptions:append "n"
 
 -- Folding
 vim.opt.foldlevel = 99
--- vim.opt.foldtext = [[v:lua.require'ui.folds'.foldtext()]]
 
 -- HACK: causes freezes on <= 0.9, so only enable on >= 0.10 for now
 if vim.fn.has "nvim-0.10" == 1 then
@@ -256,11 +208,10 @@ vim.opt.ignorecase = true
 -- enable auto indentation
 vim.opt.autoindent = true
 
--- vim.opt.sessionoptions = "resize,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 vim.opt.sessionoptions = {
   "resize",
   "winpos",
-  -- "winsize",
+  "winsize",
   "terminal",
   "localoptions",
   "buffers",
@@ -290,9 +241,6 @@ opt.diffopt:append {
   "indent-heuristic",
 }
 
--- Use system clipboard
-opt.clipboard:append "unnamedplus"
-
 -- Align columns in quickfix window
 opt.quickfixtextfunc = [[v:lua.require'utils.misc'.qftf]]
 
@@ -305,9 +253,7 @@ vim.opt.startofline = true
 vim.opt.hidden = true
 
 -- opt.cmdheight = 1
-o.laststatus = 3
--- Autom. save file before some action
--- vim.o.autowrite = true
+vim.o.laststatus = 3
 
 vim.cmd [[
   let &t_Cs = "\e[4:3m"
@@ -334,6 +280,58 @@ vim.api.nvim_create_autocmd({ "VimEnter" }, {
   end,
 })
 
+-- if last command was line-jump, remove it from history to reduce noise
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  callback = function(ctx)
+    if not ctx.match == ":" then
+      return
+    end
+    vim.defer_fn(function()
+      local lineJump = vim.fn.histget(":", -1):match "^%d+$"
+      if lineJump then
+        vim.fn.histdel(":", -1)
+      end
+    end, 100)
+  end,
+})
+
+-- automatically cleanup dirs to prevent bloating.
+-- once a week, on first FocusLost, delete files older than 30/60 days.
+vim.api.nvim_create_autocmd("FocusLost", {
+  once = true,
+  callback = function()
+    if os.date "%a" == "Mon" then
+      vim.fn.system { "find", opt.viewdir:get(), "-mtime", "+60d", "-delete" }
+      vim.fn.system { "find", opt.undodir:get()[1], "-mtime", "+30d", "-delete" }
+    end
+  end,
+})
+
+-- make `:substitute` also notify how many changes were made
+-- works, as `CmdlineLeave` is triggered before the execution of the command
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  callback = function(ctx)
+    if not ctx.match == ":" then
+      return
+    end
+    local cmdline = vim.fn.getcmdline()
+    local isSubstitution = cmdline:find "s ?/.+/.-/%a*$"
+    if isSubstitution then
+      vim.cmd(cmdline .. "ne")
+    end
+  end,
+})
+
+-- Fzf settings
+g.fzf_layout = {
+  window = {
+    width = 0.7,
+    height = 0.7,
+    pos = "center",
+  },
+}
+
+env.FZF_DEFAULT_OPTS = (env.FZF_DEFAULT_OPTS or "") .. " --border=sharp --margin=0 --padding=0"
 -- Disable some builtin providers
 vim.g.loaded_python_provider = 0
 vim.g.loaded_ruby_provider = 0
