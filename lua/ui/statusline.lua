@@ -79,7 +79,7 @@ local assets = {
 -- end
 
 function statusline.lsp_progress()
-  local progress = require("plugins.lsp.lsp-progress").message()
+  local progress = require("modules.lsp.lsp-progress").message()
   -- local progress = require("utils.lsp.progress").lsp_progress()
 
   return string.format(

@@ -45,15 +45,15 @@ end
 
 function M.set_keymap(modes, input, output, opts)
   -- local options = vim.tbl_deep_extend("force", { noremap = true, silent = true }, opts or {})
-  local options = { noremap = true, silent = true }
   local description = ""
+  local options = { desc = description, noremap = true, silent = true }
 
   if type(opts) == "table" then
-    options = vim.tbl_deep_extend("force", options, opts)
+    options = vim.tbl_deep_extend("force", options, opts or {})
   elseif type(opts) == "string" then
     description = opts
     opts = { desc = opts }
-    options = vim.tbl_deep_extend("force", options, opts)
+    options = vim.tbl_deep_extend("force", options, opts or {})
   end
 
   vim.keymap.set(modes, input, output, options)

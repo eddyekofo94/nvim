@@ -10,7 +10,7 @@ return {
       require "modules.configs.triptych"
       local lmap = require("utils.keymaps").set_leader_keymap
 
-      lmap("<leader>-", "<cmd>Triptych<CR>", "[Triptych] File explorer")
+      lmap("-", "<cmd>Triptych<CR>", "[Triptych] File explorer")
     end,
   },
 }

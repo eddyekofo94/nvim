@@ -5,6 +5,7 @@
 
 --  INFO: Utils
 local utils = require "utils.keymaps"
+local utils_gen = require "utils.general"
 local utils_buffer = require "utils.buffer"
 local fs = require "utils.fs"
 local keymap = utils.set_keymap
@@ -218,7 +219,14 @@ keymap("!a", "balme", "blame")
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   once = true,
   callback = function()
-    utils.command_abbrev("tel", "Telescope")
+    if utils_gen.is_available "focus.nvim" then
+      utils.command_abbrev("e", "FocusSplitRight")
+    end
+
+    if utils_gen.is_available "telescope.nvim" then
+      utils.command_abbrev("tel", "Telescope")
+    end
+
     utils.command_abbrev("S", "%s")
     utils.command_abbrev(":", "lua")
     utils.command_abbrev("man", "Man")
