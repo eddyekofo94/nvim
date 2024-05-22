@@ -456,13 +456,12 @@ autocmd({ "BufEnter" }, {
   group = disable_codespell,
   pattern = { "*.log", "" },
   callback = function()
-    vim.diagnostic.disable()
+    vim.diagnostic.enable(false)
   end,
 })
 
 autocmd("BufHidden", {
   desc = "Delete [No Name] buffers",
-  -- pattern = "VeryLazy",
   pattern = {},
   callback = function(data)
     if data.file == "" and vim.bo[data.buf].buftype == "" and not vim.bo[data.buf].modified then
