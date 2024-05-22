@@ -39,12 +39,10 @@ end
 keymap({ "n", "v" }, "<leader>ll", function()
   local state = vim.o.number
   vim.o.number = not state
-  vim.o.relativenumber = state
+  vim.o.relativenumber = not state
 end, { desc = "toggle [l]ine number mode" })
 
 -- Diagnostic keymaps
-keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
-keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic message" })
 keymap("n", "<leader>de", vim.diagnostic.open_float, { desc = "Show [d]iagnostic [E]rror messages" })
 keymap("n", "<leader>qf", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uick[f]ix list" })
 
