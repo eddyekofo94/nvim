@@ -217,9 +217,9 @@ keymap("!a", "balme", "blame")
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   once = true,
   callback = function()
-    if utils_gen.is_available "focus.nvim" then
-      utils.command_abbrev("e", "FocusSplitRight")
-    end
+    -- if utils_gen.is_available "focus.nvim" then
+    --   utils.command_abbrev("e", "FocusSplitRight")
+    -- end
 
     if utils_gen.is_available "telescope.nvim" then
       utils.command_abbrev("tel", "Telescope")

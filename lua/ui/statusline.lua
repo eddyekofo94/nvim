@@ -146,6 +146,21 @@ function statusline.macro()
   end
 end
 
+statusline.lazy_plug_count = function()
+  local stats = require("lazy").stats()
+  return " " .. stats.count
+end
+
+statusline.lazy_startup = function()
+  local stats = require("lazy").stats()
+  local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
+  return " " .. ms .. "ms"
+end
+
+function statusline.lazy_updates()
+  return require("lazy.status").updates()
+end
+
 statusline.project_name = function()
   local fnamemodify = vim.fn.fnamemodify
   local current_project_folder = fnamemodify(vim.fn.getcwd(), ":t")
@@ -309,6 +324,9 @@ function statusline.info()
   end
 
   -- add_section(statusline.wordcount())
+  -- add_section(statusline.lazy_updates())
+  add_section(statusline.lazy_plug_count())
+  add_section(statusline.lazy_startup())
   add_section(statusline.lsp())
   add_section(statusline.treesitter_status())
   return vim.tbl_isempty(info) and "" or string.format("(%s) ", table.concat(info, ", "))

@@ -477,6 +477,7 @@ return {
   },
   {
     "ashfinal/qfview.nvim",
+    enabled = false,
     event = "UIEnter",
     opts = {},
   },
