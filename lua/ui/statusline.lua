@@ -3,42 +3,9 @@ _G.statusline = {}
 local fs = require "utils.fs"
 local Buffer = require "utils.buffer"
 local utils = require "utils"
+local icons = require("utils.static").icons
 local contains = vim.tbl_contains
 
-local ts_buffer = {
-  "prompt",
-  "qf",
-  "checkhealth",
-  "nofile",
-  "quickfix",
-  "git-conflict",
-  "term",
-  "lazygit",
-  "oil",
-  "dap-repl",
-  "dapui_scopes",
-  "dapui_stacks",
-  "dapui_breakpoints",
-  "dapui_console",
-  "dapui_watches",
-  "dapui_repl",
-  "undotree",
-  "noice",
-  "man",
-  "messages",
-  "undotree",
-  "help",
-  "NeogitStatus",
-  "notify",
-  "Trouble",
-  "diffview",
-  "telescope",
-  "lazy",
-  "Outline",
-  "TelescopePrompt",
-  "TelescopeResults",
-  "TelescopePreview",
-}
 local options = {
   diagnostics = {
     " 0 ",
@@ -57,6 +24,7 @@ local options = {
   path = 0,
   shorting_target = 40,
 }
+
 local function is_activewin()
   return vim.api.nvim_get_current_win() == vim.g.statusline_winid
 end
@@ -69,14 +37,6 @@ local assets = {
   dir = "󰉖 ",
   file = "󰈙 ",
 }
-
--- local get_file_icon = function()
---   local filename = vim.fn.expand "%:t"
---   local extension = vim.fn.expand "%:e"
---   local present, icons = pcall(require, "nvim-web-devicons")
---   local icon = present and icons.get_icon(filename, extension) or assets.file
---   return " " .. icon .. " "
--- end
 
 function statusline.lsp_progress()
   local progress = require("modules.lsp.lsp-progress").message()
@@ -98,49 +58,27 @@ function statusline.lsp_progress()
   )
 end
 
-function statusline.LSP_Diagnostics()
+function statusline.diagnostics()
   local errors = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.ERROR })
   local warnings = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.WARN })
   local hints = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.HINT })
   local info = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.INFO })
 
-  errors = (errors and errors > 0) and ("󰅚 " .. errors .. " ") or ""
-  warnings = (warnings and warnings > 0) and (" " .. warnings .. " ") or ""
-  hints = (hints and hints > 0) and ("󰛩 " .. hints .. " ") or ""
-  info = (info and info > 0) and (" " .. info .. " ") or ""
+  errors = (errors and errors > 0) and ("E" .. errors .. " ") or ""
+  warnings = (warnings and warnings > 0) and ("W" .. warnings .. " ") or ""
+  hints = (hints and hints > 0) and ("H" .. hints .. " ") or ""
+  info = (info and info > 0) and ("I" .. info .. " ") or ""
 
-  local icons = string.format("%s%s%s%s", errors, warnings, hints, info)
+  local icons = string.format(
+    " - %s%s%s%s",
+    utils.stl.hl(tostring(errors), "StatusLineLspError"),
+    utils.stl.hl(tostring(warnings), "StatusLineLspWarning"),
+    utils.stl.hl(tostring(hints), "StatusLineLspHint"),
+    utils.stl.hl(tostring(info), "StatusLineLspInfo")
+  )
   local diagnostic_icon = (vim.o.columns > 140 and icons or "")
 
   return diagnostic_icon
-end
-
-statusline.lsp_msg = function()
-  if not rawget(vim, "lsp") or vim.lsp.status or not is_activewin() then
-    return ""
-  end
-
-  local Lsp = vim.lsp.status()
-
-  if vim.o.columns < 120 or not Lsp then
-    return ""
-  end
-
-  if Lsp.done then
-    vim.defer_fn(function()
-      vim.cmd.redrawstatus()
-    end, 1000)
-  end
-
-  local msg = Lsp.message or ""
-  local percentage = Lsp.percentage or 0
-  local title = Lsp.title or ""
-  local spinners = { "", "󰪞", "󰪟", "󰪠", "󰪢", "󰪣", "󰪤", "󰪥" }
-  local ms = vim.loop.hrtime() / 1000000
-  local frame = math.floor(ms / 120) % #spinners
-  local content = string.format(" %%<%s %s %s (%s%%%%) ", spinners[frame + 1], title, msg, percentage)
-
-  return content or ""
 end
 
 function statusline.search_count()
@@ -243,7 +181,6 @@ end
 
 function statusline.lsp()
   if rawget(vim, "lsp") then
-    -- local client = vim.lsp.get_client_by_id(ctx.client_id)
     for _, client in ipairs(vim.lsp.get_clients()) do
       if client.attached_buffers[stbufnr()] and client.name ~= "null-ls" then
         return (vim.o.columns > 100 and "   " .. client.name .. " ") or ""
@@ -259,55 +196,28 @@ end
 function statusline.gitdiff()
   -- Integration with gitsigns.nvim
   ---@diagnostic disable-next-line: undefined-field
-  local diff = vim.b.gitsigns_status_dict or utils.git.diffstat()
-  local added = diff.added or 0
-  local changed = diff.changed or 0
-  local removed = diff.removed or 0
-  if added == 0 and removed == 0 and changed == 0 then
-    return ""
-  end
-  return string.format(
-    "[ +%s ~%s -%s ]",
-    utils.stl.hl(tostring(added), "StatusLineGitAdded"),
-    utils.stl.hl(tostring(changed), "StatusLineGitChanged"),
-    utils.stl.hl(tostring(removed), "StatusLineGitRemoved")
-  )
-end
+  local git_info = vim.b.gitsigns_status_dict or utils.git.diffstat()
+  local added = git_info.added or 0
+  local changed = git_info.changed or 0
+  local removed = git_info.removed or 0
+  local branch = vim.b.gitsigns_status_dict and vim.b.gitsigns_status_dict.head or utils.git.branch()
+  branch = branch == "" and "" or " " .. branch
 
-function statusline.vcs()
-  local git_info = vim.b.gitsigns_status_dict
   if not git_info or git_info.head == "" then
     return ""
   end
-  local added = git_info.added and ("%#MiniStatuslineGitAdd#+" .. git_info.added .. " ") or ""
-  local changed = git_info.changed and ("%#MiniStatuslineGitChange#~" .. git_info.changed .. " ") or ""
-  local removed = git_info.removed and ("%#MiniStatuslineGitDelete#-" .. git_info.removed .. " ") or ""
-  if git_info.added == 0 then
-    added = ""
-  end
-  if git_info.changed == 0 then
-    changed = ""
-  end
-  if git_info.removed == 0 then
-    removed = ""
-  end
-  return table.concat {
-    "%#StatusLine# ",
-    git_info.head,
-    " ",
-    added,
-    changed,
-    removed,
-    " %#StatusLine#",
-  }
-end
 
----Get string representation of current git branch
----@return string
-function statusline.branch()
-  ---@diagnostic disable-next-line: undefined-field
-  local branch = vim.b.gitsigns_status_dict and vim.b.gitsigns_status_dict.head or utils.git.branch()
-  return branch == "" and "" or " " .. branch
+  if added == 0 and removed == 0 and changed == 0 then
+    return branch
+  end
+
+  return string.format(
+    "%s +%s ~%s -%s ",
+    utils.stl.hl(tostring(branch), "StatusLine"),
+    utils.stl.hl(tostring(added), "StatusLineGitAdd"),
+    utils.stl.hl(tostring(changed), "StatusLineGitChange"),
+    utils.stl.hl(tostring(removed), "StatusLineGitDelete")
+  )
 end
 
 --- A provider function for showing if treesitter is connected
@@ -315,10 +225,15 @@ end
 -- @see astronvim.utils.status.utils.stylize
 function statusline.treesitter_status()
   local utils_buffer = require "utils.buffer"
-  local current = vim.api.nvim_get_current_win()
+  local cur_bf = vim.api.nvim_get_current_buf()
+  local ts_enabled
 
-  local ts_enabled = vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()]
-  return utils_buffer.is_win_valid(current) and ts_enabled and "TS" or ""
+  if not utils_buffer.is_buf_valid(cur_bf) then
+    ts_enabled = vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()]
+    return ""
+  end
+
+  return utils_buffer.is_buf_valid(cur_bf) and ts_enabled and "TS" or ""
 end
 
 ---Get current filetype
@@ -392,9 +307,7 @@ function statusline.info()
   if ft_text[vim.bo.ft] and not vim.b.bigfile then
     add_section(statusline.wordcount())
   end
-  -- add_section(statusline.branch())
-  -- add_section(statusline.gitdiff())
-  -- add_section(statusline.vcs())
+
   -- add_section(statusline.wordcount())
   add_section(statusline.lsp())
   add_section(statusline.treesitter_status())

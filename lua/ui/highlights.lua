@@ -12,6 +12,15 @@ local hlgroups = {
     reverse = true,
   },
 
+  StatusLineLspWarning = { fg = gethl("LspDiagnosticsWarning", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineLspInfo = { fg = gethl("LspDiagnosticsInfo", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineLspError = { fg = gethl("LspDiagnosticsError", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineLspHint = { fg = gethl("LspDiagnosticsHint", "fg"), bg = gethl("StatusLine", "bg") },
+
+  StatusLineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineGitChange = { fg = gethl("GitSignsChange", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineGitDelete = { fg = gethl("GitSignsDelete", "fg"), bg = gethl("StatusLine", "bg") },
+
   MiniStatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("StatusLine", "bg") },
   MiniStatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("StatusLine", "bg") },
   MiniStatuslineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
