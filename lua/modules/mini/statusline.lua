@@ -26,7 +26,6 @@ return { -- Collection of various small independent plugins/modules
             "%=", -- End left alignment
             { hl = "MiniStatuslineInactive", strings = { stl_util.lsp_progress() } },
             "%=",
-            -- { hl = "StatusLine", strings = { stl_util.vcs() } },
             { hl = "StatusLine", strings = { stl_util.gitdiff() } },
             { hl = "MiniStatuslineFilename", strings = { stl_util.info() } },
             { hl = mode_hl, strings = { stl_util.search_count(), stl_util.lineinfo() } },
