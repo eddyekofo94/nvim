@@ -430,25 +430,17 @@ return {
     end,
   },
   {
-    "NvChad/nvim-colorizer.lua",
+    "brenoprata10/nvim-highlight-colors",
     event = { "BufReadPre", "BufNewFile" },
-    config = function(_, opts)
-      require("colorizer").setup(opts)
-
-      -- execute colorizer as soon as possible
-      vim.defer_fn(function()
-        require("colorizer").attach_to_buffer(0)
-      end, 0)
+    config = function()
+      require("nvim-highlight-colors").setup {
+        ---Render style
+        ---@usage 'background'|'foreground'|'virtual'
+        render = "background",
+        ---Highlight named colors, e.g. 'green'
+        enable_named_colors = false,
+      }
     end,
-    opts = {
-      filetypes = { "*", "!help", "!markdown" },
-      user_default_options = {
-        names = false,
-        rgb_fn = true,
-        hsl_fn = true,
-        mode = "virtualtext",
-      },
-    },
   },
   {
     "arsham/indent-tools.nvim",
