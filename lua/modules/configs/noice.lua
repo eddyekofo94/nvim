@@ -84,7 +84,7 @@ require("noice").setup {
   },
   lsp = {
     documentation = {
-      enabled = true,
+      enabled = false,
       opts = {
         border = { style = "rounded" },
         relative = "cursor",

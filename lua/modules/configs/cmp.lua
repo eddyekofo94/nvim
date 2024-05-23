@@ -252,7 +252,7 @@ cmp.setup {
       name = "nvim_lsp",
       priority_weight = 85,
       max_item_count = 50,
-      keyword_length = 1,
+      -- keyword_length = 1,
       -- Limits LSP results to specific types based on line context (Fields, Methods, Variables)
       entry_filter = limit_lsp_types, --  INFO: 2024-05-14 - Maybe remove this
     },
@@ -260,8 +260,6 @@ cmp.setup {
     {
       name = "fuzzy_path",
       option = { fd_timeout_msec = 1500 },
-      -- entry_filter = entry_filter_fuzzy_path,
-      -- option = fuzzy_path_option,
     },
     {
       name = "luasnip",
@@ -313,22 +311,22 @@ cmp.setup {
   window = {
     completion = cmp.config.window.bordered {
       border = border,
-      -- winhighlight = "FloatBorder:CmpBorder,Normal:CmpPmenu,CursorLine:CmpSel,Search:None",
+      winhighlight = "FloatBorder:CmpBorder,Normal:CmpPmenu,CursorLine:CmpSel,Search:None",
       col_offset = -3,
       side_padding = 0,
     },
     documentation = cmp.config.window.bordered {
-      border = border,
+      -- border = border,
       -- winhighlight = "Normal:Normal,FloatBorder:CmpBorder,CursorLine:Visual,Search:None",
       winhighlight = "FloatBorder:CmpBorder,Normal:CmpDoc",
-      side_padding = 1,
+      -- side_padding = 1,
     },
   },
   sorting = {
     priority_weight = 2,
     comparators = {
       compare.recently_used,
-      compare.offset,
+      compare.locality,
       compare.exact,
       function(entry1, entry2) -- sort by compare kind (Variable, Function etc)
         local kind1 = modified_kind(entry1:get_kind())
@@ -337,7 +335,7 @@ cmp.setup {
           return kind1 - kind2 < 0
         end
       end,
-      compare.locality,
+      compare.offset,
       function(entry1, entry2) -- sort by length ignoring "=~"
         local len1 = string.len(string.gsub(entry1.completion_item.label, "[=~()]", ""))
         local len2 = string.len(string.gsub(entry2.completion_item.label, "[=~()]", ""))

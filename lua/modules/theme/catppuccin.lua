@@ -7,7 +7,11 @@ return {
       flavour = "mocha", -- mocha, macchiato, frappe, latte
       compile = { enabled = true, path = vim.fn.stdpath "cache" .. "/catppuccin" },
       custom_highlights = function(colors)
+        local hl = require "utils.general"
+        local gethl = hl.gethl
+
         return {
+
           -- General
           MatchParen = { fg = colors.yellow, style = { "bold" } },
           FloatBorder = { fg = colors.surface0, bg = "NONE" }, -- TODO: this seems to not be working
@@ -33,7 +37,7 @@ return {
           NavicText = { fg = colors.subtext1 },
           NavicSeparator = { fg = colors.overlay0 },
           -- cmp
-          CmpSel = { link = "Visual" },
+          CmpSel = { fg = colors.base, bg = colors.green },
           CmpItemMenu = { fg = colors.mauve, bg = "NONE" },
           CmpBorder = { fg = colors.surface1, bg = "NONE" },
           CmpItemKindSnippet = { fg = colors.base, bg = colors.mauve },
@@ -75,8 +79,11 @@ return {
         noice = true,
         neogit = true,
         dashboard = true,
+        diffview = true,
+        ufo = true,
         telescope = { enabled = true, style = "nvchad" },
         which_key = true,
+        colorful_winsep = true,
         treesitter = true,
         fidget = true,
         cmp = true,
@@ -84,7 +91,7 @@ return {
         treesitter_context = true,
         mason = true,
         harpoon = true,
-        lsp_saga = true,
+        lsp_trouble = true,
         navic = {
           enabled = true,
           custom_bg = "NONE",

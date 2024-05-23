@@ -242,13 +242,23 @@ function statusline.treesitter_status()
   local utils_buffer = require "utils.buffer"
   local cur_bf = vim.api.nvim_get_current_buf()
   local ts_enabled
+  local res = "TS"
 
-  if not utils_buffer.is_buf_valid(cur_bf) then
+  if utils_buffer.is_buf_valid(cur_bf) then
     ts_enabled = vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()]
-    return ""
+    if ts_enabled then
+      local has_parser = require("nvim-treesitter.parsers").has_parser()
+      if has_parser then
+        -- return string.format("%%#StatusLine#%s%%* ", res)
+
+        return utils.stl.hl(tostring(res), "MiniStatuslineInactive")
+      end
+    end
   end
 
-  return utils_buffer.is_buf_valid(cur_bf) and ts_enabled and "TS" or ""
+  return res
+  -- return string.format(format_str, res)
+  -- return utils_buffer.is_buf_valid(cur_bf) and ts_enabled and "TS" or ""
 end
 
 ---Get current filetype

@@ -4,10 +4,9 @@ local gethl = hl.gethl
 
 local hlgroups = {
   -- UI
-  WinSeparator = { link = "Comment" },
+  WinSeparator = { link = "LineNr" },
   OverLength = { bg = "#840000" },
-  FloatBorder = { link = "Comment", bg = "None" },
-
+  FloatBorder = { link = "LineNr" },
   HighlightedyankRegion = {
     reverse = true,
   },
@@ -20,6 +19,7 @@ local hlgroups = {
   StatusLineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
   StatusLineGitChange = { fg = gethl("GitSignsChange", "fg"), bg = gethl("StatusLine", "bg") },
   StatusLineGitDelete = { fg = gethl("GitSignsDelete", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineInactive = { fg = gethl("2a2b3c", "fg"), bg = gethl("StatusLine", "bg") },
 
   MiniStatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("StatusLine", "bg") },
   MiniStatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("StatusLine", "bg") },
@@ -29,7 +29,7 @@ local hlgroups = {
 
   YankyYanked = { reverse = true },
 
-  CmpSel = { reverse = true },
+  CmpSel = { fg = gethl("LineNr", "fg"), bg = gethl("String", "fg") },
 
   -- Navbuddy
   -- NavbuddyFile = { link = "Directory" },
