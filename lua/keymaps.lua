@@ -8,7 +8,7 @@ local utils = require "utils.keymaps"
 local utils_gen = require "utils.general"
 local utils_buffer = require "utils.buffer"
 local fs = require "utils.fs"
-local keymap = utils.set_keymap
+local map = utils.set_keymap
 local nxo = utils.nxo
 local maps = require("utils.keymaps").empty_map_table()
 local Buffers = require "utils.buffer"
@@ -36,21 +36,21 @@ function Keymap:execute()
   self.action()
 end
 
-keymap({ "n", "v" }, "<leader>ll", function()
+map({ "n", "v" }, "<leader>ll", function()
   local state = vim.o.number
   vim.o.number = not state
   vim.o.relativenumber = not state
 end, { desc = "toggle [l]ine number mode" })
 
 -- Diagnostic keymaps
-keymap("n", "<leader>de", vim.diagnostic.open_float, { desc = "Show [d]iagnostic [E]rror messages" })
-keymap("n", "<leader>qf", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uick[f]ix list" })
+map("n", "<leader>de", vim.diagnostic.open_float, { desc = "Show [d]iagnostic [E]rror messages" })
+map("n", "<leader>qf", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uick[f]ix list" })
 
-keymap({ "x", "n" }, "<C-w>", "<C-w>w")
-keymap({ "x", "n" }, "<C-h>", "<C-w>h")
-keymap({ "x", "n" }, "<C-j>", "<C-w>j")
-keymap({ "x", "n" }, "<C-k>", "<C-w>k")
-keymap({ "x", "n" }, "<C-l>", "<C-w>l")
+map({ "x", "n" }, "<C-w>", "<C-w>w")
+map({ "x", "n" }, "<C-h>", "<C-w>h")
+map({ "x", "n" }, "<C-j>", "<C-w>j")
+map({ "x", "n" }, "<C-k>", "<C-w>k")
+map({ "x", "n" }, "<C-l>", "<C-w>l")
 
 --  INFO: Buffers
 Keymap
@@ -167,24 +167,72 @@ Keymap.new("n", "<leader>hh", "<cmd>nohl<BAR>redraws<cr>", "Clear highlight")
 -- keymap({ "n", "x" }, "*", "*N", "Search word or selection")
 
 -- https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
-keymap("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next search result" })
-keymap("n", "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev search result" })
-keymap("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
-keymap("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
-keymap("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
-keymap("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
-keymap(nxo, "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
-keymap(nxo, "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+map("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next search result" })
+map("n", "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev search result" })
+map("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
+map("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
+map("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+map("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+map(nxo, "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
+map(nxo, "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
+
+
+-- Terminal mode keymaps
+-- stylua: ignore start
+map('t', '<C-6>', [[v:lua.require'utils.term'.running_tui() ? "<C-6>" : "<Cmd>b#<CR>"]],        { expr = true, replace_keycodes = false })
+map('t', '<C-^>', [[v:lua.require'utils.term'.running_tui() ? "<C-^>" : "<Cmd>b#<CR>"]],        { expr = true, replace_keycodes = false })
+map('t', '<Esc>', [[v:lua.require'utils.term'.running_tui() ? "<Esc>" : "<Cmd>stopi<CR>"]],     { expr = true, replace_keycodes = false })
+map('t', '<M-v>', [[v:lua.require'utils.term'.running_tui() ? "<M-v>" : "<Cmd>wincmd v<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-s>', [[v:lua.require'utils.term'.running_tui() ? "<M-s>" : "<Cmd>wincmd s<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-W>', [[v:lua.require'utils.term'.running_tui() ? "<M-W>" : "<Cmd>wincmd W<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-H>', [[v:lua.require'utils.term'.running_tui() ? "<M-H>" : "<Cmd>wincmd H<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-J>', [[v:lua.require'utils.term'.running_tui() ? "<M-J>" : "<Cmd>wincmd J<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-K>', [[v:lua.require'utils.term'.running_tui() ? "<M-K>" : "<Cmd>wincmd K<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-L>', [[v:lua.require'utils.term'.running_tui() ? "<M-L>" : "<Cmd>wincmd L<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-r>', [[v:lua.require'utils.term'.running_tui() ? "<M-r>" : "<Cmd>wincmd r<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-R>', [[v:lua.require'utils.term'.running_tui() ? "<M-R>" : "<Cmd>wincmd R<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-x>', [[v:lua.require'utils.term'.running_tui() ? "<M-x>" : "<Cmd>wincmd x<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-p>', [[v:lua.require'utils.term'.running_tui() ? "<M-p>" : "<Cmd>wincmd p<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-c>', [[v:lua.require'utils.term'.running_tui() ? "<M-c>" : "<Cmd>wincmd c<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-q>', [[v:lua.require'utils.term'.running_tui() ? "<M-q>" : "<Cmd>wincmd q<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-o>', [[v:lua.require'utils.term'.running_tui() ? "<M-o>" : "<Cmd>wincmd o<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-w>', [[v:lua.require'utils.term'.running_tui() ? "<M-w>" : "<Cmd>wincmd w<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-h>', [[v:lua.require'utils.term'.running_tui() ? "<M-h>" : "<Cmd>wincmd h<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-j>', [[v:lua.require'utils.term'.running_tui() ? "<M-j>" : "<Cmd>wincmd j<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-k>', [[v:lua.require'utils.term'.running_tui() ? "<M-k>" : "<Cmd>wincmd k<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-l>', [[v:lua.require'utils.term'.running_tui() ? "<M-l>" : "<Cmd>wincmd l<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-=>', [[v:lua.require'utils.term'.running_tui() ? "<M-=>" : "<Cmd>wincmd =<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-_>', [[v:lua.require'utils.term'.running_tui() ? "<M-_>" : "<Cmd>wincmd _<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-|>', [[v:lua.require'utils.term'.running_tui() ? "<M-|>" : "<Cmd>wincmd |<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-+>', [[v:lua.require'utils.term'.running_tui() ? "<M-+>" : "<Cmd>wincmd 2+<CR>"]], { expr = true, replace_keycodes = false })
+map('t', '<M-->', [[v:lua.require'utils.term'.running_tui() ? "<M-->" : "<Cmd>wincmd 2-<CR>"]], { expr = true, replace_keycodes = false })
+map('t', '<M->>', [[v:lua.require'utils.term'.running_tui() ? "<M->>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? "<" : ">") . "<CR>"]], { expr = true })
+map('t', '<M-<>', [[v:lua.require'utils.term'.running_tui() ? "<M-<>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? ">" : "<") . "<CR>"]], { expr = true })
+map('t', '<M-.>', [[v:lua.require'utils.term'.running_tui() ? "<M-.>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? "<" : ">") . "<CR>"]], { expr = true })
+map('t', '<M-,>', [[v:lua.require'utils.term'.running_tui() ? "<M-,>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? ">" : "<") . "<CR>"]], { expr = true })
+-- stylua: ignore end
+
+-- Use <C-\><C-r> to insert contents of a register in terminal mode
+map("t", [[<C-\><C-r>]], [['<C-\><C-n>"' . nr2char(getchar()) . 'pi']], { expr = true })
+
+-- Don't include extra spaces around quotes
+map({ "o", "x" }, 'a"', '2i"', { noremap = false })
+map({ "o", "x" }, "a'", "2i'", { noremap = false })
+map({ "o", "x" }, "a`", "2i`", { noremap = false })
 
 -- highlights under cursor
-keymap("n", "<leader>ui", vim.show_pos, { desc = "Inspect Pos" })
+map("n", "<leader>ui", vim.show_pos, { desc = "Inspect Pos" })
 
-keymap("t", "<C-x>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true), "Escape terminal mode")
+map("t", "<C-x>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true), "Escape terminal mode")
 
 -- quit
-keymap("n", "<leader>qq", "<cmd>qa<cr>", "Quit all")
+map("n", "<leader>qq", "<cmd>qa<cr>", "Quit all")
 
-keymap("n", "i", function()
+map("n", "<leader>.", function()
+  return MiniFiles.open()
+end, "[Mini] files")
+
+map("n", "i", function()
   if #vim.fn.getline "." == 0 then
     return [["_cc]]
   else
@@ -192,7 +240,7 @@ keymap("n", "i", function()
   end
 end, { expr = true, desc = "rebind 'i' to do a smart-indent if its a blank line" })
 
-keymap("n", "dd", function()
+map("n", "dd", function()
   if vim.api.nvim_get_current_line():match "^%s*$" then
     return '"_dd'
   else
@@ -201,18 +249,18 @@ keymap("n", "dd", function()
 end, { expr = true, desc = "Don't yank empty lines into the main register" })
 
 -- Abbreviations
-keymap("!a", "ture", "true")
-keymap("!a", "Ture", "True")
-keymap("!a", "flase", "false")
-keymap("!a", "false", "false")
-keymap("!a", "Flase", "False")
-keymap("!a", "False", "False")
-keymap("!a", "lcaol", "local")
-keymap("!a", "lcoal", "local")
-keymap("!a", "local", "local")
-keymap("!a", "sahre", "share")
-keymap("!a", "saher", "share")
-keymap("!a", "balme", "blame")
+map("!a", "ture", "true")
+map("!a", "Ture", "True")
+map("!a", "flase", "false")
+map("!a", "false", "false")
+map("!a", "Flase", "False")
+map("!a", "False", "False")
+map("!a", "lcaol", "local")
+map("!a", "lcoal", "local")
+map("!a", "local", "local")
+map("!a", "sahre", "share")
+map("!a", "saher", "share")
+map("!a", "balme", "blame")
 
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   once = true,
@@ -316,27 +364,27 @@ local function map_wrapped_eol(key, remap)
   end
 end
 
-keymap({ "n", "x" }, "j", map_wrapped_cur_or_next_line_nocount("j", "gj"), { expr = true })
-keymap({ "n", "x" }, "k", map_wrapped_cur_or_prev_line_nocount("k", "gk"), { expr = true })
-keymap({ "n", "x" }, "<Down>", map_wrapped_cur_or_next_line_nocount("<Down>", "g<Down>"), { expr = true })
-keymap({ "n", "x" }, "<Up>", map_wrapped_cur_or_prev_line_nocount("<Up>", "g<Up>"), { expr = true })
-keymap({ "n", "x" }, "gg", map_wrapped_first_line_nocount("gg", "gg99999gk"), { expr = true })
-keymap({ "n", "x" }, "G", map_wrapped_last_line_nocount("G", "G99999gj"), { expr = true })
-keymap({ "n", "x" }, "<C-Home>", map_wrapped_first_line_nocount("<C-Home>", "<C-Home>99999gk"), { expr = true })
-keymap({ "n", "x" }, "<C-End>", map_wrapped_last_line_nocount("<C-End>", "<C-End>99999gj"), { expr = true })
-keymap({ "n", "x" }, "0", map_wrapped("0", "g0"), { expr = true })
-keymap({ "n", "x" }, "$", map_wrapped_eol("$", "g$"), { expr = true })
-keymap({ "n", "x" }, "^", map_wrapped("^", "g^"), { expr = true })
-keymap({ "n", "x" }, "<Home>", map_wrapped("<Home>", "g<Home>"), { expr = true })
-keymap({ "n", "x" }, "<End>", map_wrapped_eol("<End>", "g<End>"), { expr = true })
+map({ "n", "x" }, "j", map_wrapped_cur_or_next_line_nocount("j", "gj"), { expr = true })
+map({ "n", "x" }, "k", map_wrapped_cur_or_prev_line_nocount("k", "gk"), { expr = true })
+map({ "n", "x" }, "<Down>", map_wrapped_cur_or_next_line_nocount("<Down>", "g<Down>"), { expr = true })
+map({ "n", "x" }, "<Up>", map_wrapped_cur_or_prev_line_nocount("<Up>", "g<Up>"), { expr = true })
+map({ "n", "x" }, "gg", map_wrapped_first_line_nocount("gg", "gg99999gk"), { expr = true })
+map({ "n", "x" }, "G", map_wrapped_last_line_nocount("G", "G99999gj"), { expr = true })
+map({ "n", "x" }, "<C-Home>", map_wrapped_first_line_nocount("<C-Home>", "<C-Home>99999gk"), { expr = true })
+map({ "n", "x" }, "<C-End>", map_wrapped_last_line_nocount("<C-End>", "<C-End>99999gj"), { expr = true })
+map({ "n", "x" }, "0", map_wrapped("0", "g0"), { expr = true })
+map({ "n", "x" }, "$", map_wrapped_eol("$", "g$"), { expr = true })
+map({ "n", "x" }, "^", map_wrapped("^", "g^"), { expr = true })
+map({ "n", "x" }, "<Home>", map_wrapped("<Home>", "g<Home>"), { expr = true })
+map({ "n", "x" }, "<End>", map_wrapped_eol("<End>", "g<End>"), { expr = true })
 
-keymap("n", "vA", "ggVG", "Select All")
-keymap("n", "yA", "ggVGy", "Copy All")
+map("n", "vA", "ggVG", "Select All")
+map("n", "yA", "ggVGy", "Copy All")
 
-keymap("n", "[e", function()
+map("n", "[e", function()
   vim.diagnostic.goto_prev { severity = "ERROR" }
 end, "Error")
-keymap("n", "]e", function()
+map("n", "]e", function()
   vim.diagnostic.goto_next { severity = "ERROR" }
 end, "Error")
 
