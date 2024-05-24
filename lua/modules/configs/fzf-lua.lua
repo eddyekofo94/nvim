@@ -528,16 +528,16 @@ fzf.setup {
 }
 
 local keymap = require("utils.keymaps").set_keymap
-keymap("n", "<Leader>fg*", fzf.grep_cword)
-keymap("x", "<Leader>fg*", fzf.grep_visual)
+keymap("n", "<Leader>fg*", fzf.grep_cword, "[Fzf] grep cword")
+keymap("x", "<Leader>fg*", fzf.grep_visual, "[Fzf] grep cword")
 keymap("n", "<Leader>F", fzf.builtin, "[Fzf] builtin")
 keymap("n", "<Leader>R", fzf.lsp_finder)
 keymap("n", "<Leader>f", fzf.builtin, "[Fzf] builtin")
 keymap("n", '<Leader>f"', fzf.registers)
-keymap("n", "<Leader>f*", fzf.grep_cword)
-keymap("x", "<Leader>f*", fzf.grep_visual)
-keymap("n", "<Leader>f#", fzf.grep_cword)
-keymap("x", "<Leader>f#", fzf.grep_visual)
+keymap("n", "<Leader>f*", fzf.grep_cword, "[Fzf] grep cword")
+keymap("x", "<Leader>f*", fzf.grep_visual, "[Fzf grep visual]")
+keymap("n", "<Leader>f#", fzf.grep_cword, "[Fzf] grep cword")
+keymap("x", "<Leader>f#", fzf.grep_visual, "[Fzf grep visual]")
 keymap("n", "<Leader>f:", fzf.commands)
 keymap("n", "<Leader>f/", fzf.live_grep)
 keymap("n", "<Leader>fE", fzf.diagnostics_workspace)
