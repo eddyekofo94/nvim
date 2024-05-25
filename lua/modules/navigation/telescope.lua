@@ -371,10 +371,6 @@ return {
         desc = "Vim Help Tags",
       }
 
-      -- maps.n["<leader>s/"] = {
-      --   Telescope.find "current_buffer_fuzzy_find",
-      --   desc = "Find in current buffer",
-      -- }
       maps.n["<leader>:"] = {
         Telescope.find "command_history",
         desc = "Old files",
@@ -384,7 +380,7 @@ return {
         Telescope.find "grep_string",
         desc = "Grep String [Root]",
       }
-      maps.n["<leader>*"] = { --  BUG: 2024-04-23 - This seems not to be working.
+      maps.n["<leader>*"] = {
         Telescope.find("grep_string", { cwd = false }),
         desc = "Grep String",
       }
@@ -433,8 +429,8 @@ return {
 
       keymap_utils.set_mappings(maps)
 
-      -- setup number and wrap for telescope previewer
       vim.api.nvim_create_autocmd("User", {
+        desc = "setup number and wrap for telescope previewer",
         pattern = "TelescopePreviewerLoaded",
         callback = function(args)
           vim.wo.number = true

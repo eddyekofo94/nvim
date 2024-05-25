@@ -34,15 +34,12 @@ return {
         trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
         zindex = 20, -- The Z-index of the context window
         mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
-        on_attach = function(bufnr)
+        on_attach = function()
           local disabled_filetypes = { "markdown", "vim" }
+          local bufnr = vim.api.nvim_get_current_buf()
           return not vim.tbl_contains(disabled_filetypes, vim.bo[bufnr].filetype)
         end,
-        patterns = { -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
-          -- For all filetypes
-          -- Note that setting an entry here replaces all other patterns for this entry.
-          -- By setting the 'default' entry below, you can control which nodes you want to
-          -- appear in the context window.
+        patterns = {
           default = {
             "class",
             "function",

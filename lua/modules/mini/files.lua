@@ -2,7 +2,7 @@ return {
   "echasnovski/mini.files",
   enabled = true,
   lazy = false,
-  keys = { "<leader>." },
+  -- keys = { "<leader>." },
   init = function()
     vim.api.nvim_create_autocmd("User", {
       pattern = "MiniFilesBufferCreate",

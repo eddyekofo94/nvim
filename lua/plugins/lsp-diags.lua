@@ -40,8 +40,8 @@ local function setup_keymaps()
   vim.keymap.set({ 'n' }, 'gq;', vim.lsp.buf.format)
   vim.keymap.set({ 'n', 'x' }, '<Leader>lr', vim.lsp.buf.rename)
   vim.keymap.set({ 'n', 'x' }, '<Leader>la', vim.lsp.buf.code_action)
-  vim.keymap.set({ 'n', 'x' }, '<Leader>l<', vim.lsp.buf.incoming_calls)
-  vim.keymap.set({ 'n', 'x' }, '<Leader>l>', vim.lsp.buf.outgoing_calls)
+  vim.keymap.set({ 'n', 'x' }, '<Leader><', vim.lsp.buf.incoming_calls)
+  vim.keymap.set({ 'n', 'x' }, '<Leader>>', vim.lsp.buf.outgoing_calls)
   vim.keymap.set({ 'n', 'x' }, '<Leader>ls', vim.lsp.buf.document_symbol)
   vim.keymap.set({ 'n', 'x' }, '<Leader>lS', vim.lsp.buf.workspace_symbol)
   vim.keymap.set({ 'n', 'x' }, '<Leader>le', vim.diagnostic.open_float)
@@ -86,7 +86,7 @@ local function setup_lsp_overrides()
 
       -- textDocument/definition can return Location or Location[]
       -- https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition
-      if not vim.tbl_islist(result) then
+      if not vim.islist(result) then
         result = { result }
       end
 
@@ -862,7 +862,7 @@ local subcommands = {
         ["bufnr"] = subcommand_opt_vals.bufs,
       },
       fn_override = function(...)
-        vim.notify(vim.inspect(vim.diagnostic.is_disabled(...)))
+        vim.notify(vim.inspect(vim.diagnostic.is_enabled(...)))
       end,
     },
     match = {

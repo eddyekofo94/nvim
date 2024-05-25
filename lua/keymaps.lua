@@ -1,13 +1,6 @@
--- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
--- Add any additional keymaps here
--- require "nvchad.mappings"
-
---  INFO: Utils
 local utils = require "utils.keymaps"
 local utils_gen = require "utils.general"
 local utils_buffer = require "utils.buffer"
-local fs = require "utils.fs"
 local map = utils.set_keymap
 local nxo = utils.nxo
 local maps = require("utils.keymaps").empty_map_table()
@@ -265,15 +258,11 @@ map("!a", "balme", "blame")
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   once = true,
   callback = function()
-    -- if utils_gen.is_available "focus.nvim" then
-    --   utils.command_abbrev("e", "FocusSplitRight")
-    -- end
-
     if utils_gen.is_available "telescope.nvim" then
       utils.command_abbrev("tel", "Telescope")
     end
 
-    utils.command_abbrev("S", "%s")
+    utils.command_map("S", "%s/")
     utils.command_abbrev(":", "lua")
     utils.command_abbrev("man", "Man")
     utils.command_abbrev("W", "w")

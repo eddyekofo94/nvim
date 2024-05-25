@@ -24,11 +24,6 @@ return {
     end,
   },
   {
-    "ariel-frischer/bmessages.nvim",
-    event = "CmdlineEnter",
-    opts = {},
-  },
-  {
     "samjwill/nvim-unception",
     enabled = false,
     init = function()

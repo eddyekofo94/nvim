@@ -197,27 +197,27 @@ local function lcd(dir)
   end
 end
 
-local groupid = vim.api.nvim_create_augroup("SyncCwd", {})
-autocmd({ "BufEnter", "WinEnter", "BufWinEnter" }, {
-  desc = "Set cwd to follow buffers' directory.",
-  group = groupid,
-  pattern = "*",
-  callback = function(info)
-    vim.schedule(function()
-      local current = vim.api.nvim_get_current_win()
-      local is_win_valid = utils_buffer.is_win_valid(current)
-      if is_win_valid then
-        local target_cwd = vim.fs.normalize(vim.fn.getcwd(vim.fn.winnr()))
-        local cwd = fs.get_root()
-
-        if cwd ~= target_cwd then
-          print("cd to " .. cwd)
-          lcd(cwd)
-        end
-      end
-    end)
-  end,
-})
+-- local groupid = vim.api.nvim_create_augroup("SyncCwd", {})
+-- autocmd({ "BufEnter", "WinEnter", "BufWinEnter" }, {
+--   desc = "Set cwd to follow buffers' directory.",
+--   group = groupid,
+--   pattern = "*",
+--   callback = function(info)
+--     vim.schedule(function()
+--       local current = vim.api.nvim_get_current_win()
+--       local is_win_valid = utils_buffer.is_win_valid(current)
+--       if is_win_valid then
+--         local target_cwd = vim.fs.normalize(vim.fn.getcwd(vim.fn.winnr()))
+--         local cwd = fs.get_root()
+--
+--         if cwd ~= target_cwd then
+--           print("cd to " .. cwd)
+--           lcd(cwd)
+--         end
+--       end
+--     end)
+--   end,
+-- })
 
 local terminal = augroup "TerminalLocalOptions"
 autocmd({ "TermOpen" }, {
@@ -255,40 +255,36 @@ autocmd("FileType", {
   desc = "Set shiftwidth to 4 in these filetypes",
 })
 
--- augroup_autocmd("AutoCwd", {
---   { "BufWinEnter" },
---   {
---     pattern = "*",
---     desc = "Automatically change local current directory.",
---     callback = function(info)
---       if info.file == "" or vim.bo[info.buf].bt ~= "" then
---         return
---       end
---       local buf = info.buf
---       local win = vim.api.nvim_get_current_win()
---
---       vim.schedule(function()
---         if
---           not vim.api.nvim_buf_is_valid(buf)
---           or not vim.api.nvim_win_is_valid(win)
---           or not vim.api.nvim_win_get_buf(win) == buf
---         then
---           return
---         end
---         vim.api.nvim_win_call(win, function()
---           local current_dir = vim.fn.getcwd(0)
---           local target_dir = require("utils").fs.proj_dir(info.file) or vim.fs.dirname(info.file)
---           local stat = target_dir and vim.uv.fs_stat(target_dir)
---           -- Prevent unnecessary directory change, which triggers
---           -- DirChanged autocmds that may update winbar unexpectedly
---           if stat and stat.type == "directory" and current_dir ~= target_dir then
---             pcall(vim.cmd.lcd, target_dir)
---           end
---         end)
---       end)
---     end,
---   },
--- })
+local fs_change = augroup "ChangeToCurDir"
+autocmd({ "BufEnter", "WinEnter", "BufWinEnter" }, {
+  group = fs_change,
+  pattern = "*",
+  desc = "Automatically change local current directory.",
+  callback = function(info)
+    if info.file == "" or vim.bo[info.buf].bt ~= "" then
+      return
+    end
+    local buf = info.buf
+    local win = vim.api.nvim_get_current_win()
+
+    vim.schedule(function()
+      if not vim.api.nvim_buf_is_valid(buf) or not vim.api.nvim_win_is_valid(win) or not vim.api.nvim_win_get_buf(win) == buf then
+        return
+      end
+      vim.api.nvim_win_call(win, function()
+        local current_dir = vim.fn.getcwd(0)
+        local target_dir = require("utils").fs.proj_dir(info.file) or vim.fs.dirname(info.file)
+        local stat = target_dir and vim.uv.fs_stat(target_dir)
+        -- Prevent unnecessary directory change, which triggers
+        -- DirChanged autocmds that may update winbar unexpectedly
+        if stat and stat.type == "directory" and current_dir ~= target_dir then
+          print("cd to " .. target_dir)
+          pcall(vim.cmd.lcd, target_dir)
+        end
+      end)
+    end)
+  end,
+})
 
 autocmd("BufReadPre", {
   desc = "Set settings for large files.",
@@ -367,9 +363,8 @@ autocmd("TextYankPost", {
   callback = function()
     vim.highlight.on_yank {
       higroup = "HighlightedyankRegion",
-      -- higroup = "Visual",
       clear = true,
-      timeout = 400,
+      timeout = 300,
     }
   end,
 })
