@@ -5,10 +5,10 @@ return {
   { import = "modules.git" },
   {
     "NvChad/nvterm",
-    enabled = false,
+    enabled = true,
     config = function()
       require("nvterm").setup()
-      require "modules.configs.terminal"
+      require "modules.configs.nvterm"
     end,
   },
   -- Better notifications and messagess
