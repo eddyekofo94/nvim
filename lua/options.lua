@@ -36,15 +36,10 @@ vim.opt.showmode = false
 --  See `:help 'clipboard'`
 vim.opt.clipboard = "unnamedplus"
 
--- Enable break indent
-vim.opt.breakindent = true
-
--- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-
 -- Keep signcolumn on by default
 vim.opt.signcolumn = "yes"
+
+vim.opt.winminwidth = 5
 
 -- Decrease update time
 vim.opt.updatetime = 250
@@ -72,10 +67,12 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+vim.opt.softtabstop = 2
+vim.bo.shiftwidth = 2
+
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 
--- g.has_ui = #vim.api.nvim_list_uis() > 0
 vim.opt.cursorline = true
 o.cursorlineopt = "both" -- to enable cursorline!
 opt.iskeyword:append "-"
@@ -92,15 +89,6 @@ vim.opt.fillchars = {
   diff = "╱",
   eob = " ",
 }
-
-if g.modern_ui then
-  opt.listchars:append { nbsp = "␣" }
-  opt.fillchars:append {
-    foldopen = "",
-    foldclose = "",
-    diff = "╱",
-  }
-end
 
 vim.opt.listchars = {
   -- tab = "→\\ ",
@@ -162,6 +150,8 @@ opt.number = true
 vim.o.lazyredraw = false -- Faster scrolling
 vim.o.redrawtime = 100
 
+vim.opt.showtabline = 0 --  BUG: 2024-05-27 - Not working?
+
 vim.cmd [[set nowrap]] -- Display long lines as just one line
 
 vim.opt.showmode = false
@@ -203,6 +193,7 @@ vim.opt.backspace = "indent,eol,start"
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
 vim.opt.smartcase = true
+vim.opt.smartindent = true
 vim.opt.ignorecase = true
 
 -- enable auto indentation
@@ -223,8 +214,6 @@ vim.opt.sessionoptions = {
   "skiprtp",
   "folds",
 }
-
-vim.opt.list = true
 
 opt.gcr = {
   "i-c-ci-ve:blinkoff500-blinkon500-block-TermCursor",

@@ -166,7 +166,7 @@ return {
               },
             },
           },
-          file_ignore_patterns = { ".git/.*", "node_modules/.*" },
+          file_ignore_patterns = { ".git/.*", "node_modules/.*", ".cache", "build/", "%.class", "%.pdf", "%.mkv", "%.mp4", "%.zip" },
           file_sorter = require("telescope.sorters").get_fuzzy_file,
           generic_sorter = require("mini.fuzzy").get_telescope_sorter,
           path_display = { "filename_first" },

@@ -140,7 +140,11 @@ M.on_attach = function(client, bufnr)
   vim.cmd.highlight "DiagnosticUnderlineWarn  gui=undercurl" -- use undercurl for warning, if supported by terminal
 
   vim.diagnostic.config {
-    virtual_text = false,
+    virtual_text = {
+      spacing = 4,
+      source = "if_many",
+      prefix = "●",
+    },
     severity_sort = true,
     float = {
       show_header = false,

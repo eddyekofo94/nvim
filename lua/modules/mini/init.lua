@@ -13,8 +13,7 @@ return {
       -- map("n", "<leader>sn", MiniFuzzy.filtersort(word, candidate_array), opts)
       --  INFO: 2024-05-15 - I already have something set up, maybe remove it and change to
       -- this in the future?
-      -- require("mini.misc").setup()
-      -- MiniMisc.setup_auto_root { "go.mod", ".git", "Makefile", "cwd", ".obsidian" }
+
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
@@ -32,35 +31,6 @@ return {
     },
   },
 
-  {
-    -- Examples:
-    --  - va)  - [V]isually select [A]round []paren
-    --  - yinq - [Y]ank [I]nside [N]ext [']quote
-    --  - ci'  - [C]hange [I]nside [']quote
-    "echasnovski/mini.ai",
-    event = "BufReadPre",
-    dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
-    init = function()
-      -- no need to load the plugin, since we only need its queries
-      require("lazy.core.loader").disable_rtp_plugin "nvim-treesitter-textobjects"
-    end,
-    config = function()
-      local ai = require "mini.ai"
-      ai.setup {
-        n_lines = 500,
-        custom_textobjects = {
-          b = ai.gen_spec.treesitter({
-            a = { "@block.outer", "@conditional.outer", "@loop.outer", "@function.outer" },
-            i = { "@block.inner", "@conditional.inner", "@loop.inner", "@function.inner" },
-          }, {}),
-          c = ai.gen_spec.treesitter({
-            a = "@class.outer",
-            i = "@class.inner",
-          }, {}),
-        },
-      }
-    end,
-  },
   {
     "echasnovski/mini.align",
     event = "BufReadPre",

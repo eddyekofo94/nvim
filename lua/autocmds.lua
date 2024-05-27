@@ -247,14 +247,6 @@ autocmd({ "TermOpen" }, {
   end,
 })
 
-autocmd("FileType", {
-  pattern = { "go", "c", "cpp", "py", "java", "cs" },
-  callback = function()
-    vim.bo.shiftwidth = 4
-  end,
-  desc = "Set shiftwidth to 4 in these filetypes",
-})
-
 local fs_change = augroup "ChangeToCurDir"
 autocmd({ "BufEnter", "WinEnter", "BufWinEnter" }, {
   group = fs_change,

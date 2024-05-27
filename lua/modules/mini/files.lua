@@ -1,8 +1,9 @@
+--  INFO: 2024-05-27 - https://github.com/pkazmier/nvim/blob/main/lua/plugins/mini/files.lua
+
 return {
   "echasnovski/mini.files",
   enabled = true,
   lazy = false,
-  -- keys = { "<leader>." },
   init = function()
     vim.api.nvim_create_autocmd("User", {
       pattern = "MiniFilesBufferCreate",

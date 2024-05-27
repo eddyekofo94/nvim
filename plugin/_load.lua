@@ -33,15 +33,15 @@ vim.api.nvim_create_autocmd("InsertEnter", {
 -- })
 
 -- lsp-diags
-vim.api.nvim_create_autocmd({ "LspAttach", "DiagnosticChanged" }, {
-  once = true,
-  desc = "Apply lsp and diagnostic settings.",
-  group = vim.api.nvim_create_augroup("LspDiagnosticSetup", {}),
-  callback = function()
-    require("plugins.lsp-diags").setup()
-    return true
-  end,
-})
+-- vim.api.nvim_create_autocmd({ "LspAttach", "DiagnosticChanged" }, {
+--   once = true,
+--   desc = "Apply lsp and diagnostic settings.",
+--   group = vim.api.nvim_create_augroup("LspDiagnosticSetup", {}),
+--   callback = function()
+--     require("plugins.lsp-diags").setup()
+--     return true
+--   end,
+-- })
 
 -- readline
 -- vim.api.nvim_create_autocmd({ "CmdlineEnter", "InsertEnter" }, {

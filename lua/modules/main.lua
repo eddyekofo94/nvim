@@ -382,6 +382,11 @@ return {
   },
 
   {
+    "VidocqH/auto-indent.nvim",
+    opts = {},
+  },
+
+  {
     "kylechui/nvim-surround",
     event = "VeryLazy",
     keys = {

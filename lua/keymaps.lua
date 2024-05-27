@@ -187,7 +187,7 @@ map('t', '<M-R>', [[v:lua.require'utils.term'.running_tui() ? "<M-R>" : "<Cmd>wi
 map('t', '<M-x>', [[v:lua.require'utils.term'.running_tui() ? "<M-x>" : "<Cmd>wincmd x<CR>"]],  { expr = true, replace_keycodes = false })
 map('t', '<M-p>', [[v:lua.require'utils.term'.running_tui() ? "<M-p>" : "<Cmd>wincmd p<CR>"]],  { expr = true, replace_keycodes = false })
 map('t', '<M-c>', [[v:lua.require'utils.term'.running_tui() ? "<M-c>" : "<Cmd>wincmd c<CR>"]],  { expr = true, replace_keycodes = false })
-map('t', '<M-q>', [[v:lua.require'utils.term'.running_tui() ? "<M-q>" : "<Cmd>wincmd q<CR>"]],  { expr = true, replace_keycodes = false })
+map('t', '<M-q>', [[v:lua.require'utils.term'.running_tui() ? "<M-q>" : "<Cmd>wincmd q<CR>"]],  { desc = "close",expr = true, replace_keycodes = false })
 map('t', '<M-o>', [[v:lua.require'utils.term'.running_tui() ? "<M-o>" : "<Cmd>wincmd o<CR>"]],  { expr = true, replace_keycodes = false })
 map('t', '<M-w>', [[v:lua.require'utils.term'.running_tui() ? "<M-w>" : "<Cmd>wincmd w<CR>"]],  { expr = true, replace_keycodes = false })
 map('t', '<M-h>', [[v:lua.require'utils.term'.running_tui() ? "<M-h>" : "<Cmd>wincmd h<CR>"]],  { expr = true, replace_keycodes = false })
@@ -201,17 +201,12 @@ map('t', '<M-+>', [[v:lua.require'utils.term'.running_tui() ? "<M-+>" : "<Cmd>wi
 map('t', '<M-->', [[v:lua.require'utils.term'.running_tui() ? "<M-->" : "<Cmd>wincmd 2-<CR>"]], { expr = true, replace_keycodes = false })
 map('t', '<M->>', [[v:lua.require'utils.term'.running_tui() ? "<M->>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? "<" : ">") . "<CR>"]], { expr = true })
 map('t', '<M-<>', [[v:lua.require'utils.term'.running_tui() ? "<M-<>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? ">" : "<") . "<CR>"]], { expr = true })
-map('t', '<M-.>', [[v:lua.require'utils.term'.running_tui() ? "<M-.>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? "<" : ">") . "<CR>"]], { expr = true })
+map('t', '<M-;>', [[v:lua.require'utils.term'.running_tui() ? "<M-.>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? "<" : ">") . "<CR>"]], { expr = true })
 map('t', '<M-,>', [[v:lua.require'utils.term'.running_tui() ? "<M-,>" : "<Cmd>wincmd 4" . (winnr() == winnr("l") ? ">" : "<") . "<CR>"]], { expr = true })
 -- stylua: ignore end
 
 -- Use <C-\><C-r> to insert contents of a register in terminal mode
 map("t", [[<C-\><C-r>]], [['<C-\><C-n>"' . nr2char(getchar()) . 'pi']], { expr = true })
-
--- Don't include extra spaces around quotes
-map({ "o", "x" }, 'a"', '2i"', { noremap = false })
-map({ "o", "x" }, "a'", "2i'", { noremap = false })
-map({ "o", "x" }, "a`", "2i`", { noremap = false })
 
 -- highlights under cursor
 map("n", "<leader>ui", vim.show_pos, { desc = "Inspect Pos" })
@@ -222,7 +217,7 @@ map("t", "<C-x>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true
 map("n", "<leader>qq", "<cmd>qa<cr>", "Quit all")
 
 map("n", "<leader>.", function()
-  return MiniFiles.open()
+  return MiniFiles.open(vim.api.nvim_buf_get_name(0))
 end, "[Mini] files")
 
 map("n", "i", function()
