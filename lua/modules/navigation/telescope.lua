@@ -420,6 +420,11 @@ return {
         desc = "Search Configs",
       }
 
+      maps.n["<leader>sD"] = {
+        Telescope.dotfiles(),
+        desc = "Search dotfiles",
+      }
+
       maps.n["<leader>sL"] = {
         function()
           require("telescope.builtin").find_files { cwd = require("lazy.core.config").options.root }
