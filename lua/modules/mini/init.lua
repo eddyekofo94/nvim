@@ -76,23 +76,6 @@ return {
       require("mini.surround").setup(opts)
     end,
   },
-  {
-    "echasnovski/mini.animate",
-    event = "VeryLazy",
-    enabled = true,
-    version = false,
-    config = function()
-      local animate = require "mini.animate"
-      local timing = animate.gen_timing.linear { duration = 100, unit = "total" }
-      animate.setup {
-        cursor = { timing = animate.gen_timing.linear { duration = 10, unit = "total" } },
-        resize = { enable = false, timing = animate.gen_timing.linear { duration = 10, unit = "total" } },
-        scroll = { timing = timing },
-        open = { enable = true },
-        close = { enable = false },
-      }
-    end,
-  },
   -- Split and join arguments
   {
     "echasnovski/mini.splitjoin",
