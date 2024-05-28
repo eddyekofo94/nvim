@@ -169,7 +169,6 @@ map("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result
 map(nxo, "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result" })
 map(nxo, "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result" })
 
-
 -- Terminal mode keymaps
 -- stylua: ignore start
 map('t', '<C-6>', [[v:lua.require'utils.term'.running_tui() ? "<C-6>" : "<Cmd>b#<CR>"]],        { expr = true, replace_keycodes = false })
@@ -257,7 +256,7 @@ vim.api.nvim_create_autocmd("CmdlineEnter", {
       utils.command_abbrev("tel", "Telescope")
     end
 
-    utils.command_map("S", "%s/")
+    -- utils.command_map("S%", "%s/")
     utils.command_abbrev(":", "lua")
     utils.command_abbrev("man", "Man")
     utils.command_abbrev("W", "w")
