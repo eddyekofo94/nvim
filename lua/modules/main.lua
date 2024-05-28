@@ -6,12 +6,12 @@ return {
   {
     "NvChad/nvterm",
     enabled = true,
+    event = "VeryLazy",
     config = function()
       require("nvterm").setup()
       require "modules.configs.nvterm"
     end,
   },
-  -- Better notifications and messagess
   {
     "folke/noice.nvim",
     enabled = true,
@@ -26,6 +26,7 @@ return {
   {
     "samjwill/nvim-unception",
     enabled = false,
+    event = "VeryLazy",
     init = function()
       vim.g.unception_delete_replaced_buffer = true
       vim.api.nvim_create_autocmd("User", {
@@ -96,6 +97,7 @@ return {
   {
     "folke/todo-comments.nvim",
     event = { "BufReadPre", "BufNewFile" },
+    event = "VeryLazy",
     keys = {
       { "<leader>Tq", "<cmd>TodoQuickFix<cr>", desc = "Search TODO" },
       {
