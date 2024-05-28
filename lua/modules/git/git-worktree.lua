@@ -9,7 +9,7 @@ return {
       local worktree = require "git-worktree"
       local utils = require "utils.keymaps"
       local Buffer = require "utils.buffer"
-      local keymap = utils.set_keymap
+      local map = utils.set_keymap
 
       worktree.setup {
         change_directory_command = "cd", -- default: "cd",
@@ -19,15 +19,13 @@ return {
         autopush = false, -- default: false,
       }
 
-      -- require("telescope").load_extension("git_worktree")
-      --
-      -- keymap_set("n", "<leader>gwc", function()
-      --   require("telescope").extensions.git_worktree.create_git_worktree()
-      -- end, "Git Worktree create")
-      --
-      -- keymap_set("n", "<Leader>gww", function()
-      --   require("telescope").extensions.git_worktree.git_worktrees()
-      -- end, "Git worktree list")
+      map("n", "<leader>gwc", function()
+        require("telescope").extensions.git_worktree.create_git_worktree()
+      end, "Git Worktree create")
+
+      map("n", "<Leader>gww", function()
+        require("telescope").extensions.git_worktree.git_worktrees()
+      end, "Git worktree list")
 
       worktree.on_tree_change(function(op, metadata)
         if op == worktree.Operations.Switch then

@@ -36,15 +36,4 @@ return {
     event = "VeryLazy",
     dependencies = { "nvim-lua/plenary.nvim" },
   },
-  {
-    "FabijanZulj/blame.nvim",
-    event = "VeryLazy",
-    keys = {
-      {
-        "<leader>gB",
-        "<cmd>ToggleBlame virtual<CR>",
-        "Git blame side",
-      },
-    },
-  },
 }
