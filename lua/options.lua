@@ -193,11 +193,12 @@ vim.opt.backspace = "indent,eol,start"
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
 vim.opt.smartcase = true
-vim.opt.smartindent = true
 vim.opt.ignorecase = true
 
 -- enable auto indentation
 vim.opt.autoindent = true
+vim.opt.cindent = true
+vim.opt.smartindent = true
 
 vim.opt.sessionoptions = {
   "resize",

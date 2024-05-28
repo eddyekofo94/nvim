@@ -13,6 +13,7 @@ return {
         miniclue.gen_clues.registers(),
         miniclue.gen_clues.windows { submode_resize = true },
         miniclue.gen_clues.z(),
+        miniclue.ensure_all_triggers(),
       },
       triggers = {
         -- Leader triggers
