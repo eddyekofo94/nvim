@@ -124,7 +124,7 @@ function M.config_files()
 end
 
 function M.dotfiles()
-  return M.find("find_files", { cwd = os.getenv "HOME" .. "/.dotfiles/", follow = true, no_ignore = true, hidden = true })
+  return M.find("git_files", { cwd = os.getenv "HOME" .. "/.dotfiles/", follow = true, no_ignore = true, hidden = true })
 end
 
 return M
