@@ -333,10 +333,10 @@ return {
         desc = "[All] List buffers",
       }
 
-      -- maps.n["<leader>s,"] = {
-      --   "<cmd>Telescope frecency<cr>",
-      --   desc = "[Root] Frecency",
-      -- }
+      maps.n["<leader>s,"] = {
+        "<cmd>Telescope frecency<cr>",
+        desc = "[Root] Frecency",
+      }
 
       maps.n["<leader>sb"] = {
         Telescope.find "buffers",
