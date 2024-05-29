@@ -2,6 +2,7 @@ return {
   {
     "simonmclean/triptych.nvim",
     event = "VeryLazy",
+    enabled = true,
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
       "nvim-tree/nvim-web-devicons", -- optional
@@ -12,7 +13,6 @@ return {
       "[Triptych] File explorer",
     },
     config = function()
-      require "modules.navigation.triptych"
       local lmap = require("utils.keymaps").set_leader_keymap
 
       lmap("-", "<cmd>Triptych<CR>", "[Triptych] File explorer")
