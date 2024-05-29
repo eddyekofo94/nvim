@@ -215,6 +215,10 @@ map("t", "<C-x>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true
 -- quit
 map("n", "<leader>qq", "<cmd>qa<cr>", "Quit all")
 
+map("n", "<leader>-", function()
+  require("triptych").toggle_triptych()
+end, "[Triptych] files")
+
 map("n", "<leader>.", function()
   return MiniFiles.open(vim.api.nvim_buf_get_name(0))
 end, "[Mini] files")
