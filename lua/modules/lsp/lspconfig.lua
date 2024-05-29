@@ -10,85 +10,6 @@ return {
     { "williamboman/mason.nvim", config = true }, -- NOTE: Must be loaded before dependants
     { "b0o/schemastore.nvim", event = "VeryLazy", ft = { "json" } },
     {
-      "williamboman/mason.nvim",
-      dependencies = {
-        "williamboman/mason-lspconfig.nvim",
-      },
-      config = function()
-        require "modules.lsp.mason"
-      end,
-      opts = {
-        ensure_installed = {
-          "lua-language-server",
-          "shellcheck",
-          "shfmt",
-          "flake8",
-          "prettier",
-          "vim-language-server",
-          "stylua",
-          "json-lsp",
-          "marksman",
-          "yamlls",
-          "pylsp",
-          "bashls",
-          "sqlls",
-          "dockerls",
-          "glint",
-          "gopls",
-          "clangd",
-        },
-      },
-    },
-    {
-      "folke/lsp-trouble.nvim",
-      event = "LspAttach",
-      dependencies = { "nvim-tree/nvim-web-devicons" },
-      cmd = { "TroubleToggle", "Trouble" },
-      config = function()
-        require "modules.lsp.trouble"
-      end,
-      keys = {
-        { "<leader>dD", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "[D]ocument Diagnostics" },
-        { "<leader>dW", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "[W]orkspace Diagnostics" },
-        { "<leader>dl", "<cmd>TroubleToggle loclist<cr>", desc = "[L]ocation List" },
-        { "<leader>dq", "<cmd>TroubleToggle quickfix<cr>", desc = "[Q]uickfix List" },
-        {
-          "<leader>dt",
-          "<cmd>TroubleToggle<cr>",
-          desc = "Trouble Toggle",
-        },
-        {
-          "[q",
-          function()
-            if require("trouble").is_open() then
-              require("trouble").previous { skip_groups = true, jump = true }
-            else
-              local ok, err = pcall(vim.cmd.cprev)
-              if not ok then
-                vim.notify(err, vim.log.levels.ERROR)
-              end
-            end
-          end,
-          desc = "Previous trouble/quickfix item",
-        },
-        {
-          "]q",
-          function()
-            if require("trouble").is_open() then
-              require("trouble").next { skip_groups = true, jump = true }
-            else
-              local ok, err = pcall(vim.cmd.cnext)
-              if not ok then
-                ---@diagnostic disable-next-line: param-type-mismatch
-                vim.notify(err, vim.log.levels.ERROR)
-              end
-            end
-          end,
-          desc = "Next trouble/quickfix item",
-        },
-      },
-    },
-    {
       --  INFO: 2023-10-19 - this temporarily disables lsp to save the
       --  CPU usage...
       "hinell/lsp-timeout.nvim",
@@ -124,24 +45,6 @@ return {
           show_sign = true, -- set to true if you want to render the diagnostic sign before the diagnostic message
           scope = "cursor", -- 'cursor', 'line' this changes the scope, so instead of showing errors under the cursor, it shows errors on the entire line.
         }
-      end,
-    },
-    {
-      "SmiteshP/nvim-navbuddy",
-      dependencies = {
-        "SmiteshP/nvim-navic",
-        "MunifTanjim/nui.nvim",
-      },
-      keys = {
-        {
-          "<leader>nn",
-          "<cmd>Navbuddy<CR>",
-          desc = "Navbuddy open",
-        },
-      },
-      opts = { lsp = { auto_attach = true } },
-      config = function()
-        require "modules.lsp.navbuddy"
       end,
     },
     "williamboman/mason-lspconfig.nvim",

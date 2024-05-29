@@ -60,7 +60,9 @@ return {
           },
           menu = {},
         },
-        config = require "modules.lsp.lspkind",
+        config = function(_, opts)
+          require("lspkind").init(opts)
+        end,
       },
     },
     config = function()

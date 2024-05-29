@@ -104,15 +104,15 @@ return {
             return
           end
           local stat = vim.uv.fs_stat(path)
-          if stat and stat.type == "directory" then
-            vim.api.nvim_del_autocmd(info.id)
-            require "oil"
-            vim.cmd.edit {
-              bang = true,
-              mods = { keepjumps = true },
-            }
-            return true
-          end
+          -- if stat and stat.type == "directory" then
+          --   vim.api.nvim_del_autocmd(info.id)
+          --   require "oil"
+          --   vim.cmd.edit {
+          --     bang = true,
+          --     mods = { keepjumps = true },
+          --   }
+          --   return true
+          -- end
         end,
       })
     end,

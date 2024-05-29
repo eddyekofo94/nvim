@@ -3,6 +3,7 @@ return {
   { import = "modules.edit" },
   { import = "modules.navigation" },
   { import = "modules.git" },
+  { import = "modules.lsp" },
   {
     "NvChad/nvterm",
     enabled = true,
@@ -411,15 +412,5 @@ return {
         end,
       },
     },
-  },
-  {
-    "olexsmir/gopher.nvim",
-    ft = "go",
-    config = function(_, opts)
-      require("gopher").setup(opts)
-    end,
-    build = function()
-      vim.cmd [[silent! GoInstallDeps]]
-    end,
   },
 }

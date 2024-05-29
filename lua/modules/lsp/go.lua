@@ -1,5 +1,6 @@
 return {
   "ray-x/go.nvim",
+  enabled = false,
   dependencies = {
     "ray-x/guihua.lua",
     "nvim-treesitter/nvim-treesitter",
@@ -10,11 +11,13 @@ return {
   config = function()
     -- code
     -- local icons = require("utils.icons")
-    local set_keymap = require("utils.keymaps").set_keymap
+    local map = require("utils.keymaps").set_keymap
+    local lmap = require("utils.keymaps").set_leader_keymap
     local go_cfg = require "go"
 
     -- INFO: don't know if this is working :(
-    set_keymap("n", "<leader>f", "<cmd>lua require('go.format').goimport()<CR>", { desc = "Format" })
+    map("n", "<leader>f", "<cmd>lua require('go.format').goimport()<CR>", { desc = "Format" })
+    lmap("cT", "<cmd>", options)
 
     local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
     vim.api.nvim_create_autocmd("BufWritePre", {

@@ -196,9 +196,9 @@ vim.opt.smartcase = true
 vim.opt.ignorecase = true
 
 -- enable auto indentation
-vim.opt.autoindent = true
 vim.opt.cindent = true
 vim.opt.smartindent = true
+vim.opt.autoindent = true
 
 vim.opt.sessionoptions = {
   "resize",

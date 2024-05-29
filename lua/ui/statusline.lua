@@ -39,7 +39,7 @@ local assets = {
 }
 
 function statusline.lsp_progress()
-  local progress = require("modules.lsp.lsp-progress").message()
+  local progress = require("utils.lsp.lsp-progress").message()
   -- local progress = require("utils.lsp.progress").lsp_progress()
 
   return string.format(
@@ -64,19 +64,23 @@ function statusline.diagnostics()
   local hints = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.HINT })
   local info = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.INFO })
 
+  if vim.bo.ft:gsub("^%l", string.lower) == "term" then
+    return
+  end
+
   errors = (errors and errors > 0) and ("E" .. errors .. " ") or ""
   warnings = (warnings and warnings > 0) and ("W" .. warnings .. " ") or ""
   hints = (hints and hints > 0) and ("H" .. hints .. " ") or ""
   info = (info and info > 0) and ("I" .. info .. " ") or ""
 
   local icons = string.format(
-    " - %s%s%s%s",
+    "%s%s%s%s",
     utils.stl.hl(tostring(errors), "StatusLineLspError"),
     utils.stl.hl(tostring(warnings), "StatusLineLspWarning"),
     utils.stl.hl(tostring(hints), "StatusLineLspHint"),
     utils.stl.hl(tostring(info), "StatusLineLspInfo")
   )
-  local diagnostic_icon = (vim.o.columns > 140 and icons or "")
+  local diagnostic_icon = (vim.o.columns > 140 and " - " .. icons or "")
 
   return diagnostic_icon
 end

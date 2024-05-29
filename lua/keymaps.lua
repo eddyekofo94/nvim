@@ -215,6 +215,8 @@ map("t", "<C-x>", vim.api.nvim_replace_termcodes("<C-\\><C-N>", true, true, true
 -- quit
 map("n", "<leader>qq", "<cmd>qa<cr>", "Quit all")
 
+--  NOTE: 2024-05-29 - Plugins
+
 map("n", "<leader>-", function()
   require("triptych").toggle_triptych()
 end, "[Triptych] files")
