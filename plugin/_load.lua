@@ -1,14 +1,14 @@
 -- Lazy-load builtin plugins
 
 -- expandtab
-vim.api.nvim_create_autocmd("InsertEnter", {
-  once = true,
-  group = vim.api.nvim_create_augroup("SmartExpandtabSetup", {}),
-  callback = function()
-    require("plugins.expandtab").setup()
-    return true
-  end,
-})
+-- vim.api.nvim_create_autocmd("InsertEnter", {
+--   once = true,
+--   group = vim.api.nvim_create_augroup("SmartExpandtabSetup", {}),
+--   callback = function()
+--     require("plugins.expandtab").setup()
+--     return true
+--   end,
+-- })
 
 -- im
 -- vim.api.nvim_create_autocmd("ModeChanged", {
