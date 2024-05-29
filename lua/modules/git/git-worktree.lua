@@ -27,14 +27,14 @@ return {
         require("telescope").extensions.git_worktree.git_worktrees()
       end, "Git worktree list")
 
-      worktree.on_tree_change(function(op, metadata)
-        if op == worktree.Operations.Switch then
-          utils.log("Switched from " .. metadata.prev_path .. " to " .. metadata.path, "Git Worktree")
-          -- vim.cmd([[BufOnly]])
-          Buffer.close_all_buffers()
-          vim.cmd "e"
-        end
-      end)
+      --  INFO: 2024-05-28 - Fix this when you get a chace
+      -- worktree.on_tree_change(function(op, metadata)
+      --   if op == worktree.Operations.Switch then
+      --     utils.log("Switched from " .. metadata.prev_path .. " to " .. metadata.path, "Git Worktree")
+      --     Buffer.close_all_buffers()
+      --     vim.cmd "e"
+      --   end
+      -- end)
     end,
   },
 }
