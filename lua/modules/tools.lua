@@ -9,22 +9,9 @@ return {
   },
 
   {
-    "olimorris/persisted.nvim",
-    lazy = false,
-    enabled = false,
-    config = function()
-      require "modules.configs.persisted"
-    end,
+    "mbbill/undotree",
+    event = "VeryLazy",
   },
-  -- {
-  --   "lewis6991/gitsigns.nvim",
-  --   event = "BufReadPre",
-  --   dependencies = "nvim-lua/plenary.nvim",
-  --   config = function()
-  --     require "configs.gitsigns"
-  --   end,
-  -- },
-
   -- {
   --   "tpope/vim-fugitive",
   --   cmd = {

@@ -1,6 +1,6 @@
 return {
   "ray-x/go.nvim",
-  enabled = false,
+  enabled = true,
   dependencies = {
     "ray-x/guihua.lua",
     "nvim-treesitter/nvim-treesitter",
@@ -11,13 +11,17 @@ return {
   config = function()
     -- code
     -- local icons = require("utils.icons")
-    local map = require("utils.keymaps").set_keymap
     local lmap = require("utils.keymaps").set_leader_keymap
+
     local go_cfg = require "go"
 
     -- INFO: don't know if this is working :(
-    map("n", "<leader>f", "<cmd>lua require('go.format').goimport()<CR>", { desc = "Format" })
-    lmap("cT", "<cmd>", options)
+    lmap("cf", "<cmd>lua require('go.format').goimport()<CR>", { desc = "Format" })
+    lmap("cTt", "<cmd>GoAddTest<CR>", "Add unit test for current function")
+
+    -- lmap("cTA", "<cmd>GoTestsAll<CR>", "Generate all tests for all functions/methods in current file")
+    -- lmap("cTE", "<cmd>GoTestsExp<CR>", "Generate tests only for exported functions/methods in current file")
+    -- lmap("cTi", "<cmd>GoIfErr<CR>", "Setup nvim-dap for go in one line")
 
     local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
     vim.api.nvim_create_autocmd("BufWritePre", {

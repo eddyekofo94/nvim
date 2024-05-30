@@ -1,8 +1,12 @@
 return {
   {
     "olexsmir/gopher.nvim",
-    enabled = true,
+    enabled = false,
     ft = { "go", "gomod" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
     event = "VeryLazy",
     config = function(_, opts)
       require("gopher").setup(opts)

@@ -2,6 +2,7 @@ local utils = require "utils.keymaps"
 local utils_gen = require "utils.general"
 local utils_buffer = require "utils.buffer"
 local map = utils.set_keymap
+local lmap = utils.set_leader_keymap
 local nxo = utils.nxo
 local maps = require("utils.keymaps").empty_map_table()
 local Buffers = require "utils.buffer"
@@ -224,6 +225,8 @@ end, "[Triptych] files")
 map("n", "<leader>.", function()
   return MiniFiles.open(vim.api.nvim_buf_get_name(0))
 end, "[Mini] files")
+
+lmap("U", "<cmd>UndotreeShow<cr>", "Undotree")
 
 map("n", "i", function()
   if #vim.fn.getline "." == 0 then

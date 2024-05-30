@@ -4,15 +4,16 @@ return {
     event = "VimEnter",
     dependencies = {
       {
-        "prochri/telescope-all-recent.nvim",
-        enabled = false,
+        --  NOTE: 2024-05-30 - Fedora: sudo dnf install sqlite sqlite-devel sqlite-tcl
+        "danielfalk/smart-open.nvim",
+        branch = "0.2.x",
         dependencies = {
-          "nvim-telescope/telescope.nvim",
           "kkharji/sqlite.lua",
-          -- optional, if using telescope for vim.ui.select
-          "stevearc/dressing.nvim",
+          -- Only required if using match_algorithm fzf
+          { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+          -- Optional.  If installed, native fzy will be used when match_algorithm is fzy
+          { "nvim-telescope/telescope-fzy-native.nvim" },
         },
-        config = true,
       },
       "nvim-lua/plenary.nvim",
       { "kyoh86/telescope-windows.nvim" },
@@ -36,9 +37,6 @@ return {
         config = function()
           require("project_nvim").setup {
             scope_chdir = "global",
-            -- your configuration comes here
-            -- or leave it empty to use the default settings
-            -- refer to the configuration section below
           }
         end,
       },
@@ -62,8 +60,10 @@ return {
       local actions = require "telescope.actions"
       local Util = require "utils.telescope"
       local themes = require "telescope.themes"
+      local extensions = require("telescope").extensions
 
       local utils = require "utils"
+      local icons = utils.static.icons
       local maps = utils.keymaps:empty_map_table()
 
       local builtin = require "telescope.builtin"
@@ -155,8 +155,8 @@ return {
               ignore_current_buffer = true,
               mappings = {
                 i = {
-                  ["<c-z>"] = actions.delete_buffer, -- this overrides the built in preview scroller
-                  ["<c-b>"] = actions.preview_scrolling_down,
+                  ["<A-x>"] = actions.delete_buffer, -- this overrides the built in preview scroller
+                  ["-b>"] = actions.preview_scrolling_down,
                 },
                 n = {
                   -- BUG: this is still not working
@@ -243,8 +243,15 @@ return {
           "terms",
           "fzf",
           "windows",
+          "smart_open",
         },
+
         extensions = {
+          smart_open = {
+            match_algorithm = "fzf", -- default: fzy
+            show_scores = true,
+            open_buffer_indicators = { previous = icons.Diamond, others = icons.DotLarge },
+          },
           ["ui-select"] = {
             themes.get_dropdown {},
           },
@@ -298,6 +305,10 @@ return {
       map("n", "<leader>sc", function()
         builtin.commands()
       end, "[S]earch [C]ommands")
+
+      map("n", "<leader>;", function()
+        extensions.smart_open.smart_open()
+      end, "Smart open")
 
       maps.n["<leader><space>"] = { Telescope.find "files", desc = "Find files" }
 
