@@ -50,19 +50,27 @@ return {
     "williamboman/mason-lspconfig.nvim",
     "WhoIsSethDaniel/mason-tool-installer.nvim",
 
-    -- Useful status updates for LSP.
-    -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-    { "j-hui/fidget.nvim", enabled = false, opts = {} },
-
-    -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
-    -- used for completion, annotations and signatures of Neovim apis
-    { "folke/neodev.nvim", opts = {} },
+    { "Bilal2453/luvit-meta", lazy = true }, -- optional `vim.uv` typings
+    {
+      "folke/lazydev.nvim",
+      ft = "lua", -- only load on lua files
+      opts = {
+        library = {
+          -- Library items can be absolute paths
+          -- "~/projects/my-awesome-lib",
+          -- Or relative, which means they will be resolved as a plugin
+          -- "LazyVim",
+          -- When relative, you can also provide a path to the library in the plugin dir
+          "luvit-meta/library", -- see below
+        },
+      },
+    },
   },
   config = function()
     local lspconfig = require "lspconfig"
 
     vim.api.nvim_create_autocmd("LspAttach", {
-      group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
+      group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
       callback = function(event)
         local bufnr = event.buf
         local filetype = vim.api.nvim_buf_get_name(bufnr)
@@ -146,7 +154,7 @@ return {
         -- end
 
         if client and client.server_capabilities.documentHighlightProvider then
-          local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
+          local highlight_augroup = vim.api.nvim_create_augroup("lsp-highlight", { clear = false })
           vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
             buffer = event.buf,
             group = highlight_augroup,
@@ -160,10 +168,10 @@ return {
           })
 
           vim.api.nvim_create_autocmd("LspDetach", {
-            group = vim.api.nvim_create_augroup("kickstart-lsp-detach", { clear = true }),
+            group = vim.api.nvim_create_augroup("lsp-detach", { clear = true }),
             callback = function(event2)
               vim.lsp.buf.clear_references()
-              vim.api.nvim_clear_autocmds { group = "kickstart-lsp-highlight", buffer = event2.buf }
+              vim.api.nvim_clear_autocmds { group = "lsp-highlight", buffer = event2.buf }
             end,
           })
         end
@@ -178,12 +186,14 @@ return {
           end, "[T]oggle Inlay [H]ints")
         end
 
-        if client and client.supports_method "textDocument/codeLens" then
-          vim.lsp.codelens.refresh()
-          --- autocmd BufEnter,CursorHold,InsertLeave <buffer> lua vim.lsp.codelens.refresh()
+        -- if not client and client.supports_method "textDocument/codeLens" then
+        if not client and client.server_capabilities.codeLensProvider then
+          --   --- autocmd BufEnter,CursorHold,InsertLeave <buffer> lua vim.lsp.codelens.refresh()
           vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
             buffer = bufnr,
-            callback = vim.lsp.codelens.refresh,
+            callback = function()
+              return vim.lsp.codelens.refresh()
+            end,
           })
         end
 

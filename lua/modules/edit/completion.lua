@@ -1,16 +1,14 @@
 return {
   {
-    "altermo/ultimate-autopair.nvim",
-    enabled = true,
-    branch = "v0.6", --recomended as each new version will have breaking changes
-    event = { "InsertEnter", "CmdlineEnter" },
-    config = function()
-      require "modules.configs.ultimate-autopair"
-    end,
-  },
-  {
     "hrsh7th/nvim-cmp",
     event = { "InsertEnter", "CmdlineEnter" },
+    opts = function(_, opts)
+      opts.sources = opts.sources or {}
+      table.insert(opts.sources, {
+        name = "lazydev",
+        group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+      })
+    end,
     dependencies = {
       {
         -- INFO: additional snippets
@@ -67,18 +65,6 @@ return {
     },
     config = function()
       require "modules.configs.cmp"
-    end,
-  },
-  {
-    "nguyenvukhang/nvim-toggler",
-    keys = {
-      { "<leader>ii", desc = "Toggle Word" },
-    },
-    config = function()
-      require("nvim-toggler").setup {
-        remove_default_keybinds = true,
-      }
-      vim.keymap.set({ "n", "v" }, "<leader>ii", require("nvim-toggler").toggle, { desc = "Toggle a Word" })
     end,
   },
 }

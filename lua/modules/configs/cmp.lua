@@ -71,7 +71,7 @@ cmp.setup {
   completion = {
     completeopt = "menu,menuone,noinsert",
     autocomplete = { types.cmp.TriggerEvent.TextChanged },
-    keyword_length = 2,
+    keyword_length = 1,
   },
   -- explanations: https://github.com/hrsh7th/nvim-cmp/blob/main/doc/cmp.txt#L425
   performance = {
@@ -304,9 +304,6 @@ cmp.setup {
   },
   view = {
     entries = { follow_cursor = true, name = "custom", selection_order = "near_cursor" },
-    docs = {
-      auto_open = false,
-    },
   },
   window = {
     completion = cmp.config.window.bordered {
@@ -315,12 +312,7 @@ cmp.setup {
       col_offset = -3,
       side_padding = 0,
     },
-    documentation = cmp.config.window.bordered {
-      -- border = border,
-      -- winhighlight = "Normal:Normal,FloatBorder:CmpBorder,CursorLine:Visual,Search:None",
-      winhighlight = "FloatBorder:CmpBorder,Normal:CmpDoc",
-      -- side_padding = 1,
-    },
+    documentation = cmp.config.window.bordered {},
   },
   sorting = {
     priority_weight = 2,

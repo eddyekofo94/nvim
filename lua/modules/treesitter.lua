@@ -36,7 +36,8 @@ return {
         mode = "cursor", -- Line used to calculate context. Choices: 'cursor', 'topline'
         on_attach = function()
           local disabled_filetypes = { "markdown", "vim" }
-          local ft = vim.bo.ft:gsub("^%l", string.lower)
+          -- local ft = vim.bo.ft:gsub("^%l", string.lower)
+          local ft = vim.bo.filetype
 
           return not vim.tbl_contains(disabled_filetypes, ft)
         end,

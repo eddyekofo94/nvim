@@ -27,6 +27,7 @@ return { -- Collection of various small independent plugins/modules
             { hl = "MiniStatuslineInactive", strings = { stl_util.lsp_progress() } },
             "%=",
             { hl = "StatusLine", strings = { stl_util.gitdiff() } },
+            -- { hl = "MiniStatuslineInactive", strings = { stl_util.fmt() } },
             { hl = "MiniStatuslineFilename", strings = { stl_util.info() } },
             { hl = mode_hl, strings = { stl_util.search_count(), stl_util.lineinfo() } },
           }

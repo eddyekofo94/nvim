@@ -5,6 +5,8 @@ local function config()
   local focus = require "focus"
 
   local ignore_filetypes = {
+    "undotree_2",
+    "diffpanel_3",
     "prompt",
     "NvimTree",
     "bmessages_buffer",
