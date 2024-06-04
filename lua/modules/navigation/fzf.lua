@@ -25,7 +25,7 @@ return {
     "<Leader>?",
     '<Leader>"',
     -- '<Leader>o',
-    "<Leader>'",
+    -- "<Leader>'",
     "<Leader>-",
     -- "<Leader>=",
     "<Leader>R",

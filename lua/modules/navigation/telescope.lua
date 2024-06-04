@@ -15,6 +15,10 @@ return {
           { "nvim-telescope/telescope-fzy-native.nvim" },
         },
       },
+      {
+        "nvim-telescope/telescope-file-browser.nvim",
+        dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
+      },
       "nvim-lua/plenary.nvim",
       { "kyoh86/telescope-windows.nvim" },
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -61,6 +65,7 @@ return {
       local Util = require "utils.telescope"
       local themes = require "telescope.themes"
       local extensions = require("telescope").extensions
+      local telescope = require "telescope"
 
       local utils = require "utils"
       local icons = utils.static.icons
@@ -234,6 +239,7 @@ return {
         },
 
         extensions_list = {
+          "file_browser",
           "zoxide",
           "ui-select",
           "frecency",
@@ -307,10 +313,14 @@ return {
       end, "[S]earch [C]ommands")
 
       map("n", "<leader>;", function()
+        telescope.extensions.file_browser.file_browser { path = "%:p:h", bufnr = 0 }
+      end, "[Tel] file browser")
+
+      map("n", "<leader><space>", function()
         extensions.smart_open.smart_open()
       end, "Smart open")
 
-      maps.n["<leader><space>"] = { Telescope.find "files", desc = "Find files" }
+      maps.n["<leader>'"] = { Telescope.find "files", desc = "Find files" }
 
       maps.n["<leader>p"] = {
         Telescope.find("files", { cwd = "%:p:h" }),
