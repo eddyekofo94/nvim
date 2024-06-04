@@ -85,6 +85,44 @@ function statusline.diagnostics()
   return diagnostic_icon
 end
 
+function statusline.get_lsp_name()
+  local buf_clients = vim.lsp.get_clients(0)
+  -- local buf_ft = vim.bo.filetype
+  if next(buf_clients) == nil then
+    return "  No servers"
+  end
+  local buf_client_names = {}
+
+  for _, client in pairs(buf_clients) do
+    if client.name ~= "null-ls" then
+      table.insert(buf_client_names, client.name)
+    end
+  end
+
+  local ok, conform = pcall(require, "conform")
+  local formatters = table.concat(conform.list_all_formatters(), " ")
+  if ok then
+    for formatter in formatters:gmatch "%w+" do
+      if formatter then
+        table.insert(buf_client_names, formatter)
+      end
+    end
+  end
+
+  local hash = {}
+  local unique_client_names = {}
+
+  for _, v in ipairs(buf_client_names) do
+    if not hash[v] then
+      unique_client_names[#unique_client_names + 1] = v
+      hash[v] = true
+    end
+  end
+  local language_servers = table.concat(unique_client_names, ", ")
+
+  return "  " .. language_servers
+end
+
 function statusline.search_count()
   if vim.v.hlsearch == 0 then
     return ""
@@ -171,6 +209,51 @@ statusline.project_name = function()
   local parent_project_folder = fnamemodify(vim.fn.getcwd(), ":h:t")
   -- return parent_project_folder .. "/" .. current_project_folder
   return current_project_folder
+end
+
+--  BUG: 2024-06-03 - keep throwing some error about table concat
+statusline.formatter = function()
+  local ok, conform = pcall(require, "conform")
+  if not ok then
+    return
+  end
+
+  local formatters = conform.list_formatters_for_buffer()
+
+  return vim.tbl_isempty(formatters) and "" or string.format("(%s) ", table.concat(formatters, ", "))
+end
+
+statusline.fmt = function()
+  local buf_clients = vim.lsp.get_clients()
+  local buf_ft = vim.bo.filetype
+  if next(buf_clients) == nil then
+    return "  No servers"
+  end
+
+  local buf_client_names = {}
+  local ok, conform = pcall(require, "conform")
+  local formatters = table.concat(conform.formatters_by_ft[vim.bo.filetype], " ")
+
+  if ok then
+    for formatter in formatters:gmatch "%w+" do
+      if formatter then
+        table.insert(buf_client_names, formatter)
+      end
+    end
+  end
+  local hash = {}
+  local unique_client_names = {}
+
+  for _, v in ipairs(buf_client_names) do
+    if not hash[v] then
+      unique_client_names[#unique_client_names + 1] = v
+      hash[v] = true
+    end
+  end
+
+  local language_servers = table.concat(unique_client_names, ", ")
+  return "  " .. language_servers
+  -- return require("conform").list_formatters_for_buffer(0)
 end
 
 function statusline.filename()
@@ -342,6 +425,8 @@ function statusline.info()
   -- add_section(statusline.lazy_plug_count())
   -- add_section(statusline.lazy_startup())
   add_section(statusline.lsp())
+  -- add_section(statusline.formatter())
+  -- add_section(get_lsp_name())
   add_section(statusline.treesitter_status())
   return vim.tbl_isempty(info) and "" or string.format("(%s) ", table.concat(info, ", "))
 end
