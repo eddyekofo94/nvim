@@ -23,6 +23,7 @@ return {
       { "hrsh7th/cmp-cmdline" },
       { "ray-x/cmp-treesitter" },
       { "dmitmel/cmp-cmdline-history" },
+      { "hrsh7th/cmp-nvim-lsp-document-symbol" },
       { "hrsh7th/cmp-nvim-lsp" },
       { "saadparwaiz1/cmp_luasnip" },
       { "hrsh7th/cmp-nvim-lsp" },
