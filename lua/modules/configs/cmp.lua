@@ -456,14 +456,11 @@ cmp.setup.filetype({ "oil" }, {
 
 -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
 cmp.setup.cmdline({ "/", "?" }, {
-  enabled = true,
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = {
+  sources = cmp.config.sources({
     { name = "nvim_lsp_document_symbol" },
-  },
-  {
+  }, {
     { name = "buffer" },
-  },
+  }),
 })
 
 -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
