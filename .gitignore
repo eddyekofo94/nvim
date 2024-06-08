@@ -2,7 +2,7 @@ tags
 test.sh
 .luarc.json
 nvim
-
+undodir/**
 spell/
 lazy-lock.json
 LICENSE.md
