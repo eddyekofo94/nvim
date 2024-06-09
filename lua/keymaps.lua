@@ -267,6 +267,8 @@ vim.api.nvim_create_autocmd("CmdlineEnter", {
 
     -- utils.command_map("S%", "%s/")
     utils.command_abbrev(":", "lua")
+    utils.command_abbrev("Qa", "qa")
+    utils.command_abbrev("QA", "qa")
     utils.command_abbrev("man", "Man")
     utils.command_abbrev("W", "w")
     utils.command_abbrev("Wqa", "wqa")
