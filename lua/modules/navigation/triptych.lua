@@ -2,7 +2,7 @@ return {
   {
     "simonmclean/triptych.nvim",
     event = "VeryLazy",
-    enabled = false,
+    enabled = true,
     init = function()
       -- vim.api.nvim_create_autocmd("BufWinEnter", {
       --   nested = true,
