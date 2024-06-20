@@ -5,6 +5,7 @@ return {
   config = function()
     require("diagflow").setup {
       toggle_event = { "InsertLeave" },
+      update_event = { "DiagnosticChanged" },
       enable = function()
         return vim.bo.filetype ~= "lazy"
       end,
