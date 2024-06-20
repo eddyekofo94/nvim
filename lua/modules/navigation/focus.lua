@@ -89,7 +89,7 @@ local function config()
     focus.focus_equalise()
   end, "balance windows")
 
-  map("<leader>vr", "<cmd>FocusSplitRight<cr>", "balance windows")
+  map("<leader>vr", "<cmd>FocusSplitRight<cr>", "Split right")
 
   map("<leader>vv", function()
     focus.split_nicely()

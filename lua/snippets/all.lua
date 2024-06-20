@@ -1,7 +1,6 @@
 local ls = require "luasnip"
 local parse = ls.parser.parse_snippet
-local s, t, i, c, r, f, sn =
-  ls.snippet, ls.text_node, ls.insert_node, ls.choice_node, ls.restore_node, ls.function_node, ls.snippet_node
+local s, t, i, c, r, f, sn = ls.snippet, ls.text_node, ls.insert_node, ls.choice_node, ls.restore_node, ls.function_node, ls.snippet_node
 local fmt = require("luasnip.extras.fmt").fmt
 local u = require "utils.snippets"
 local today = u.today
@@ -16,6 +15,7 @@ local todos = {
   "break",
   "todo",
   "info",
+  "disabled",
   "hack",
   "example",
   "warn",

@@ -10,6 +10,7 @@ local comment_open = {
   cpp = "// ",
   sh = "# ",
   fish = "# ",
+  zsh = "# ",
   html = "<!-- ",
   query = "; ",
 }

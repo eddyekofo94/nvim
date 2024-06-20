@@ -2,7 +2,7 @@ return {
   "folke/lsp-trouble.nvim",
   event = "LspAttach",
   dependencies = { "nvim-tree/nvim-web-devicons" },
-  cmd = { "TroubleToggle", "Trouble" },
+  cmd = { "Trouble" },
   config = function()
     -- mapped to <space>dt -- this shows a list of diagnostics
     require("trouble").setup {
@@ -37,13 +37,23 @@ return {
     }
   end,
   keys = {
-    { "<leader>dD", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "[D]ocument Diagnostics" },
-    { "<leader>dW", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "[W]orkspace Diagnostics" },
-    { "<leader>dl", "<cmd>TroubleToggle loclist<cr>", desc = "[L]ocation List" },
-    { "<leader>dq", "<cmd>TroubleToggle quickfix<cr>", desc = "[Q]uickfix List" },
+    {
+      "<leader>dx",
+      "<cmd>Trouble diagnostics toggle<cr>",
+      desc = "Diagnostics (Trouble)",
+    },
+    -- { "<leader>dD", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "[D]ocument Diagnostics" },
+    -- { "<leader>dW", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "[W]orkspace Diagnostics" },
+    -- { "<leader>dl", "<cmd>TroubleToggle loclist<cr>", desc = "[L]ocation List" },
+    { "<leader>dq", "<cmd>Trouble qflist toggle<cr>", desc = "[Q]uickfix List" },
+    {
+      "<leader>dr",
+      "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+      desc = "LSP Definitions / references / ... (Trouble)",
+    },
     {
       "<leader>dt",
-      "<cmd>TroubleToggle<cr>",
+      "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
       desc = "Trouble Toggle",
     },
     {

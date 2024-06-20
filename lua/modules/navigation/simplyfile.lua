@@ -1,7 +1,7 @@
 return {
   "Rizwanelansyah/simplyfile.nvim",
   tag = "v0.4",
-  enabled = false,
+  enabled = true,
   dependencies = {
     { "nvim-tree/nvim-web-devicons", opts = {} },
   },
@@ -30,7 +30,7 @@ return {
 
     lmap("-", function()
       require("simplyfile").open()
-    end, "[Triptych] File explorer")
+    end, "[SimplyFile] File explorer")
   end,
 }
 -- return function()

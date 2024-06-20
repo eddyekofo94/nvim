@@ -67,9 +67,10 @@ local options = {
     map({ "n", "v" }, "<leader>gx", gs.reset_hunk, "Reset Hunk")
     map("n", "<leader>gG", gs.stage_buffer, opts "Stage Buffer")
     map("n", "<leader>gu", gs.undo_stage_hunk, opts "Undo Stage Hunk")
-    map("n", "<leader>gX", gs.reset_buffer, opts "Reset Buffer") --  BUG: 2024-04-22 - This is not working
+    map("n", "<leader>gX", gs.reset_buffer_index, opts "Reset Buffer") --  BUG: 2024-04-22 - This is not working
     map("n", "<leader>gL", gs.toggle_current_line_blame, "toggle blame line")
     map("n", "<leader>gv", gs.preview_hunk, "Preview Hunk")
+    map("n", "<leader>gV", gs.preview_hunk, "Inline Preview Hunk")
     map("n", "<leader>gb", function()
       gs.blame_line { full = true }
     end, opts "Blame Line")

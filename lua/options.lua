@@ -34,7 +34,19 @@ vim.opt.showmode = false
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.opt.clipboard = "unnamedplus"
+-- vim.opt.clipboard = "unnamedplus"
+
+vim.g.clipboard = {
+  name = "OSC 52",
+  copy = {
+    ["+"] = require("vim.ui.clipboard.osc52").copy "+",
+    ["*"] = require("vim.ui.clipboard.osc52").copy "*",
+  },
+  paste = {
+    ["+"] = require("vim.ui.clipboard.osc52").paste "+",
+    ["*"] = require("vim.ui.clipboard.osc52").paste "*",
+  },
+}
 
 -- Keep signcolumn on by default
 vim.opt.signcolumn = "yes"
@@ -68,6 +80,7 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 vim.opt.softtabstop = 2
+vim.bo.expandtab = true
 vim.bo.shiftwidth = 2
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
@@ -91,7 +104,6 @@ vim.opt.fillchars = {
 }
 
 vim.opt.listchars = {
-  -- tab = "→\\ ",
   tab = "→ ",
   trail = "•",
   precedes = "«",
@@ -123,7 +135,7 @@ vim.opt.autoread = true
 
 vim.opt.conceallevel = 2
 -- Use ripgrep as grep tool
-vim.o.grepprg = "rg --vimgrep --no-heading"
+vim.o.grepprg = "rg --vimgrep --no-heading --smart-case"
 vim.o.grepformat = "%f:%l:%c:%m,%f:%l:%m"
 
 -- completion

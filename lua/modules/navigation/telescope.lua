@@ -2,6 +2,26 @@ return {
   {
     "nvim-telescope/telescope.nvim",
     event = "VimEnter",
+    -- init = function()
+    --   local telescope = require "telescope"
+    --   local Telescope = require "utils.telescope"
+    --
+    --   vim.api.nvim_create_autocmd("BufWinEnter", {
+    --     nested = true,
+    --     callback = function(info)
+    --       local path = info.file
+    --       if path == "" then
+    --         return
+    --       end
+    --       local stat = vim.uv.fs_stat(path)
+    --       if stat and stat.type == "directory" then
+    --         vim.api.nvim_del_autocmd(info.id)
+    --         -- return Telescope.find("files", { cwd = "%:p:h" })
+    --         return telescope.extensions.file_browser.file_browser { path = "%:p:h", bufnr = 0 }
+    --       end
+    --     end,
+    --   })
+    -- end,
     dependencies = {
       {
         --  NOTE: 2024-05-30 - Fedora: sudo dnf install sqlite sqlite-devel sqlite-tcl
@@ -257,6 +277,11 @@ return {
             match_algorithm = "fzf", -- default: fzy
             show_scores = true,
             open_buffer_indicators = { previous = icons.Diamond, others = icons.DotLarge },
+          },
+          file_browser = {
+            -- theme = "ivy",
+            -- disables netrw and use telescope-file-browser in its place
+            hijack_netrw = true,
           },
           ["ui-select"] = {
             themes.get_dropdown {},

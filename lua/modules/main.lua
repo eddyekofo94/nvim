@@ -38,51 +38,23 @@ return {
       })
     end,
   },
-  -- Global search and replace within cwd
   {
-    "nvim-pack/nvim-spectre",
-    enabled = true,
-    event = "VeryLazy",
+    "rachartier/tiny-buffers-switcher.nvim",
+    enabled = false,
+    opts = {},
     config = function()
-      local spectre = require "spectre"
-      vim.keymap.set(
-        "n",
-        "<leader>S",
-        -- spectre.toggle,
-        '<cmd>lua require("spectre").toggle()<CR>',
-        {
-          desc = "Toggle Spectre",
-        }
-      )
-      vim.keymap.set(
-        "n",
-        "<leader>sW",
-        -- spectre.open_visual { select_word = true },
-        '<cmd>lua require("spectre").open_visual({select_word=true})<CR>',
-        {
-          desc = "Search current word",
-        }
-      )
-      vim.keymap.set("v", "<leader>sW", '<esc><cmd>lua require("spectre").open_visual()<CR>', {
-        desc = "Search current word",
-      })
-      vim.keymap.set(
-        "n",
-        "<leader>sM",
-        -- spectre.open_file_search { select_word = true },
-        '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>',
-        {
-          desc = "Search on current file",
-        }
-      )
-      -- vim.keymap.set("n", "<D-S-r>", spectre.toggle, {
-      --   desc = "Toggle Spectre",
-      -- })
-      -- vim.keymap.set("v", "<D-S-r>", spectre.open_visual, {
-      --   desc = "Toggle Spectre",
-      -- })
+      local tbs = require "tiny-buffers-switcher"
+      local lmap = require("utils.keymaps").set_leader_keymap
+      tbs.setup {
+        use_fzf_lua = false,
+      }
+
+      lmap("bB", function()
+        tbs.switcher()
+      end, "[B]uffer switcher")
     end,
   },
+  -- Global search and replace within cwd
   {
     "notjedi/nvim-rooter.lua",
     lazy = false,
@@ -98,7 +70,6 @@ return {
   {
     "folke/todo-comments.nvim",
     event = { "BufReadPre", "BufNewFile" },
-    event = "VeryLazy",
     keys = {
       { "<leader>Tq", "<cmd>TodoQuickFix<cr>", desc = "Search TODO" },
       {
@@ -148,8 +119,39 @@ return {
       require("overlength").set_overlength({ "rust", "python" }, 100)
     end,
   },
+
+  {
+    "tris203/precognition.nvim",
+    enabled = false,
+    --event = "VeryLazy",
+    opts = {
+      -- startVisible = true,
+      -- showBlankVirtLine = true,
+      -- highlightColor = { link = "Comment" },
+      -- hints = {
+      --      Caret = { text = "^", prio = 2 },
+      --      Dollar = { text = "$", prio = 1 },
+      --      MatchingPair = { text = "%", prio = 5 },
+      --      Zero = { text = "0", prio = 1 },
+      --      w = { text = "w", prio = 10 },
+      --      b = { text = "b", prio = 9 },
+      --      e = { text = "e", prio = 8 },
+      --      W = { text = "W", prio = 7 },
+      --      B = { text = "B", prio = 6 },
+      --      E = { text = "E", prio = 5 },
+      -- },
+      -- gutterHints = {
+      --     G = { text = "G", prio = 10 },
+      --     gg = { text = "gg", prio = 9 },
+      --     PrevParagraph = { text = "{", prio = 8 },
+      --     NextParagraph = { text = "}", prio = 8 },
+      -- },
+    },
+  },
   {
     -- "ahmedkhalf/project.nvim",
+    --  INFO: 2024-06-17 - nvim-telescope/telescope-project.nvim
+    -- natecraddock/workspaces.nvim -- look into this?
     "LennyPhoenix/project.nvim", -- Temporary switch to fork
     branch = "fix-get_clients",
     -- can't use 'opts' because module has non standard name 'project_nvim'
@@ -174,7 +176,40 @@ return {
     "folke/flash.nvim",
     -- event = "VeryLazy",
     lazy = false,
-    enabled = true,
+    enabled = function()
+      local smart_close_filetypes = {
+        "NeogitStatus",
+        "neogit*",
+        "qf",
+        "nofile",
+        "quickfix",
+        "term",
+        "lazygit",
+        "dap-repl",
+        "dapui_scopes",
+        "dapui_stacks",
+        "dapui_breakpoints",
+        "dapui_console",
+        "dapui_watches",
+        "dapui_repl",
+        "undotree",
+        "noice",
+        "messages",
+        "help",
+        "Trouble",
+        "diffview",
+        "telescope",
+        "lazy",
+        "Outline",
+        "TelescopePrompt",
+        "TelescopeResults",
+        "TelescopePreview",
+      }
+      if vim.tbl_contains(smart_close_filetypes, vim.bo.filetype) then
+        return false
+      end
+      return true
+    end,
     -- @type Flash.Config
     opts = {
       search = {

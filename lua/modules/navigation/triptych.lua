@@ -2,7 +2,25 @@ return {
   {
     "simonmclean/triptych.nvim",
     event = "VeryLazy",
-    enabled = true,
+    enabled = false,
+    init = function()
+      -- vim.api.nvim_create_autocmd("BufWinEnter", {
+      --   nested = true,
+      --   callback = function(info)
+      --     local path = info.file
+      --     if path == "" then
+      --       return
+      --     end
+      --     local stat = vim.uv.fs_stat(path)
+      --     if stat and stat.type == "directory" then
+      --       local triptych = require "triptych"
+      --       vim.api.nvim_del_autocmd(info.id)
+      --       -- return Telescope.find("files", { cwd = "%:p:h" })
+      --       return triptych.toggle_triptych()
+      --     end
+      --   end,
+      -- })
+    end,
     dependencies = {
       "nvim-lua/plenary.nvim", -- required
       "nvim-tree/nvim-web-devicons", -- optional

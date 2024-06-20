@@ -12,6 +12,59 @@ return {
     "mbbill/undotree",
     event = "VeryLazy",
   },
+  {
+    --  INFO: 2024-06-18 - find and replace
+    "MagicDuck/grug-far.nvim",
+    config = function()
+      require("grug-far").setup {}
+    end,
+  },
+
+  {
+    --  DISABLED: 2024-06-18
+    "nvim-pack/nvim-spectre",
+    enabled = false,
+    event = "VeryLazy",
+    config = function()
+      local spectre = require "spectre"
+      vim.keymap.set(
+        "n",
+        "<leader>S",
+        -- spectre.toggle,
+        '<cmd>lua require("spectre").toggle()<CR>',
+        {
+          desc = "Toggle Spectre",
+        }
+      )
+      vim.keymap.set(
+        "n",
+        "<leader>sW",
+        -- spectre.open_visual { select_word = true },
+        '<cmd>lua require("spectre").open_visual({select_word=true})<CR>',
+        {
+          desc = "Search current word",
+        }
+      )
+      vim.keymap.set("v", "<leader>sW", '<esc><cmd>lua require("spectre").open_visual()<CR>', {
+        desc = "Search current word",
+      })
+      vim.keymap.set(
+        "n",
+        "<leader>sM",
+        -- spectre.open_file_search { select_word = true },
+        '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>',
+        {
+          desc = "Search on current file",
+        }
+      )
+      -- vim.keymap.set("n", "<D-S-r>", spectre.toggle, {
+      --   desc = "Toggle Spectre",
+      -- })
+      -- vim.keymap.set("v", "<D-S-r>", spectre.open_visual, {
+      --   desc = "Toggle Spectre",
+      -- })
+    end,
+  },
   -- {
   --   "tpope/vim-fugitive",
   --   cmd = {
@@ -91,15 +144,15 @@ return {
             return
           end
           local stat = vim.uv.fs_stat(path)
-          -- if stat and stat.type == "directory" then
-          --   vim.api.nvim_del_autocmd(info.id)
-          --   require "oil"
-          --   vim.cmd.edit {
-          --     bang = true,
-          --     mods = { keepjumps = true },
-          --   }
-          --   return true
-          -- end
+          if stat and stat.type == "directory" then
+            vim.api.nvim_del_autocmd(info.id)
+            require "oil"
+            vim.cmd.edit {
+              bang = true,
+              mods = { keepjumps = true },
+            }
+            return true
+          end
         end,
       })
     end,

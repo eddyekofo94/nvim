@@ -302,6 +302,7 @@ oil.setup {
   prompt_save_on_select_new_entry = true,
   use_default_keymaps = false,
   view_options = {
+    show_hidden = true,
     is_always_hidden = function(name)
       return name == ".."
     end,
@@ -368,6 +369,11 @@ oil.setup {
     border = border,
   },
   float = {
+    -- Padding around the floating window
+    padding = 2,
+    max_width = 90,
+    max_height = 0,
+    -- border = "rounded",
     border = border,
     win_options = {
       winblend = 0,

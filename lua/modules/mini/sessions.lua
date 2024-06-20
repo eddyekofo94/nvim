@@ -76,13 +76,6 @@ return {
       },
     }
 
-    vim.api.nvim_create_autocmd({ "VimLeavePre", "QuitPre", "ExitPre" }, {
-      desc = "Save session before exiting Vim",
-      callback = function()
-        M.save()
-      end,
-    })
-
     -- M.save = function()
     --   local res = H.get_session_from_user "Save session as: "
     --   if res ~= nil then

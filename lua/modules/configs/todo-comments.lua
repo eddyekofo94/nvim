@@ -20,7 +20,7 @@ local opts = {
     },
     NOTE = { icon = " ", color = "hint", alt = { "INFO", "REVIEW" } },
     EXAMPLE = { icon = "󰄛 ", color = "hint", alt = { "E.G." } },
-    CLEAN_UP = { icon = " ", color = "error", alt = { "CLEAN" } },
+    CLEAN_UP = { icon = " ", color = "error", alt = { "CLEAN", "DISABLED" } },
     DEBUG = { icon = " ", color = "error" },
     TEST = {
       icon = "󰙨 ",

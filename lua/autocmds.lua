@@ -94,7 +94,7 @@ augroup_autocmd("LastPosJmp", {
 local ft_as_bash = augroup "ftAsBash"
 autocmd("BufRead", {
   group = ft_as_bash,
-  pattern = { "*.env", ".zprofile", "*.zsh", ".zshenv", ".zshrc" },
+  pattern = { "*.env" },
   callback = function()
     vim.bo.filetype = "sh"
   end,
@@ -197,7 +197,7 @@ local function lcd(dir)
   end
 end
 
--- local groupid = vim.api.nvim_create_augroup("SyncCwd", {})
+local groupid = vim.api.nvim_create_augroup("SyncCwd", {})
 -- autocmd({ "BufEnter", "WinEnter", "BufWinEnter" }, {
 --   desc = "Set cwd to follow buffers' directory.",
 --   group = groupid,

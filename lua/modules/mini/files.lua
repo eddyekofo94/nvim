@@ -40,6 +40,7 @@ return {
     })
   end,
   opts = {
+    use_as_default_explorer = false,
     content = {
       filter = function(entry)
         return entry.name ~= ".DS_Store" and entry.name ~= ".git" and entry.name ~= ".direnv"
