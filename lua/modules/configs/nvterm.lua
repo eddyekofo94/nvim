@@ -5,7 +5,7 @@ map({ "t", "n" }, "<A-i>", function()
   return require("nvterm.terminal").toggle "float"
 end, "Toggle floating term")
 
-map({ "t", "n" }, "<A-h>", function()
+map({ "t", "n" }, "<A-o>", function()
   return require("nvterm.terminal").toggle "horizontal"
 end, "Toggle horizontal term")
 

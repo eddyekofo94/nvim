@@ -149,7 +149,9 @@ return {
     end,
   },
   {
-    "ahmedkhalf/project.nvim",
+    -- "ahmedkhalf/project.nvim",
+    "LennyPhoenix/project.nvim", -- Temporary switch to fork
+    branch = "fix-get_clients",
     -- can't use 'opts' because module has non standard name 'project_nvim'
     config = function()
       require("project_nvim").setup {

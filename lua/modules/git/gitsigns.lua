@@ -47,6 +47,7 @@ local options = {
       end)
       return "<Ignore>"
     end, opts "Jump to prev hunk")
+
     map({ "n", "v" }, "<leader>gg", gs.stage_hunk, "Stage Hunk")
 
     map("x", "<leader>gg", function()
