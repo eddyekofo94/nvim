@@ -15,7 +15,14 @@ return {
       numhl = false, -- Toggle with `:Gitsigns toggle_numhl`
       linehl = false, -- Toggle with `:Gitsigns toggle_linehl`
       word_diff = true, -- Toggle with `:Gitsigns toggle_word_diff`
-      current_line_blame_formatter = " <author>:<author_time:%Y-%m-%d> - <summary>",
+      signs_staged = {
+        add = { text = vim.trim(icons.GitSignAdd), numhl = "GitSignsAddNr" },
+        untracked = { text = vim.trim(icons.GitSignUntracked) },
+        change = { text = vim.trim(icons.GitSignChange), numhl = "GitSignsChangeNr" },
+        delete = { text = vim.trim(icons.GitSignDelete), numhl = "GitSignsDeleteNr" },
+        topdelete = { text = vim.trim(icons.GitSignTopdelete), numhl = "GitSignDelete" },
+        changedelete = { text = vim.trim(icons.GitSignChangedelete), numhl = "GitSignsChangeNr" },
+      },
       signs = {
         add = { text = vim.trim(icons.GitSignAdd), numhl = "GitSignsAddNr" },
         untracked = { text = vim.trim(icons.GitSignUntracked) },
@@ -41,23 +48,23 @@ return {
         -- Navigation
         map({ "n", "x" }, "]x", function()
           if vim.wo.diff then
-            return "]x"
+            vim.api.nvim_feedkeys(vim.v.count1 .. "]x", "n", true)
+            return
           end
-          vim.schedule(function()
+          for _ = 1, vim.v.count1 do
             gs.next_hunk()
-          end)
-          return "<Ignore>"
-        end, { expr = true })
+          end
+        end)
 
         map({ "n", "x" }, "[x", function()
           if vim.wo.diff then
-            return "[x"
+            vim.api.nvim_feedkeys(vim.v.count1 .. "xc", "n", true)
+            return
           end
-          vim.schedule(function()
+          for _ = 1, vim.v.count1 do
             gs.prev_hunk()
-          end)
-          return "<Ignore>"
-        end, { expr = true })
+          end
+        end)
 
         map("x", "<leader>gg", function()
           gs.stage_hunk {
@@ -73,6 +80,7 @@ return {
           }
         end, opts "Reset Hunk")
 
+        map("n", "<leader>gg", gs.stage_hunk, "Stage Hunk")
         map({ "n", "v" }, "<leader>gx", gs.reset_hunk, "Reset Hunk")
         map("n", "<leader>gG", gs.stage_buffer, opts "Stage Buffer")
         map("n", "<leader>gu", gs.undo_stage_hunk, opts "Undo Stage Hunk")
@@ -105,6 +113,7 @@ return {
         virt_text = true,
         virt_text_pos = "eol", -- 'eol' | 'overlay' | 'right_align'
         ignore_whitespace = false,
+        delay = 100,
       },
       sign_priority = 6,
       update_debounce = 100,
