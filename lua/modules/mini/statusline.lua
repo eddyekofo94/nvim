@@ -17,18 +17,19 @@ return { -- Collection of various small independent plugins/modules
 
           return statusline.combine_groups {
             { hl = mode_hl, strings = { mode, spell, wrap } },
-            { hl = "MiniStatuslineInactive", strings = { stl_util.project_name() } },
+            { hl = "StatuslineInactive", strings = { stl_util.project_name() } },
             { hl = "MiniStatuslineFilename", strings = { stl_util.file_info() } },
             "%<", -- Mark general truncate point
-            { hl = "MiniStatuslineDevinfo", strings = { stl_util.diagnostics() } },
+            { hl = "MiniStatuslineFilename", strings = { stl_util.diagnostics() } },
             { hl = "MiniStatuslineGitAdd", strings = { stl_util.macro() } },
             { hl = "StatusLine" },
             "%=", -- End left alignment
             { hl = "MiniStatuslineInactive", strings = { stl_util.lsp_progress() } },
             "%=",
             { hl = "StatusLine", strings = { stl_util.gitdiff() } },
+
             -- { hl = "MiniStatuslineInactive", strings = { stl_util.fmt() } },
-            { hl = "MiniStatuslineFilename", strings = { stl_util.info() } },
+            { hl = "StatuslineInactive", strings = { stl_util.info() } },
             { hl = mode_hl, strings = { stl_util.search_count(), stl_util.lineinfo() } },
           }
         end,

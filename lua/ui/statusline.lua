@@ -42,20 +42,16 @@ function statusline.lsp_progress()
   local progress = require("utils.lsp.lsp-progress").message()
   -- local progress = require("utils.lsp.progress").lsp_progress()
 
-  return string.format(
-    "%s",
-    progress
-
-    -- require("lsp-progress").progress {
-    --   max_size = 80,
-    --   format = function(messages)
-    --     if #messages > 0 then
-    --       return #messages > 0 and table.concat(messages, " ") or ""
-    --     end
-    --     return ""
-    --   end,
-    -- }
-  )
+  -- require("lsp-progress").progress {
+  --   max_size = 80,
+  --   format = function(messages)
+  --     if #messages > 0 then
+  --       return #messages > 0 and table.concat(messages, " ") or ""
+  --     end
+  --     return ""
+  --   end,
+  -- }
+  return utils.stl.hl(string.format("%s", progress), "StatuslineInactive")
 end
 
 function statusline.diagnostics()
@@ -80,9 +76,14 @@ function statusline.diagnostics()
     utils.stl.hl(tostring(hints), "StatusLineLspHint"),
     utils.stl.hl(tostring(info), "StatusLineLspInfo")
   )
-  local diagnostic_icon = (vim.o.columns > 140 and " - " .. icons or "")
 
-  return diagnostic_icon
+  if errors == "" and warnings == "" and hints == "" and info == "" then
+    return ""
+  end
+
+  local diagnostic_icons = (vim.o.columns > 140 and " - " .. icons or "")
+
+  return utils.stl.hl(tostring(diagnostic_icons), "StatusLine")
 end
 
 function statusline.get_lsp_name()
@@ -139,7 +140,7 @@ end
 
 function statusline.file_info()
   local symbols = {}
-  local fname_hl = "MiniStatuslineFileinfo"
+  local fname_hl = "StatusLineFilename"
   local fpath = statusline.filepath()
   local filename = statusline.filename()
   local devicons_present, devicons = pcall(require, "nvim-web-devicons")
@@ -156,7 +157,7 @@ function statusline.file_info()
     if options.file_status then
       if vim.bo.modified then
         table.insert(symbols, options.symbols.modified)
-        fname_hl = "MiniStatuslineModified"
+        fname_hl = "StatuslineModified"
       end
       if vim.bo.modifiable == false or vim.bo.readonly == true then
         table.insert(symbols, options.symbols.readonly)
@@ -172,11 +173,11 @@ function statusline.file_info()
   end
 
   if errors > 0 then
-    fname_hl = "MiniStatuslineError"
+    fname_hl = "StatuslineError"
   end
 
   local file_symbol = (#symbols > 0 and " " .. table.concat(symbols, "") or "")
-  return string.format("%s%s%s", "%#MiniStatuslineInactive#" .. icon .. fpath, "%#" .. fname_hl .. "#" .. filename, file_symbol)
+  return string.format("%s%s%s", "%#StatuslineInactive#" .. icon .. fpath, "%#" .. fname_hl .. "#" .. filename, file_symbol)
 end
 
 function statusline.macro()
@@ -336,9 +337,8 @@ function statusline.treesitter_status()
     if ts_enabled then
       local has_parser = require("nvim-treesitter.parsers").has_parser()
       if has_parser then
-        -- return string.format("%%#StatusLine#%s%%* ", res)
-
-        return utils.stl.hl(tostring(res), "MiniStatuslineInactive")
+        return tostring(res)
+        -- return utils.stl.hl(tostring(res), "StatuslineInactive")
       end
     end
   end
@@ -415,6 +415,7 @@ function statusline.info()
       table.insert(info, section)
     end
   end
+
   add_section(statusline.ft())
   if ft_text[vim.bo.ft] and not vim.b.bigfile then
     add_section(statusline.wordcount())
