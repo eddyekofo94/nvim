@@ -19,13 +19,16 @@ local hlgroups = {
   StatusLineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
   StatusLineGitChange = { fg = gethl("GitSignsChange", "fg"), bg = gethl("StatusLine", "bg") },
   StatusLineGitDelete = { fg = gethl("GitSignsDelete", "fg"), bg = gethl("StatusLine", "bg") },
-  StatusLineInactive = { fg = gethl("2a2b3c", "fg"), bg = gethl("StatusLine", "bg") },
 
-  MiniStatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("StatusLine", "bg") },
-  MiniStatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("StatusLine", "bg") },
-  MiniStatuslineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
-  MiniStatuslineGitChange = { fg = gethl("GitSignsChange", "fg"), bg = gethl("StatusLine", "bg") },
-  MiniStatuslineGitDelete = { fg = gethl("GitSignsDelete", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineFilename = { fg = gethl("StatusLine", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineInactive = { fg = gethl("Whitespace", "fg"), bg = gethl("StatusLine", "bg") },
+  -- StatuslineFileinfo = { fg = gethl(hlgroup_name, attr) }
+
+  StatuslineError = { fg = gethl("ErrorMsg", "fg"), bg = gethl("StatusLine", "bg") },
+  StatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("StatusLine", "bg") },
+  StatuslineGitAdd = { fg = gethl("GitSignsAdd", "fg"), bg = gethl("StatusLine", "bg") },
+  StatuslineGitChange = { fg = gethl("GitSignsChange", "fg"), bg = gethl("StatusLine", "bg") },
+  StatuslineGitDelete = { fg = gethl("GitSignsDelete", "fg"), bg = gethl("StatusLine", "bg") },
 
   YankyYanked = { reverse = true },
 

@@ -4,6 +4,8 @@ return {
   { import = "modules.navigation" },
   { import = "modules.git" },
   { import = "modules.lsp" },
+  -- disables hungry features for files larget than 2MB
+  { "LunarVim/bigfile.nvim" },
   {
     "NvChad/nvterm",
     enabled = true,
@@ -176,7 +178,8 @@ return {
     "folke/flash.nvim",
     -- event = "VeryLazy",
     lazy = false,
-    enabled = function()
+    enabled = true,
+    config = function()
       local smart_close_filetypes = {
         "NeogitStatus",
         "neogit*",
@@ -306,12 +309,11 @@ return {
   {
     "NMAC427/guess-indent.nvim",
     event = "VeryLazy",
-    config = function(_, opts)
-      require("guess-indent").setup(opts)
-      vim.cmd.lua {
-        args = { "require('guess-indent').set_from_buffer('auto_cmd')" },
-        mods = { silent = true },
-      }
+    enabled = true,
+    config = function()
+      require("guess-indent").setup {}
+      local guess_indent = require "guess-indent"
+      guess_indent.set_from_buffer(_, _, true)
     end,
   },
 

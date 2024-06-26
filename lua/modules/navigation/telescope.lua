@@ -345,9 +345,9 @@ return {
         extensions.smart_open.smart_open()
       end, "Smart open")
 
-      maps.n["<leader>'"] = { Telescope.find "files", desc = "Find files" }
+      maps.n["<leader>p"] = { Telescope.find "files", desc = "Find files" }
 
-      maps.n["<leader>p"] = {
+      maps.n["<leader>'"] = {
         Telescope.find("files", { cwd = "%:p:h" }),
         desc = "Find files current dir",
       }

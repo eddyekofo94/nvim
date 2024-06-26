@@ -1,4 +1,5 @@
 return {
+  { import = "modules.theme.catppuccin" },
   {
     "f-person/auto-dark-mode.nvim",
     enabled = false,
@@ -35,7 +36,6 @@ return {
     end,
     config = true,
   },
-  { import = "modules.theme.catppuccin" },
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -67,7 +67,7 @@ return {
   },
   {
     "Verf/deepwhite.nvim",
-    lazy = false,
+    lazy = true,
     priority = 1000,
     config = function()
       -- vim.cmd [[colorscheme deepwhite]]
@@ -75,6 +75,7 @@ return {
   },
   {
     "rose-pine/neovim",
+    enabled = false,
     config = function()
       require("rose-pine").setup {
         --- @usage 'auto'|'main'|'moon'|'dawn'
@@ -117,6 +118,7 @@ return {
   },
   {
     "olivercederborg/poimandres.nvim",
+    enabled = false,
     lazy = false,
     priority = 1000,
     config = function()

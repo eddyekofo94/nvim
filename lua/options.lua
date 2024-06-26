@@ -82,6 +82,11 @@ vim.opt.scrolloff = 10
 vim.opt.softtabstop = 2
 vim.bo.expandtab = true
 vim.bo.shiftwidth = 2
+vim.opt.tabstop = 2
+
+--  INFO: 2024-06-25 - Show tabline? navic
+vim.opt.showtabline = 1
+-- vim.opt.winbar = true
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -208,7 +213,6 @@ vim.opt.smartcase = true
 vim.opt.ignorecase = true
 
 -- enable auto indentation
-vim.opt.cindent = true
 vim.opt.smartindent = true
 vim.opt.autoindent = true
 
