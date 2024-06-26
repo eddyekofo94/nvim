@@ -31,51 +31,6 @@ return {
     },
   },
 
-  {
-    "echasnovski/mini.align",
-    event = "BufReadPre",
-    config = function()
-      local align = require "mini.align"
-      align.setup {
-        modifiers = {
-          ["{"] = function(steps, opts)
-            opts.split_pattern = "{"
-            opts.merge_delimiter = " "
-            table.insert(steps.pre_justify, align.gen_step.trim())
-          end,
-        },
-      }
-    end,
-  },
-  {
-    "echasnovski/mini.surround",
-    enabled = false,
-    event = "BufReadPre",
-    opts = {
-      search_method = "cover_or_next",
-      highlight_duration = 2000,
-      mappings = {
-        add = "ys",
-        delete = "ds",
-        replace = "cs",
-        highlight = "",
-        find = "",
-        find_left = "",
-        update_n_lines = "",
-      },
-      custom_surroundings = {
-        ["("] = { output = { left = "( ", right = " )" } },
-        ["["] = { output = { left = "[ ", right = " ]" } },
-        ["{"] = { output = { left = "{ ", right = " }" } },
-        ["<"] = { output = { left = "<", right = ">" } },
-        ["|"] = { output = { left = "|", right = "|" } },
-        ["%"] = { output = { left = "<% ", right = " %>" } },
-      },
-    },
-    config = function(_, opts)
-      require("mini.surround").setup(opts)
-    end,
-  },
   -- Split and join arguments
   {
     "echasnovski/mini.splitjoin",
