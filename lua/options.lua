@@ -34,6 +34,13 @@ vim.opt.showmode = false
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
+
+-- + reg: Ctrl-v nnamedplus
+-- * reg: middle click unnamed
+if vim.fn.has "clipboard" == 1 then
+  vim.o.clipboard = "unnamedplus,unnamed"
+end
+
 -- vim.opt.clipboard = "unnamedplus"
 
 vim.g.clipboard = {
@@ -60,9 +67,9 @@ vim.opt.updatetime = 250
 -- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
 
--- Configure how new splits should be opened
-vim.opt.splitright = true
-vim.opt.splitbelow = true
+vim.opt.display = "lastline" -- long lines fit on one line
+
+vim.o.modeline = false
 
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
@@ -86,7 +93,6 @@ vim.opt.tabstop = 2
 
 --  INFO: 2024-06-25 - Show tabline? navic
 vim.opt.showtabline = 1
--- vim.opt.winbar = true
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -94,7 +100,9 @@ vim.opt.hlsearch = true
 vim.opt.cursorline = true
 o.cursorlineopt = "both" -- to enable cursorline!
 opt.iskeyword:append "-"
-vim.opt.errorbells = false
+
+vim.o.errorbells = false
+vim.o.visualbell = false
 
 -- No double spaces with join after a dot
 vim.opt.joinspaces = false
@@ -149,8 +157,14 @@ vim.opt.pumheight = 10 -- Makes popup menu smaller
 -- Numbers
 vim.opt.signcolumn = "yes:1"
 vim.opt.inccommand = "split"
-vim.opt.splitkeep = "screen" -- topline
 vim.o.history = 10000 -- Number of command-lines that are remembered
+
+-- Window
+vim.opt.splitkeep = "cursor" -- topline/screen/cursor
+vim.o.equalalways = false
+-- Configure how new splits should be opened
+vim.opt.splitright = true
+vim.opt.splitbelow = true
 
 -- Buffer
 vim.opt.swapfile = false
@@ -158,6 +172,8 @@ vim.opt.fileformat = "unix"
 vim.opt.autochdir = true
 vim.opt.shiftround = true
 vim.opt.virtualedit = "block"
+vim.opt.switchbuf = "useopen,uselast"
+
 -- opt.colorcolumn = "80"
 opt.autowriteall = true
 opt.mousemoveevent = true
@@ -167,19 +183,12 @@ opt.number = true
 vim.o.lazyredraw = false -- Faster scrolling
 vim.o.redrawtime = 100
 
-vim.opt.showtabline = 0 --  BUG: 2024-05-27 - Not working?
-
 vim.cmd [[set nowrap]] -- Display long lines as just one line
 
 vim.opt.showmode = false
 
 -- Save undo history
 vim.opt.undofile = true
-
--- Set directories for backup/swap/undo files
--- vim.opt.directory = vim.fn.stdpath "state" .. "swap"
--- vim.opt.backupdir = vim.fn.stdpath "state" .. "backup"
--- vim.opt.undodir = vim.fn.stdpath "state" .. "undo"
 
 vim.opt.wrapscan = true
 
@@ -327,6 +336,44 @@ vim.api.nvim_create_autocmd("CmdlineLeave", {
     end
   end,
 })
+
+local small_dot = " "
+local icons = require("utils").static.icons
+vim.diagnostic.config {
+  severity_sort = true,
+  -- float = {
+  --   show_header = false,
+  --   close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+  --   scope = "cursor",
+  --   source = "if_many",
+  --   border = "single",
+  --   focusable = false,
+  -- },
+  inlay_hints = {
+    enabled = true,
+  },
+  virtual_text = {
+    prefix = vim.trim(icons.TriangleUp), -- Could be '●', '▎', │, 'x', '■', , 
+  },
+  jump = {
+    float = true,
+  },
+  float = { border = "single" },
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = vim.trim(icons.Diamond),
+      [vim.diagnostic.severity.WARN] = vim.trim(icons.TriangleUp),
+      [vim.diagnostic.severity.INFO] = small_dot,
+      [vim.diagnostic.severity.HINT] = small_dot,
+    },
+    linehl = {
+      [vim.diagnostic.severity.ERROR] = "ErrorMsg",
+    },
+    numhl = {
+      [vim.diagnostic.severity.WARN] = "WarningMsg",
+    },
+  },
+}
 
 -- Fzf settings
 g.fzf_layout = {
