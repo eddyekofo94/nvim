@@ -426,6 +426,7 @@ function statusline.info()
   -- add_section(statusline.lazy_plug_count())
   -- add_section(statusline.lazy_startup())
   add_section(statusline.lsp())
+  add_section(statusline.lint_progress())
   -- add_section(statusline.formatter())
   -- add_section(get_lsp_name())
   add_section(statusline.treesitter_status())
@@ -441,6 +442,20 @@ statusline.navic = function()
     return ""
   end
   return nvim_navic.get_location()
+end
+
+--  BUG: 2024-06-29 - not sure if this is working
+statusline.lint_progress = function()
+  if not pcall(require, "lint") then
+    return ""
+  end
+
+  local linters = require("lint").get_running()
+
+  if #linters < 1 then
+    return "󰦕"
+  end
+  return "󱉶 " .. table.concat(linters, ", ")
 end
 
 return statusline

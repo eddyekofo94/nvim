@@ -3,6 +3,7 @@ return {
   "gnikdroy/projections.nvim",
   event = "VimEnter",
   enabled = true,
+  branch = "pre_release",
   keys = {
     {
       "<leader>fp",

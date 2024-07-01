@@ -176,56 +176,6 @@ return {
     end,
   },
   {
-    "folke/flash.nvim",
-    -- event = "VeryLazy",
-    lazy = false,
-    enabled = true,
-    config = function()
-      local smart_close_filetypes = {
-        "NeogitStatus",
-        "neogit*",
-        "qf",
-        "nofile",
-        "quickfix",
-        "term",
-        "lazygit",
-        "dap-repl",
-        "dapui_scopes",
-        "dapui_stacks",
-        "dapui_breakpoints",
-        "dapui_console",
-        "dapui_watches",
-        "dapui_repl",
-        "undotree",
-        "noice",
-        "messages",
-        "help",
-        "Trouble",
-        "diffview",
-        "telescope",
-        "lazy",
-        "Outline",
-        "TelescopePrompt",
-        "TelescopeResults",
-        "TelescopePreview",
-      }
-      if vim.tbl_contains(smart_close_filetypes, vim.bo.filetype) then
-        return false
-      end
-      return true
-    end,
-    -- @type Flash.Config
-    opts = {
-      search = {
-        multi_window = true,
-      },
-    },
-    -- config = function()
-    --   require "configs.flash"
-    -- end,
-    keys = require "modules.configs.flash",
-  },
-  {
     "RRethy/vim-illuminate",
     -- INFO: disabled for now
     enabled = false,
@@ -276,7 +226,7 @@ return {
         mode = { "v", "n" },
         "<Leader>mc",
         "<cmd>MCstart<cr>",
-        desc = "Create a selection for selected text or word under the cursor",
+        desc = "Multi cursor",
       },
     },
   },
@@ -369,7 +319,7 @@ return {
   },
   {
     "ashfinal/qfview.nvim",
-    enabled = false,
+    enabled = true,
     event = "UIEnter",
     opts = {},
   },

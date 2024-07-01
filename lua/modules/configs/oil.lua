@@ -296,7 +296,7 @@ oil.setup {
     foldcolumn = "0",
     statuscolumn = "",
   },
-  cleanup_delay_ms = false,
+  cleanup_delay_ms = 2000,
   delete_to_trash = true,
   skip_confirm_for_simple_edits = true,
   prompt_save_on_select_new_entry = true,

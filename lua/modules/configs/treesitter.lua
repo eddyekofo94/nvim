@@ -36,9 +36,6 @@ local options = {
   },
   autotag = {
     enable = true,
-    disable = function(buffer)
-      return vim.api.nvim_buf_line_count(buffer) > 20000
-    end,
   },
   matchup = {
     -- enable = true,
@@ -75,7 +72,7 @@ local options = {
       },
       enable = true,
     },
-    highlight_current_scope = { enable = false },
+    highlight_current_scope = { enable = true },
     smart_rename = {
       enable = true,
       keymaps = {

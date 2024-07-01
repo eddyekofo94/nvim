@@ -16,8 +16,6 @@ if not fuzzy_path_ok then
   fuzzy_path_comparator = function() end
 end
 
-local icon_dot = icons.DotLarge
-local icon_calc = icons.Calculator
 local icon_folder = icons.Folder
 local icon_file = icons.File
 local compltype_path = {
@@ -124,13 +122,22 @@ cmp.setup {
         end
       end,
     },
-    ["<C-e>"] = cmp.mapping.close(),
+    ["<C-e>"] = cmp.mapping {
+      i = cmp.mapping.abort(),
+      c = cmp.mapping.close(),
+    },
+    ["<C-l>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        return cmp.complete_common_string()
+      end
+      fallback()
+    end),
     ["<CR>"] = cmp.mapping.confirm {
       i = function(fallback)
         if cmp.visible() and cmp.get_active_entry() then
           cmp.confirm {
             behavior = cmp.ConfirmBehavior.Replace,
-            select = true,
+            select = false,
           }
         else
           fallback()
@@ -317,8 +324,16 @@ cmp.setup {
   sorting = {
     priority_weight = 2,
     comparators = {
-      compare.recently_used,
       compare.locality,
+      function(entry1, entry2) -- score by lsp, if available
+        local t1 = entry1.completion_item.sortText
+        local t2 = entry2.completion_item.sortText
+        if t1 ~= nil and t2 ~= nil and t1 ~= t2 then
+          return t1 < t2
+        end
+      end,
+      compare.offset,
+      compare.recently_used,
       compare.exact,
       function(entry1, entry2) -- sort by compare kind (Variable, Function etc)
         local kind1 = modified_kind(entry1:get_kind())
@@ -327,7 +342,6 @@ cmp.setup {
           return kind1 - kind2 < 0
         end
       end,
-      compare.offset,
       function(entry1, entry2) -- sort by length ignoring "=~"
         local len1 = string.len(string.gsub(entry1.completion_item.label, "[=~()]", ""))
         local len2 = string.len(string.gsub(entry2.completion_item.label, "[=~()]", ""))
@@ -336,13 +350,6 @@ cmp.setup {
         end
       end,
       compare.scopes,
-      function(entry1, entry2) -- score by lsp, if available
-        local t1 = entry1.completion_item.sortText
-        local t2 = entry2.completion_item.sortText
-        if t1 ~= nil and t2 ~= nil and t1 ~= t2 then
-          return t1 < t2
-        end
-      end,
       compare.sort_text,
       compare.order,
       fuzzy_path_comparator,

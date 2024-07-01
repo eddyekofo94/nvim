@@ -31,6 +31,8 @@ vim.opt.mouse = "a"
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
+vim.opt.encoding = "utf-8"
+
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
@@ -77,6 +79,8 @@ vim.o.modeline = false
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
+opt.showbreak = "↳"
+
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
 
@@ -86,10 +90,13 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
-vim.opt.softtabstop = 2
+--  INFO: 2024-06-28 - Indenting - tabs
 vim.bo.expandtab = true
 vim.bo.shiftwidth = 2
-vim.opt.tabstop = 2
+vim.opt.smarttab = true -- Makes tabbing smarter will realize you have 2 vs 4
+vim.opt.tabstop = 1
+vim.opt.softtabstop = 2
+vim.opt.wm = 0 -- Set textwidth, but don't automatically insert newline at given column
 
 --  INFO: 2024-06-25 - Show tabline? navic
 vim.opt.showtabline = 1

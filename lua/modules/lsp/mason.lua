@@ -28,6 +28,7 @@ return {
     ensure_installed = {
       "lua-language-server",
       "shellcheck",
+      "selene",
       "shfmt",
       "flake8",
       "prettier",

@@ -86,16 +86,47 @@ return {
       local themes = require "telescope.themes"
       local extensions = require("telescope").extensions
       local telescope = require "telescope"
+      local action_state = require "telescope.actions.state"
 
       local utils = require "utils"
       local icons = utils.static.icons
       local maps = utils.keymaps:empty_map_table()
 
+      local previewers = require "telescope.previewers"
+      local state = require "telescope.state"
       local builtin = require "telescope.builtin"
       local Telescope = require "utils.telescope"
       -- local TelescopePickers = require "utils.telescope_pickers"
       local keymap_utils = require "utils.keymaps"
       local map = keymap_utils.set_keymap
+
+      -- https://github.com/nvim-telescope/telescope.nvim/issues/2602#issuecomment-1636809235
+      local slow_scroll = function(prompt_bufnr, direction)
+        local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+        local status = state.get_status(prompt_bufnr)
+
+        -- Check if we actually have a previewer and a preview window
+        if type(previewer) ~= "table" or previewer.scroll_fn == nil or status.preview_win == nil then
+          return
+        end
+
+        previewer:scroll_fn(1 * direction)
+      end
+
+      local new_maker = function(filepath, bufnr, opts)
+        opts = opts or {}
+        filepath = vim.fn.expand(filepath)
+        vim.loop.fs_stat(filepath, function(_, stat)
+          if not stat then
+            return
+          end
+          if stat.size > 100000 then
+            return
+          else
+            previewers.buffer_previewer_maker(filepath, bufnr, opts)
+          end
+        end)
+      end
 
       require("telescope").setup {
         defaults = {
@@ -178,15 +209,11 @@ return {
             buffers = {
               sort_mru = false,
               ignore_current_buffer = true,
+              theme = "dropdown",
               mappings = {
-                i = {
-                  ["<A-x>"] = actions.delete_buffer, -- this overrides the built in preview scroller
-                  ["-b>"] = actions.preview_scrolling_down,
-                },
                 n = {
-                  -- BUG: this is still not working
-                  ["dd"] = actions.delete_buffer,
-                  ["<c-b>"] = actions.preview_scrolling_down,
+                  ["<C-e>"] = "delete_buffer",
+                  ["l"] = "select_default",
                 },
               },
             },
@@ -205,10 +232,17 @@ return {
           grep_previewer = require("telescope.previewers").vim_buffer_vimgrep.new,
           qflist_previewer = require("telescope.previewers").vim_buffer_qflist.new,
           -- Developer configurations: Not meant for general override
-          buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
+          -- buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
+          buffer_previewer_maker = new_maker,
           mappings = {
             n = { ["q"] = actions.close },
             i = {
+              ["<C-d>"] = function(bufnr)
+                slow_scroll(bufnr, 1)
+              end,
+              ["<C-b>"] = function(bufnr)
+                slow_scroll(bufnr, -1)
+              end,
               ["<C-j>"] = actions.move_selection_next,
               ["<C-k>"] = actions.move_selection_previous,
               ["<C-q>"] = actions.smart_send_to_qflist + actions.open_qflist,
@@ -219,7 +253,6 @@ return {
               ["<C-Up>"] = actions.cycle_history_prev,
               ["<C-t>"] = actions.select_tab,
               ["<C-f>"] = actions.preview_scrolling_down,
-              ["<C-b>"] = actions.preview_scrolling_up,
               ["<C-u>"] = false, --  INFO: 2024-02-19 09:24 AM - Resets prompt
               -- Add up multiple actions
               ["<CR>"] = actions.select_default + actions.center,
@@ -238,7 +271,6 @@ return {
               ["<C-p>"] = function(prompt_bufnr)
                 -- Use nvim-window-picker to choose the window by dynamically attaching a function
                 local action_set = require "telescope.actions.set"
-                local action_state = require "telescope.actions.state"
 
                 local picker = action_state.get_current_picker(prompt_bufnr)
                 picker.get_selection_window = function(picker, entry)

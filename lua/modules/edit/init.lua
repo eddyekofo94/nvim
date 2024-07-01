@@ -53,23 +53,4 @@ return {
     dependencies = "nvim-treesitter/nvim-treesitter",
     config = true,
   },
-  {
-    "gbprod/yanky.nvim",
-    event = "VeryLazy",
-    opts = {},
-    keys = {
-      { "<c-p>", "<Plug>(YankyPreviousEntry)" },
-      { "<c-n>", "<Plug>(YankyNextEntry)" },
-
-      { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" } },
-      { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" } },
-
-      {
-        "<leader>sY",
-        "<cmd>Telescope yank_history theme=ivy<cr>",
-        desc = "[Y]ank History",
-        mode = { "i", "n", "x" },
-      },
-    },
-  },
 }

@@ -1,5 +1,6 @@
 return {
   "SmiteshP/nvim-navbuddy",
+  enabled = true,
   dependencies = {
     "SmiteshP/nvim-navic",
     "MunifTanjim/nui.nvim",

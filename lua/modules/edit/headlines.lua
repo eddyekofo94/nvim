@@ -1,5 +1,6 @@
 return { -- highlight markdown headings and code blocks etc.
   "lukas-reineke/headlines.nvim",
+  enabled = true,
   ft = "markdown",
   dependencies = "nvim-treesitter/nvim-treesitter",
   config = function()

@@ -11,6 +11,9 @@ local augroup = utils.create_augroup
 local augroup_autocmd = utils.augroup_autocmd
 local contains = vim.tbl_contains
 
+local group_name = "vimrc_vimrc"
+vim.api.nvim_create_augroup(group_name, { clear = true })
+
 local smart_close_filetypes = {
   "prompt",
   "qf",
@@ -30,7 +33,7 @@ local smart_close_filetypes = {
   "undotree",
   "noice",
   "man",
-  "Mininotify-history", --  NOTE: 2024-05-14 - Not closing
+  "Mininotify*", --  NOTE: 2024-05-14 - Not closing
   "Mini*",
   "messages",
   "undotree",
@@ -45,6 +48,8 @@ local smart_close_filetypes = {
   "TelescopePrompt",
   "TelescopeResults",
   "TelescopePreview",
+  "viminfo",
+  "vimdoc",
 }
 
 autocmd({ "VimEnter", "FileType", "BufEnter", "WinEnter" }, {
@@ -531,11 +536,6 @@ vim.api.nvim_create_autocmd("QuickFixCmdPost", {
   command = "cwindow",
 })
 
-vim.api.nvim_create_autocmd({ "LspProgress" }, {
-  group = groupid,
-  command = "redrawstatus",
-})
-
 -- autocmd({ "ExitPre", "QuitPre", "VimLeavePre" }, {
 --   group = groupid,
 --   callback = function()
@@ -588,6 +588,50 @@ vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "QuickFixCmdPost" }, {
       end
     end, 300)
   end,
+})
+
+autocmd({ "BufWinEnter", "BufNew", "FileType", "TermOpen" }, {
+  desc = "Don't set numbers and other options for special buffer numbers",
+  callback = function(info)
+    if vim.bo[info.buf].bt == "" or vim.bo[info.buf].ft == "TelescopePrompt" then
+      return
+    end
+    -- Current window isn't necessarily the window of the buffer that
+    -- triggered the event, use `bufwinid()` to get the first window of
+    -- the triggering buffer. We can also use `win_findbuf()` to get all
+    -- windows that display the triggering buffer, but it is slower and using
+    -- `bufwinid()` is enough for our purpose.
+    local winid = vim.fn.bufwinid(info.buf)
+    if winid == -1 then
+      return
+    end
+
+    vim.opt_local.number = false
+    vim.opt_local.relativenumber = false
+    vim.opt_local.cursorline = true
+    vim.opt_local.signcolumn = "no"
+    -- vim.opt_local.buflisted = false
+  end,
+})
+
+-- https://www.reddit.com/r/neovim/comments/wlkq0e/neovim_configuration_to_backup_files_with/
+-- Add timestamp as extension for backup files
+autocmd("BufWritePre", {
+  group = group_name,
+  desc = "Add timestamp to backup extension",
+  pattern = "*",
+  callback = function()
+    vim.opt.backupext = "-" .. os.date "%Y%m%d%H%M"
+  end,
+})
+
+autocmd({ "FileType" }, {
+  group = group_name,
+  pattern = { "gitcommit" },
+  callback = function()
+    vim.cmd.startinsert()
+  end,
+  once = false,
 })
 
 -- augroup_autocmd("SpecialBufHl", {

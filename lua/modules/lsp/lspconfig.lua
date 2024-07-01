@@ -1,12 +1,12 @@
 local utils_keymaps = require "utils.keymaps"
 local lmap = utils_keymaps.set_leader_keymap
-local small_dot = " "
 
 return {
   "neovim/nvim-lspconfig",
   event = { "BufReadPre", "BufNewFile" },
   dependencies = {
-    -- Automatically install LSPs and related tools to stdpath for Neovim
+    { "williamboman/mason-lspconfig.nvim" },
+    { "WhoIsSethDaniel/mason-tool-installer.nvim" },
     { "williamboman/mason.nvim", config = true }, -- NOTE: Must be loaded before dependants
     { "b0o/schemastore.nvim", event = "VeryLazy", ft = { "json" } },
     {
@@ -28,24 +28,6 @@ return {
       config = function()
         require("glance").setup {}
       end,
-    },
-    "williamboman/mason-lspconfig.nvim",
-    "WhoIsSethDaniel/mason-tool-installer.nvim",
-
-    { "Bilal2453/luvit-meta", lazy = true }, -- optional `vim.uv` typings
-    {
-      "folke/lazydev.nvim",
-      ft = "lua", -- only load on lua files
-      opts = {
-        library = {
-          -- Library items can be absolute paths
-          -- "~/projects/my-awesome-lib",
-          -- Or relative, which means they will be resolved as a plugin
-          -- "LazyVim",
-          -- When relative, you can also provide a path to the library in the plugin dir
-          "luvit-meta/library", -- see below
-        },
-      },
     },
   },
   config = function()
@@ -77,14 +59,14 @@ return {
         -- Jump to the definition of the word under your cursor.
         --  This is where a variable was first declared, or where a function is defined, etc.
         --  To jump back, press <C-t>.
-        map("gd", require("telescope.builtin").lsp_definitions, "[G]oto [D]efinition")
+        -- map("gd", require("telescope.builtin").lsp_definitions, "[G]oto [D]efinition")
 
         -- Find references for the word under your cursor.
-        map("gr", require("telescope.builtin").lsp_references, "[G]oto [R]eferences")
+        -- map("gr", require("telescope.builtin").lsp_references, "[G]oto [R]eferences")
 
         -- Jump to the implementation of the word under your cursor.
         --  Useful when your language has ways of declaring types without an actual implementation.
-        map("gI", require("telescope.builtin").lsp_implementations, "[G]oto [I]mplementation")
+        -- map("gI", require("telescope.builtin").lsp_implementations, "[G]oto [I]mplementation")
 
         -- Jump to the type of the word under your cursor.
         --  Useful when you're not sure what type a variable is and you want to see
@@ -181,36 +163,6 @@ return {
 
         vim.cmd.highlight "DiagnosticUnderlineError gui=undercurl" -- use undercurl for error, if supported by terminal
         vim.cmd.highlight "DiagnosticUnderlineWarn  gui=undercurl" -- use undercurl for warning, if supported by terminal
-
-        vim.diagnostic.config {
-          virtual_text = false,
-          severity_sort = true,
-          float = {
-            show_header = false,
-            close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-            scope = "cursor",
-            source = "if_many",
-            border = "single",
-            focusable = false,
-          },
-          inlay_hints = {
-            enabled = true,
-          },
-          signs = {
-            text = {
-              [vim.diagnostic.severity.ERROR] = small_dot,
-              [vim.diagnostic.severity.WARN] = small_dot,
-              [vim.diagnostic.severity.INFO] = small_dot,
-              [vim.diagnostic.severity.HINT] = small_dot,
-            },
-            linehl = {
-              [vim.diagnostic.severity.ERROR] = "ErrorMsg",
-            },
-            numhl = {
-              [vim.diagnostic.severity.WARN] = "WarningMsg",
-            },
-          },
-        }
       end,
     })
 
@@ -366,8 +318,8 @@ return {
               version = "LuaJIT",
             },
             diagnostics = {
-              disable = { "missing-fields", "duplicate-doc-alias" },
-              globals = { "vim", "use" },
+              disable = { "missing-fields", "trailing-space", "duplicate-doc-alias" },
+              globals = { "vim", "use", "quarto", "pandoc", "io", "string", "print", "require", "table" },
             },
             workspace = {
               -- Make the server aware of Neovim runtime files

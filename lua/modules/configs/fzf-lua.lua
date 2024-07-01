@@ -475,7 +475,6 @@ fzf.setup {
     ["--info"] = "inline-right",
     ["--layout"] = "reverse",
     ["--marker"] = "+",
-    ["--pointer"] = "→",
     ["--prompt"] = "/ ",
     ["--border"] = "none",
     ["--padding"] = "0,1",

@@ -6,3 +6,4 @@ undodir/**
 spell/
 lazy-lock.json
 LICENSE.md
+Session.vim

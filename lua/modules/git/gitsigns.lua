@@ -87,6 +87,7 @@ return {
         map("n", "<leader>gX", gs.reset_buffer_index, opts "Reset Buffer") --  BUG: 2024-04-22 - This is not working
         map("n", "<leader>gL", gs.toggle_current_line_blame, "toggle blame line")
         map("n", "<leader>gv", gs.preview_hunk, "Preview Hunk")
+        map("n", "<leader>gq", gs.setqflist, "Hunk quickfix")
         map("n", "<leader>gV", gs.preview_hunk, "Inline Preview Hunk")
         map("n", "<leader>gb", function()
           gs.blame_line { full = true }
@@ -97,10 +98,8 @@ return {
         end, opts "Diff This ~")
         map({ "o", "x" }, "ih", "<cmd>C-U>Gitsigns select_hunk<CR>", opts "GitSigns Select Hunk")
 
-        -- Text object
         map({ "o", "x" }, "ic", ":<C-U>Gitsigns select_hunk<CR>", opts "select hunk")
         map({ "o", "x" }, "ac", ":<C-U>Gitsigns select_hunk<CR>", opts "select hunk")
-        -- Text object
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>")
       end,
       watch_gitdir = {

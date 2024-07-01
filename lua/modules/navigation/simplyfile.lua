@@ -1,7 +1,6 @@
 return {
   "Rizwanelansyah/simplyfile.nvim",
-  tag = "v0.4",
-  enabled = true,
+  enabled = false,
   dependencies = {
     { "nvim-tree/nvim-web-devicons", opts = {} },
   },
@@ -14,6 +13,9 @@ return {
       },
       derfault_keymaps = true,
       keymaps = {
+        ["q"] = function()
+          -- return require("simplyfile").close()
+        end,
         --- your custom keymaps
         --- {dir} have following field
         --- name: name of file/folder

@@ -6,9 +6,8 @@ return {
   config = function()
     -- mapped to <space>dt -- this shows a list of diagnostics
     require("trouble").setup {
-      use_diagnostic_signs = true,
       position = "bottom", -- position of the list can be: bottom, top, left, right
-      icons = true, -- use devicons for filenames
+      focus = true,
       group = true, -- group results by file
       padding = true, -- add an extra new line on top of the list
       -- win_config = { border = "single" }, -- window configuration for floating windows. See |nvim_open_win()|.
@@ -42,7 +41,7 @@ return {
       "<cmd>Trouble diagnostics toggle<cr>",
       desc = "Diagnostics (Trouble)",
     },
-    -- { "<leader>dD", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "[D]ocument Diagnostics" },
+    { "<leader>dD", "<cmd>Trouble document_diagnostics<cr>", desc = "[D]ocument Diagnostics" },
     -- { "<leader>dW", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "[W]orkspace Diagnostics" },
     -- { "<leader>dl", "<cmd>TroubleToggle loclist<cr>", desc = "[L]ocation List" },
     { "<leader>dq", "<cmd>Trouble qflist toggle<cr>", desc = "[Q]uickfix List" },

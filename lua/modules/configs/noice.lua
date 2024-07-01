@@ -13,6 +13,24 @@ require("noice").setup {
     opts = {}, -- global options for the cmdline. See section on views
     ---@type table<string, CmdlineFormat>
   },
+  routes = {
+    {
+      view = "mini",
+      filter = {
+        event = "msg_show",
+        find = "substitutions",
+      },
+    },
+    { filter = { find = "fewer lines;" }, opts = { skip = true } },
+    { filter = { find = "more line;" }, opts = { skip = true } },
+    { filter = { find = "more lines;" }, opts = { skip = true } },
+    { filter = { find = "less;" }, opts = { skip = true } },
+    { filter = { find = "change;" }, opts = { skip = true } },
+    { filter = { find = "changes;" }, opts = { skip = true } },
+    { filter = { find = "indent" }, opts = { skip = true } },
+    { filter = { find = "move" }, opts = { skip = true } },
+    { filter = { find = "No information available" }, opts = { skip = true } },
+  },
   messages = {
     -- NOTE: If you enable messages, then the cmdline is enabled automatically.
     -- This is a current Neovim limitation.
@@ -197,34 +215,6 @@ require("noice").setup {
       },
     },
   },
-  ---@type NoiceRouteConfig[]
-  routes = {
-    {
-      view = "mini",
-      filter = {
-        event = "msg_showmode",
-        any = {
-          { find = "; after #%d+" },
-          { find = "; before #%d+" },
-          { find = "fewer lines" },
-          { find = "written" },
-        },
-      },
-      opts = { skip = true },
-    },
-    {
-      view = "mini",
-      filter = {
-        event = "notify",
-        any = {
-          { find = "hidden" },
-          { find = "clipboard" },
-          { find = "Deleted" },
-          { find = "Renamed" },
-        },
-      },
-    },
-  }, --- @see section on routes
   ---@type table<string, NoiceFilter>
   status = {}, --- @see section on statusline components
   ---@type NoiceFormatOptions

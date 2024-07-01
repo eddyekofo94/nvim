@@ -76,12 +76,12 @@ return {
       },
     }
 
-    -- M.save = function()
-    --   local res = H.get_session_from_user "Save session as: "
-    --   if res ~= nil then
-    --     MiniSessions.write(res)
-    --   end
-    -- end
+    M.save = function()
+      local res = H.get_session_from_user "Save session as: "
+      if res ~= nil then
+        MiniSessions.write(res)
+      end
+    end
 
     -- For autocompletion of session name
     -- Config._session_complete = function(arg_lead)
@@ -102,5 +102,18 @@ return {
       end
       return res
     end
+
+    vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+      callback = function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          -- Don't save while there's any 'nofile' buffer open.
+          if vim.api.nvim_get_option_value("buftype", { buf = buf }) == "nofile" then
+            return
+          end
+        end
+        -- MiniSessions.write(_, MiniSessions.config.directory())
+        require("session_manager").save_current_session()
+      end,
+    })
   end,
 }
