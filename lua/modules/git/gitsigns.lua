@@ -14,7 +14,7 @@ return {
       signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`
       numhl = false, -- Toggle with `:Gitsigns toggle_numhl`
       linehl = false, -- Toggle with `:Gitsigns toggle_linehl`
-      word_diff = true, -- Toggle with `:Gitsigns toggle_word_diff`
+      word_diff = false, -- Toggle with `:Gitsigns toggle_word_diff`
       signs_staged = {
         add = { text = vim.trim(icons.GitSignAdd), numhl = "GitSignsAddNr" },
         untracked = { text = vim.trim(icons.GitSignUntracked) },
@@ -83,7 +83,7 @@ return {
         map("n", "<leader>gg", gs.stage_hunk, "Stage Hunk")
         map({ "n", "v" }, "<leader>gx", gs.reset_hunk, "Reset Hunk")
         map("n", "<leader>gG", gs.stage_buffer, opts "Stage Buffer")
-        map("n", "<leader>gu", gs.undo_stage_hunk, opts "Undo Stage Hunk")
+        map("n", "<leader>gu", gs.undo_stage_hunk, opts "Undo Stage Hunk") --  BUG: 2024-07-01 - Seems to be broken
         map("n", "<leader>gX", gs.reset_buffer_index, opts "Reset Buffer") --  BUG: 2024-04-22 - This is not working
         map("n", "<leader>gL", gs.toggle_current_line_blame, "toggle blame line")
         map("n", "<leader>gv", gs.preview_hunk, "Preview Hunk")
