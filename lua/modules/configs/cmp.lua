@@ -265,6 +265,9 @@ cmp.setup {
     },
     { name = "nvim_lsp_signature_help" },
     {
+      name = "path",
+    },
+    {
       name = "fuzzy_path",
       option = { fd_timeout_msec = 1500 },
     },
@@ -272,6 +275,7 @@ cmp.setup {
       name = "luasnip",
       keyword_length = 2,
       max_item_count = 3,
+      dup = 0,
       option = {
         use_show_condition = true,
         show_autosnippets = true,
@@ -303,6 +307,7 @@ cmp.setup {
       priority_weight = 60,
       max_item_count = 10,
       keyword_length = 4,
+      dup = 0,
       option = {
         additional_arguments = "--smart-case",
       },
