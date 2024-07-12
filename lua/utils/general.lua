@@ -1,6 +1,7 @@
 local M = {}
 local autocmd = vim.api.nvim_create_autocmd
 local groupid = vim.api.nvim_create_augroup
+local core = require "lib.core"
 
 M.create_augroup = function(group, opts)
   opts = opts or { clear = true }
@@ -750,4 +751,39 @@ function M.define_augroups(definitions) -- {{{1
     vim.cmd "augroup END"
   end
 end
+
+-- add custom command
+function M.add_command(key, callback, opts)
+  opts = vim.tbl_deep_extend("force", {
+    cmd_opts = nil,
+    add_custom = false,
+  }, opts or {})
+
+  assert(opts.cmd_opts or opts.add_custom, "must either provide cmd_opts or set add_custom")
+
+  -- opts are defined, create user command
+  if opts.cmd_opts then
+    vim.api.nvim_create_user_command(key, callback, opts.cmd_opts)
+  end
+
+  -- create custom command
+  if opts.add_custom then
+    -- make sure this command takes:
+    --  - no parameters
+    --  - 0+ parameters
+    assert(
+      (not opts.cmd_opts) or not opts.cmd_opts.nargs or (opts.cmd_opts.nargs == 0) or (opts.cmd_opts.nargs == "*") or (opts.cmd_opts.nargs == "?"),
+      "cannot add custom command which requires 1+ arguments"
+    )
+
+    -- add command header
+    local header_regex = vim.regex "\\v\\[.*]"
+    if not header_regex:match_str(key) then
+      key = "[CMD] " .. key
+    end
+  end
+
+  return key
+end
+
 return M
