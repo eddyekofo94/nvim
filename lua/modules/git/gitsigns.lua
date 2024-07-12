@@ -1,4 +1,6 @@
 local icons = require("utils").static.icons
+local hl = require "utils.general"
+local sethl_groups = hl.sethl_groups
 
 return {
   "lewis6991/gitsigns.nvim",
@@ -24,12 +26,12 @@ return {
         changedelete = { text = vim.trim(icons.GitSignChangedelete), numhl = "GitSignsChangeNr" },
       },
       signs = {
-        add = { text = vim.trim(icons.GitSignAdd), numhl = "GitSignsAddNr" },
+        add = { text = vim.trim(icons.GitSignAdd) },
         untracked = { text = vim.trim(icons.GitSignUntracked) },
-        change = { text = vim.trim(icons.GitSignChange), numhl = "GitSignsChangeNr" },
-        delete = { text = vim.trim(icons.GitSignDelete), numhl = "GitSignsDeleteNr" },
-        topdelete = { text = vim.trim(icons.GitSignTopdelete), numhl = "GitSignDelete" },
-        changedelete = { text = vim.trim(icons.GitSignChangedelete), numhl = "GitSignsChangeNr" },
+        change = { text = vim.trim(icons.GitSignChange) },
+        delete = { text = vim.trim(icons.GitSignDelete) },
+        topdelete = { text = vim.trim(icons.GitSignTopdelete) },
+        changedelete = { text = vim.trim(icons.GitSignChangedelete) },
       },
       on_attach = function(bufnr)
         local gs = package.loaded.gitsigns
@@ -39,11 +41,15 @@ return {
           return { expr = true, desc = desc, buffer = bufnr }
         end
 
-        -- local function map(mode, l, r, opts)
-        --   opts = opts or {}
-        --   opts.buffer = bufnr
-        --   vim.keymap.set(mode, l, r, opts)
-        -- end
+        local hlgroups = {
+          GitSignsAddNr = { link = "GitSignsAddNr" },
+          GitSignsChangeNr = { link = "GitSignsChangeNr" },
+          GitSignsChangedeleteNr = { link = "GitSignsChangeNr" },
+          GitSignsDeleteNr = { link = "GitSignsDeleteNr" },
+          GitSignsTopdeleteNr = { link = "GitSignDelete" },
+        }
+
+        sethl_groups(hlgroups)
 
         -- Navigation
         map({ "n", "x" }, "]x", function()
@@ -120,8 +126,6 @@ return {
       max_file_length = 40000,
       preview_config = {
         -- Options passed to nvim_open_win
-        -- border = { "─", "│","│", "┌", "┐", "└", "┘" },
-        -- border = { "┏", "━", "┓", "┃", "┛", "━", "┗", "┃" },
         style = "minimal",
         relative = "cursor",
         row = 0,
