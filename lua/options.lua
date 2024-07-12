@@ -344,44 +344,6 @@ vim.api.nvim_create_autocmd("CmdlineLeave", {
   end,
 })
 
-local small_dot = " "
-local icons = require("utils").static.icons
-vim.diagnostic.config {
-  severity_sort = true,
-  -- float = {
-  --   show_header = false,
-  --   close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-  --   scope = "cursor",
-  --   source = "if_many",
-  --   border = "single",
-  --   focusable = false,
-  -- },
-  inlay_hints = {
-    enabled = true,
-  },
-  virtual_text = {
-    prefix = vim.trim(icons.TriangleUp), -- Could be '●', '▎', │, 'x', '■', , 
-  },
-  jump = {
-    float = true,
-  },
-  float = { border = "single" },
-  signs = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = vim.trim(icons.Diamond),
-      [vim.diagnostic.severity.WARN] = vim.trim(icons.TriangleUp),
-      [vim.diagnostic.severity.INFO] = small_dot,
-      [vim.diagnostic.severity.HINT] = small_dot,
-    },
-    linehl = {
-      [vim.diagnostic.severity.ERROR] = "ErrorMsg",
-    },
-    numhl = {
-      [vim.diagnostic.severity.WARN] = "WarningMsg",
-    },
-  },
-}
-
 -- Fzf settings
 g.fzf_layout = {
   window = {
@@ -397,4 +359,3 @@ vim.g.loaded_python_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_node_provider = 0
-
