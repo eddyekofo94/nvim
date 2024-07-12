@@ -131,6 +131,17 @@ Keymap.new("n", "<C-u>", "zz<C-u>")
   :execute()
 
 --  INFO: General
+--  TODO: 2024-07-04 - Turn this to a Lua method, 0 = first character on the line
+-- function! LineHome()
+--   let x = col('.')
+--   execute "normal ^"
+--   if x == col('.')
+--     unmap 0
+--     execute "normal 0"
+--     map 0 :call LineHome()<CR>:echo<CR>
+--   endif
+--   return ""
+-- endfunction
 Keymap.new("n", "<leader>hh", "<cmd>nohl<BAR>redraws<cr>", "Clear highlight")
   :bind(
     -- Clear search, diff update and redraw
