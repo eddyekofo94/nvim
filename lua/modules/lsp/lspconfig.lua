@@ -33,6 +33,41 @@ return {
   config = function()
     local lspconfig = require "lspconfig"
 
+    local small_dot = " "
+    local icons = require("utils").static.icons
+    vim.diagnostic.config {
+      severity_sort = true,
+      -- float = {
+      --   show_header = false,
+      --   close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+      --   scope = "cursor",
+      --   source = "if_many",
+      --   border = "single",
+      --   focusable = false,
+      -- },
+      inlay_hints = {
+        enabled = true,
+      },
+      virtual_text = false,
+      jump = {
+        float = true,
+      },
+      float = { border = "single" },
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = vim.trim(icons.Diamond),
+          [vim.diagnostic.severity.WARN] = vim.trim(icons.TriangleUp),
+          [vim.diagnostic.severity.INFO] = small_dot,
+          [vim.diagnostic.severity.HINT] = small_dot,
+        },
+        linehl = {
+          [vim.diagnostic.severity.ERROR] = "ErrorMsg",
+        },
+        numhl = {
+          [vim.diagnostic.severity.WARN] = "WarningMsg",
+        },
+      },
+    }
     vim.api.nvim_create_autocmd("LspAttach", {
       group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
       callback = function(event)
