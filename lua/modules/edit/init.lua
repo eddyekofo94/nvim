@@ -43,11 +43,6 @@ return {
     end,
   },
   {
-    -- Automatically fill/change/remove xml-like tags
-    "windwp/nvim-ts-autotag",
-    opts = {},
-  },
-  {
     "danymat/neogen",
     event = "VeryLazy",
     dependencies = "nvim-treesitter/nvim-treesitter",

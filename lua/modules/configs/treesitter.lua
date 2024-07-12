@@ -34,9 +34,6 @@ local options = {
       end
     end,
   },
-  autotag = {
-    enable = true,
-  },
   matchup = {
     -- enable = true,
     enable = function(_, buffer)
