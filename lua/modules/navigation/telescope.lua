@@ -389,10 +389,10 @@ return {
         desc = "Find all",
       }
 
-      maps.n["<leader>sP"] = {
-        "<cmd> Telescope persisted<CR>",
-        desc = "List Sessions",
-      }
+      -- maps.n["<leader>sP"] = {
+      --   "<cmd> Telescope persisted<CR>",
+      --   desc = "List Sessions",
+      -- }
 
       maps.n["<leader>ss"] = {
         Telescope.find("live_grep", { cwd = utils.fs:get_root() }),
