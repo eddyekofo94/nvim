@@ -271,52 +271,52 @@ augroup("FixCmdLineIskeyword", {
 })
 
 -- INFO: This is where background (bg) of special buffers are set
-augroup("SpecialBufHl", {
-  { "BufWinEnter", "BufNew", "FileType", "TermOpen" },
-  {
-    desc = "Set background color for special buffers.",
-    callback = function(info)
-      if vim.bo[info.buf].bt == "" then
-        return
-      end
-      -- Current window isn't necessarily the window of the buffer that
-      -- triggered the event, use `bufwinid()` to get the first window of
-      -- the triggering buffer. We can also use `win_findbuf()` to get all
-      -- windows that display the triggering buffer, but it is slower and using
-      -- `bufwinid()` is enough for our purpose.
-      local winid = vim.fn.bufwinid(info.buf)
-      if winid == -1 then
-        return
-      end
-      vim.api.nvim_win_call(winid, function()
-        local wintype = vim.fn.win_gettype()
-        if wintype == "popup" or wintype == "autocmd" then
-          return
-        end
-        vim.opt_local.winhl:append {
-          Normal = "NormalSpecial",
-          FloatBorder = "NormalSpecial",
-          EndOfBuffer = "NormalSpecial",
-        }
-      end)
-    end,
-  },
-}, {
-  { "UIEnter", "ColorScheme", "OptionSet", "WinEnter" },
-  {
-    desc = "Set special buffer normal hl.",
-    callback = function(info)
-      if info.event == "OptionSet" and info.match ~= "background" then
-        return
-      end
-      local hl = require "utils.hl"
-      local blended = hl.blend("Normal", "NormalFloat")
-      hl.set_default(0, "NormalSpecial", blended)
-      hl.set_default(0, "EndOfBuffer", blended)
-      hl.set_default(0, "FloatBorder", blended)
-    end,
-  },
-})
+-- augroup("SpecialBufHl", {
+--   { "BufWinEnter", "BufNew", "FileType", "TermOpen" },
+--   {
+--     desc = "Set background color for special buffers.",
+--     callback = function(info)
+--       if vim.bo[info.buf].bt == "" then
+--         return
+--       end
+--       -- Current window isn't necessarily the window of the buffer that
+--       -- triggered the event, use `bufwinid()` to get the first window of
+--       -- the triggering buffer. We can also use `win_findbuf()` to get all
+--       -- windows that display the triggering buffer, but it is slower and using
+--       -- `bufwinid()` is enough for our purpose.
+--       local winid = vim.fn.bufwinid(info.buf)
+--       if winid == -1 then
+--         return
+--       end
+--       vim.api.nvim_win_call(winid, function()
+--         local wintype = vim.fn.win_gettype()
+--         if wintype == "popup" or wintype == "autocmd" then
+--           return
+--         end
+--         vim.opt_local.winhl:append {
+--           Normal = "NormalSpecial",
+--           FloatBorder = "NormalSpecial",
+--           EndOfBuffer = "NormalSpecial",
+--         }
+--       end)
+--     end,
+--   },
+-- }, {
+-- { "UIEnter", "ColorScheme", "OptionSet" },
+--   {
+--     desc = "Set special buffer normal hl.",
+--     callback = function(info)
+--       if info.event == "OptionSet" and info.match ~= "background" then
+--         return
+--       end
+--       local hl = require "utils.hl"
+--       local blended = hl.blend("Normal", "NormalFloat")
+--       hl.set_default(0, "NormalSpecial", blended)
+--       hl.set_default(0, "EndOfBuffer", blended)
+--       hl.set_default(0, "FloatBorder", blended)
+--     end,
+--   },
+-- })
 
 -- Close certain filetypes by pressing q.
 -- autocmd({ "UIEnter", "ColorScheme", "OptionSet" }, {
@@ -543,7 +543,7 @@ vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "QuickFixCmdPost" }, {
   end,
 })
 
--- vim.api.nvim_create_autocmd({ "FileChangedShellPost", "DiagnosticChanged", "LspProgress" }, {
---   group = vim.api.nvim_create_augroup("StatusLine", {}),
---   command = "redrawstatus",
--- })
+vim.api.nvim_create_autocmd({ "FileChangedShellPost", "DiagnosticChanged", "LspProgress" }, {
+  group = vim.api.nvim_create_augroup("StatusLine", {}),
+  command = "redrawstatus",
+})

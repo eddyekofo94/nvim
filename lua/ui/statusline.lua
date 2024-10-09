@@ -57,10 +57,10 @@ function statusline.diagnostics()
 
   local icons = string.format(
     "%s%s%s%s",
-    utils.stl.hl(tostring(errors), "StatusLineDiagnosticHint"),
-    utils.stl.hl(tostring(warnings), "StatusLineDiagnosticWarn"),
-    utils.stl.hl(tostring(hints), "StatusLineDiagnosticHint"),
-    utils.stl.hl(tostring(info), "StatusLineDiagnosticInfo")
+    utils.stl.hl(tostring(errors), "StatusLineLspError"),
+    utils.stl.hl(tostring(warnings), "StatusLineLspWarning"),
+    utils.stl.hl(tostring(hints), "StatusLineLspHint"),
+    utils.stl.hl(tostring(info), "ErrorMsg")
   )
 
   if errors == "" and warnings == "" and hints == "" and info == "" then
@@ -69,7 +69,8 @@ function statusline.diagnostics()
 
   local diagnostic_icons = (vim.o.columns > 140 and " - " .. icons or "")
 
-  return utils.stl.hl(tostring(diagnostic_icons), "StatusLine")
+  -- return utils.stl.hl(tostring(diagnostic_icons), "StatusLine")
+  return tostring(diagnostic_icons)
 end
 
 function statusline.get_lsp_names()
@@ -163,7 +164,7 @@ function statusline.file_info()
 
   local file_symbol = (#symbols > 0 and " " .. table.concat(symbols, "") or "")
   return string.format(
-    "%s%s%s",
+    " %s%s%s",
     "%#StatusLineDimmed#" .. fpath,
     "%#" .. fname_hl .. "#" .. icon .. " " .. filename,
     file_symbol
@@ -175,7 +176,8 @@ function statusline.macro()
   if recording_register == "" then
     return ""
   else
-    return "Recording @" .. recording_register .. " "
+    -- return string.format(" %s%s%s ", "%#String#", "Recording @", recording_register)
+    return "%#String#" .. "Recording @" .. recording_register .. " "
   end
 end
 
@@ -198,7 +200,7 @@ statusline.project_name = function()
   local icon = "󰉋 "
   local fnamemodify = vim.fn.fnamemodify
   local cwd = fnamemodify(vim.fn.getcwd(), ":t")
-  return string.format("%s%s", icon, cwd)
+  return icon .. cwd
 end
 
 --  BUG: 2024-06-03 - keep throwing some error about table concat
@@ -293,9 +295,11 @@ end
 function statusline.cwd()
   local icon = "󰉋 "
   local name = fs.shorten_path(fs.get_root(), "/", 0)
+  -- local name = vim.uv.cwd()
   name = (name:match "([^/\\]+)[/\\]*$" or name)
 
-  return (vim.o.columns > 85 and ("%#StatusLineDimmed#" .. icon .. name)) or ""
+  return (vim.o.columns > 85 and (" " .. icon .. name)) or ""
+  -- return string.format(" %s", (vim.o.columns > 85 and (icon .. name)) or "")
 end
 
 function statusline.lsp()
@@ -349,9 +353,9 @@ function statusline.git_diff()
     and string.format(
       "%s +%s~%s-%s",
       utils.stl.hl(tostring(branch), "StatusLine"),
-      utils.stl.hl(tostring(added), "StatusLineGitAdd"),
-      utils.stl.hl(tostring(changed), "StatusLineGitChange"),
-      utils.stl.hl(tostring(removed), "StatusLineGitDelete")
+      utils.stl.hl(tostring(added), "GitSignsAdd"),
+      utils.stl.hl(tostring(changed), "GitSignsChange"),
+      utils.stl.hl(tostring(removed), "GitSignsDelete")
     )
 end
 
@@ -383,7 +387,7 @@ function statusline.ft()
   return vim.bo.ft == "" and "" or " " .. icon_provider(0) .. " " .. vim.bo.ft:gsub("^%l", string.upper) .. " "
 end
 
-function statusline.line_percentage()
+function statusline.cursor_pos()
   local curr_line = vim.api.nvim_win_get_cursor(0)[1]
   local lines = vim.api.nvim_buf_line_count(0)
 
@@ -405,7 +409,9 @@ function statusline.line_info()
     return ""
   end
 
-  return string.format("%s %s", statusline.section_location(), statusline.line_percentage())
+  -- local cursor_pos = "%p%%  "
+
+  return string.format("%s %s", statusline.section_location(), statusline.cursor_pos())
 end
 
 ---@return string
@@ -492,42 +498,42 @@ end
 
 ---Set default highlight groups for statusline components
 ---@return  nil
-local function set_default_hlgroups()
-  local default_attr = utils.hl.get(0, {
-    name = "StatusLine",
-    link = false,
-    winhl_link = false,
-  })
+-- local function set_default_hlgroups()
+--   local default_attr = utils.hl.get(0, {
+--     name = "StatusLine",
+--     link = false,
+--     winhl_link = false,
+--   })
+--
+--   ---@param hlgroup_name string
+--   ---@param attr table
+--   ---@return nil
+--   local function sethl(hlgroup_name, attr)
+--     local merged_attr = vim.tbl_deep_extend("keep", attr, default_attr)
+--     utils.hl.set_default(0, hlgroup_name, merged_attr)
+--   end
+--   sethl("StatusLineGitAdd", { fg = "GitSignsAdd" })
+--   sethl("StatusLineGitChange", { fg = "GitSignsChange" })
+--   sethl("StatusLineGitDelete", { fg = "GitSignsDelete" })
+--   sethl("StatusLineDiagnosticHint", { fg = "DiagnosticSignHint" })
+--   sethl("StatusLineDiagnosticInfo", { fg = "DiagnosticSignInfo" })
+--   sethl("StatusLineDiagnosticWarn", { fg = "DiagnosticSignWarn" })
+--   sethl("StatusLineDiagnosticError", { fg = "DiagnosticSignError" })
+--   sethl("StatusLineDimmed", { fg = "StatusLineNC" })
+--   sethl("StatusLineFileModified", { fg = "Added" }) -- Changed
+--   sethl("StatusLineFileError", { fg = "ErrorMsg" })
+--   sethl("StatusLineHeader", { fg = "TabLine", bg = "fg", reverse = true })
+--   sethl("StatusLineHeaderModified", {
+--     fg = "Special",
+--     bg = "fg",
+--     reverse = true,
+--   })
+-- end
+-- set_default_hlgroups()
 
-  ---@param hlgroup_name string
-  ---@param attr table
-  ---@return nil
-  local function sethl(hlgroup_name, attr)
-    local merged_attr = vim.tbl_deep_extend("keep", attr, default_attr)
-    utils.hl.set_default(0, hlgroup_name, merged_attr)
-  end
-  sethl("StatusLineGitAdd", { fg = "GitSignsAdd" })
-  sethl("StatusLineGitChange", { fg = "GitSignsChange" })
-  sethl("StatusLineGitDelete", { fg = "GitSignsDelete" })
-  sethl("StatusLineDiagnosticHint", { fg = "DiagnosticSignHint" })
-  sethl("StatusLineDiagnosticInfo", { fg = "DiagnosticSignInfo" })
-  sethl("StatusLineDiagnosticWarn", { fg = "DiagnosticSignWarn" })
-  sethl("StatusLineDiagnosticError", { fg = "DiagnosticSignError" })
-  sethl("StatusLineDimmed", { fg = "StatusLineNC" })
-  sethl("StatusLineFileModified", { fg = "Added" }) -- Changed
-  sethl("StatusLineFileError", { fg = "ErrorMsg" })
-  sethl("StatusLineHeader", { fg = "TabLine", bg = "fg", reverse = true })
-  sethl("StatusLineHeaderModified", {
-    fg = "Special",
-    bg = "fg",
-    reverse = true,
-  })
-end
-set_default_hlgroups()
-
-vim.api.nvim_create_autocmd("ColorScheme", {
-  group = groupid,
-  callback = set_default_hlgroups,
-})
+-- vim.api.nvim_create_autocmd("ColorScheme", {
+--   group = groupid,
+--   callback = set_default_hlgroups,
+-- })
 
 return statusline

@@ -22,33 +22,54 @@ local hl_groups = {
   EndOfBuffer = { fg = get_hl("Normal", "bg") }, -- INFO: buffer
 
   OverLength = { fg = "NONE", bg = "#840000" },
-  -- NormalFloat = { link = "FloatBorder" },
-  FloatBorder = { fg = "LineNr", bg = get_hl("NormalSpecial", "bg") },
-  -- NvimSeparator = { link = "Error" },
+  NormalFloat = { fg = "lavender", bg = "darker_black" },
+
+  Border = { fg = "line" },
+
+  FloatBorder = { link = "Border" },
+
+  NvimSeparator = { link = "Debug" },
   HighlightedYankRegion = {
     reverse = true,
   },
 
-  StatusLineLspWarning = { fg = get_hl("LspDiagnosticsWarning", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineLspInfo = { fg = get_hl("LspDiagnosticsInfo", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineLspError = { fg = get_hl("LspDiagnosticsError", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineLspHint = { fg = get_hl("LspDiagnosticsHint", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLine = { bg = "statusline_bg" },
+  StatusLineLspWarning = { fg = get_hl("DiagnosticWarn", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineLspInfo = { fg = get_hl("DiagnosticInfo", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineLspError = { fg = get_hl("DiagnosticError", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineLspHint = { fg = get_hl("DiagnosticHint", "fg"), bg = get_hl("StatusLine", "bg") },
 
   StatusLineGitAdd = { fg = get_hl("GitSignsAdd", "fg"), bg = get_hl("StatusLine", "bg") },
   StatusLineGitChange = { fg = get_hl("GitSignsChange", "fg"), bg = get_hl("StatusLine", "bg") },
   StatusLineGitDelete = { fg = get_hl("GitSignsDelete", "fg"), bg = get_hl("StatusLine", "bg") },
 
   StatusLineFilename = { fg = get_hl("StatusLine", "fg"), bg = get_hl("StatusLine", "bg") },
-  -- StatusLineDimmed = { fg = get_hl("StatusLineNC", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineDimmed = { fg = "grey_fg", bg = get_hl("StatusLine", "bg") },
 
-  StatuslineError = { fg = get_hl("ErrorMsg", "fg"), bg = get_hl("StatusLine", "bg") },
-  -- StatuslineModified = { fg = gethl("Changed", "fg"), bg = gethl("StatusLine", "bg") },
+  StatusLineFileError = { fg = get_hl("ErrorMsg", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineFileModified = { link = "String" },
 
   CmpSel = { link = "Visual" },
 
+  -- Flash.nvim
+  FlashLabel = { fg = "green" },
+  FlashMatch = { fg = "purple" },
+  FlashCurrent = { fg = "sun" },
+  FlashPrompt = { link = "NormalFloat" },
+  FlashBackdrop = { fg = "light_grey" },
+
   -- Mini
   -- MiniFilesBorder = {},
-
+  MiniIconsAzure = { fg = "nord_blue" },
+  MiniIconsBlue = { fg = "blue" },
+  MiniIconsCyan = { fg = "cyan" },
+  MiniIconsGreen = { fg = "green" },
+  MiniIconsGrey = { fg = "grey" },
+  MiniIconsOrange = { fg = "sun" },
+  MiniIconsPurple = { fg = "purple" },
+  MiniIconsRed = { fg = "red" },
+  MiniIconsYellow = { fg = "yellow" },
+  --
   -- Navbuddy
   -- NavbuddyFile = { link = "Directory" },
   -- NavbuddyModule = { link = "Title" },
@@ -275,7 +296,10 @@ local hl_groups = {
   --
   --   -- LSP
   --   LspCodeLens = { fg = c_macroAsh },
-  LspInfoBorder = { link = "FloatBorder" },
+  LspInfoBorder = { link = "Border" },
+  LspFloatBorder = { link = "Border" },
+  LspFloat = { bg = "darker_black" },
+
   -- LspReferenceRead = { underline = true },
   -- LspReferenceText = { underline = true },
   -- LspReferenceWrite = { underline = true },
@@ -451,9 +475,11 @@ local set_all_hl = function()
   sethl_groups(highlights)
 end
 
-set_all_hl()
+-- set_all_hl()
+--
+-- vim.api.nvim_create_autocmd("ColorScheme", {
+--   group = vim.api.nvim_create_augroup("Highlights", {}),
+--   callback = set_all_hl,
+-- })
 
-vim.api.nvim_create_autocmd("ColorScheme", {
-  group = vim.api.nvim_create_augroup("Highlights", {}),
-  callback = set_all_hl,
-})
+return hl_groups

@@ -475,7 +475,6 @@ local function oil_sethl()
   sethl(0, "OilTypeFile", { fg = "NonText" })
   sethl(0, "OilTypeLink", { fg = "Constant" })
   sethl(0, "OilTypeSocket", { fg = "OilSocket" })
-  sethl(0, "EndOfBuffer", { fg = "NormalSpecial" })
 end
 oil_sethl()
 

@@ -1,6 +1,7 @@
 return { -- or show symbols in the current file as breadcrumbs
   "Bekaboo/dropbar.nvim",
   enabled = true,
+  lazy = false,
   dependencies = {
     "nvim-telescope/telescope-fzf-native.nvim",
   },

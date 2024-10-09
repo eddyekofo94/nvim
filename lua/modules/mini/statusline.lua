@@ -3,7 +3,7 @@ local stl_util = require "ui.statusline"
 return { -- Collection of various small independent plugins/modules
   "echasnovski/mini.statusline",
   event = "UIEnter",
-  enabled = false,
+  enabled = true,
   config = function()
     local statusline = require "mini.statusline"
     statusline.setup {

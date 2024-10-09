@@ -1,5 +1,6 @@
 return {
   "echasnovski/mini.animate",
+  enabled = true,
   keys = {
     {
       "<leader>aa",
