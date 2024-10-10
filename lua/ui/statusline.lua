@@ -384,7 +384,8 @@ end
 ---Get current filetype
 ---@return string
 function statusline.ft()
-  return vim.bo.ft == "" and "" or " " .. icon_provider(0) .. " " .. vim.bo.ft:gsub("^%l", string.upper) .. " "
+  local ft = string.format("%s %s ", icon_provider(0), vim.bo.ft:gsub("^%l", string.upper))
+  return vim.bo.ft == "" and "" or ft
 end
 
 function statusline.cursor_pos()
