@@ -370,4 +370,6 @@ return {
   ["@lsp.type.parameter.lua"] = { link = "TSParameter" },
   -- bash
   ["@variable.parameter.bash"] = { fg = "white" }, -- INFO: chadrc
+  -- lua
+  ["@variable.member.lua"] = { fg = "blue" },
 }
