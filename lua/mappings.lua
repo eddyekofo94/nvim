@@ -1,4 +1,4 @@
-require "nvchad.mappings"
+-- require "nvchad.mappings"
 
 local Utils = require "utils.keymap.keymaps"
 local General = require "utils.general"

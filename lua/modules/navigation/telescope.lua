@@ -446,7 +446,7 @@ return {
       lmap("sO", Telescope.find("oldfiles", { cwd = false }), "[Root] Find oldfiles")
       lmap("sp", "<cmd> Telescope projects<CR>", "Find projects")
       lmap("sz", "<cmd> Telescope zoxide list<CR>", "Find zoxide")
-      lmap("sr", Telescope.find "resume", "Telescope Resume")
+      map({ "x", "n" }, "<C-j>", Telescope.find "resume", "Telescope Resume")
       lmap("sh", function()
         builtin.help_tags()
       end, "Vim Help Tags")

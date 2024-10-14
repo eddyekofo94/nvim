@@ -295,14 +295,13 @@ augroup("FixCmdLineIskeyword", {
 --         end
 --         vim.opt_local.winhl:append {
 --           Normal = "NormalSpecial",
---           FloatBorder = "NormalSpecial",
 --           EndOfBuffer = "NormalSpecial",
 --         }
 --       end)
 --     end,
 --   },
 -- }, {
--- { "UIEnter", "ColorScheme", "OptionSet" },
+--   { "UIEnter", "ColorScheme", "OptionSet" },
 --   {
 --     desc = "Set special buffer normal hl.",
 --     callback = function(info)

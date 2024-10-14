@@ -15,6 +15,40 @@ end
 local blended = blend("LineNr", "#000")
 local float = { fg = blended, bg = "NONE" }
 
+local nvchad_base_30 = {
+  White = { fg = "white" },
+  Black = { fg = "black" }, -- usually your theme bg
+  DarkerBlack = { fg = "darker_black" }, -- 6% darker than black
+  Black2 = { fg = "black2" }, -- 6% lighter than black
+  OneBg = { fg = "one_bg" }, -- 10% lighter than black
+  OneBg2 = { fg = "one_bg2" }, -- 6% lighter than one_bg2
+  OneBg3 = { fg = "one_bg3" }, -- 6% lighter than one_bg3
+  Grey = { fg = "grey" }, -- 40% lighter than black (the % here depends so choose the perfect grey!)
+  GreyFg = { fg = "grey_fg" }, -- 10% lighter than grey
+  GreyFg2 = { fg = "grey_fg2" }, -- 5% lighter than grey
+  LightGrey = { fg = "light_grey" },
+  Red = { fg = "red" },
+  BabyPink = { fg = "baby_pink" },
+  Pink = { fg = "pink" },
+  Line = { fg = "line" }, -- 15% lighter than black
+  Green = { fg = "green" },
+  VibrantGreen = { fg = "vibrant_green" },
+  NordBlue = { fg = "nord_blue" },
+  Blue = { fg = "blue" },
+  Seablue = { fg = "seablue" },
+  Yellow = { fg = "yellow" }, -- 8% lighter than yellow
+  Sun = { fg = "sun" },
+  Purple = { fg = "purple" },
+  DarkPurple = { fg = "dark_purple" },
+  Teal = { fg = "teal" },
+  Orange = { fg = "orange" },
+  Cyan = { fg = "cyan" },
+  StatusLineBG = { fg = "statusline_bg" },
+  LightBg = { fg = "lightbg" },
+  PmenuBg = { fg = "pmenu_bg" },
+  FolderBg = { fg = "folder_bg" },
+}
+
 local hl_groups = {
   -- UI
   -- WinSeparator = { link = "LineNr" },
@@ -34,7 +68,7 @@ local hl_groups = {
   },
 
   StatusLine = { bg = "statusline_bg" },
-  StatusLineLspWarning = { fg = get_hl("DiagnosticWarn", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineLspWarning = { fg = "yellow", bg = get_hl("StatusLine", "bg") },
   StatusLineLspInfo = { fg = get_hl("DiagnosticInfo", "fg"), bg = get_hl("StatusLine", "bg") },
   StatusLineLspError = { fg = get_hl("DiagnosticError", "fg"), bg = get_hl("StatusLine", "bg") },
   StatusLineLspHint = { fg = get_hl("DiagnosticHint", "fg"), bg = get_hl("StatusLine", "bg") },
@@ -44,7 +78,7 @@ local hl_groups = {
   StatusLineGitDelete = { fg = get_hl("GitSignsDelete", "fg"), bg = get_hl("StatusLine", "bg") },
 
   StatusLineFilename = { fg = get_hl("StatusLine", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineDimmed = { fg = "grey_fg", bg = get_hl("StatusLine", "bg") },
+  StatusLineDimmed = { fg = "grey_fg", bg = "statusline_bg" },
 
   StatusLineFileError = { fg = get_hl("ErrorMsg", "fg"), bg = get_hl("StatusLine", "bg") },
   StatusLineFileModified = { link = "String" },
@@ -60,16 +94,23 @@ local hl_groups = {
 
   -- Mini
   -- MiniFilesBorder = {},
-  MiniIconsAzure = { fg = "nord_blue" },
-  MiniIconsBlue = { fg = "blue" },
-  MiniIconsCyan = { fg = "cyan" },
-  MiniIconsGreen = { fg = "green" },
-  MiniIconsGrey = { fg = "grey" },
-  MiniIconsOrange = { fg = "sun" },
-  MiniIconsPurple = { fg = "purple" },
-  MiniIconsRed = { fg = "red" },
-  MiniIconsYellow = { fg = "yellow" },
-  --
+  MiniIconsAzure = { link = "NordBlue" },
+  MiniIconsBlue = { link = "Blue" },
+  MiniIconsCyan = { link = "Cyan" },
+  MiniIconsGreen = { link = "Green" },
+  MiniIconsGrey = { link = "Grey" },
+  MiniIconsOrange = { link = "Sun" },
+  MiniIconsPurple = { link = "Purple" },
+  MiniIconsRed = { link = "Red" },
+  MiniIconsYellow = { link = "Yellow" },
+
+  MiniStatuslineModeCommand = { fg = "orange", bold = true },
+  MiniStatuslineModeInsert = { fg = "green", bold = true },
+  MiniStatuslineModeNormal = { fg = "nord_blue", bold = true },
+  MiniStatuslineModeOther = { fg = "teal", bold = true },
+  MiniStatuslineModeReplace = { fg = "yellow", bold = true },
+  MiniStatuslineModeVisual = { fg = "purple", bold = true },
+
   -- Navbuddy
   -- NavbuddyFile = { link = "Directory" },
   -- NavbuddyModule = { link = "Title" },
@@ -200,19 +241,19 @@ local hl_groups = {
   Character = { link = "String" },
   --   Comment = { fg = c_macroAsh },
   --   Constant = { fg = "Orange" },
-  --   Delimiter = { fg = c_macroGray1 },
+  Delimiter = { fg = "base05" },
   --   Error = { fg = c_lotusRed1 },
   --   Exception = { fg = "Red" },
   Float = { link = "Number" },
   --   Function = { fg = c_macroBlue1 },
-  --   Identifier = { fg = c_macroFg0 },
+  Identifier = { fg = "base05" },
   --   Keyword = { fg = c_macroViolet },
   --   Number = { fg = c_macroPink },
-  --   Operator = { fg = "Red" },
+  Operator = { fg = "pink" },
   --   PreProc = { fg = "Red" },
   --   Special = { fg = "Teal" },
   --   SpecialKey = { fg = c_macroGray2 },
-  --   Statement = { fg = c_macroViolet },
+  Statement = { fg = "orange" },
   -- String = { link = "MoreMsg" },
   --   Todo = { fg = c_macroBg0, bg = c_macroBlue0, bold = true },
   --   Type = { fg = c_macroAqua },
@@ -220,19 +261,18 @@ local hl_groups = {
   --   -- Treesitter syntax
   ["@attribute"] = { link = "Constant" },
   ["@constructor"] = { fg = "Teal" },
-  -- ["@constructor.lua"] = { fg = c_macroViolet },
+  ["@constructor.lua"] = { link = "Pink" },
   ["@exception"] = { bold = true, fg = "Red" },
   ["@keyword.luap"] = { link = "@string.regex" },
-  ["@keyword.operator"] = { bold = true, fg = "Red" },
-  ["@keyword.return"] = { fg = "Red", italic = true },
+  -- ["@keyword.operator"] = { bold = true, fg = "Operator" },
+  ["@keyword.return"] = { fg = "DarkPurple", italic = true },
   ["@namespace"] = { fg = "Orange" },
   ["@operator"] = { link = "Operator" },
-  -- ["@parameter"] = { fg = c_macroGray0 },
   ["@string"] = { link = "String" },
   ["@character"] = { link = "String" },
-  -- ["@punctuation.bracket"] = { fg = c_macroGray1 },
-  -- ["@punctuation.delimiter"] = { fg = c_macroGray1 },
-  ["@punctuation.special"] = { fg = "Teal" },
+  -- ["@punctuation.bracket"] = { link = "Delimiter" },
+  -- ["@punctuation.delimiter"] = { link = "Delimiter" },
+  -- ["@punctuation.special"] = { fg = "Teal" },
   ["@string.escape"] = { fg = "Orange" },
   ["@string.regex"] = { fg = "Orange" },
   ["@symbol"] = { link = "Normal" },
@@ -246,9 +286,9 @@ local hl_groups = {
   ["@text.environment.name"] = { link = "String" },
   ["@text.literal"] = { link = "String" },
   --   ["@text.note"] = { bg = c_waveAqua0, fg = c_waveBlue0, bold = true },
-  ["@text.quote"] = { link = "@parameter" },
+  ["@text.quote"] = { link = "@variable.parameter" },
   -- ["@text.reference.markdown_inline"] = { link = "htmlLink" },
-  --   ["@text.strong"] = { bold = true },
+  ["@text.strong"] = { bold = true },
   ["@text.title"] = { link = "Function" },
   --   ["@text.title.1.markdown"] = { fg = "Red" },
   --   ["@text.title.2.markdown"] = { fg = "Red" },
@@ -266,8 +306,9 @@ local hl_groups = {
   --   ["@text.todo.unchecked"] = { fg = "Red" },
   --   ["@text.uri.markdown_inline"] = { link = "htmlString" },
   --   ["@text.warning"] = { bg = c_roninYellow, fg = c_waveBlue0, bold = true },
-  --   ["@variable"] = { fg = c_macroFg0 },
-  --   ["@variable.builtin"] = { fg = "Red", italic = true },
+  ["@variable"] = { fg = "lavender" },
+  ["@variable.builtin"] = { fg = "pink", italic = true },
+  ["@variable.parameter"] = { fg = "baby_pink", italic = true },
   --
   --   -- LSP semantic
   ["@lsp.mod.readonly"] = { link = "Constant" },
@@ -278,7 +319,7 @@ local hl_groups = {
   ["@lsp.type.magicFunction"] = { link = "@function.builtin" },
   ["@lsp.type.method"] = { link = "@method" },
   ["@lsp.type.namespace"] = { link = "@namespace" },
-  ["@lsp.type.parameter"] = { link = "@parameter" },
+  ["@lsp.type.parameter"] = { fg = "baby_pink" },
   ["@lsp.type.selfParameter"] = { link = "@variable.builtin" },
   ["@lsp.type.variable"] = { fg = "NONE" },
   ["@lsp.typemod.function.builtin"] = { link = "@function.builtin" },
@@ -291,7 +332,7 @@ local hl_groups = {
   ["@lsp.typemod.string.injected"] = { link = "String" },
   ["@lsp.typemod.variable.defaultLibrary"] = { link = "Special" },
   ["@lsp.typemod.variable.global"] = { link = "Constant" },
-  ["@lsp.typemod.variable.injected"] = { link = "@variable" },
+  ["@lsp.typemod.variable.injected"] = { link = "@variable.parameter" },
   ["@lsp.typemod.variable.static"] = { link = "Constant" },
   --
   --   -- LSP
@@ -432,6 +473,8 @@ local hl_groups = {
   --   StatusLineHeader = { bg = c_macroBg5, fg = c_macroFg1 },
   --   StatusLineHeaderModified = { bg = "Red", fg = c_macroBg1 },
 }
+
+hl_groups = extend_tbl(hl_groups, nvchad_base_30)
 
 local fg, bg = get_hl("Normal", "fg"), get_hl("NormalFloat", "bg")
 
