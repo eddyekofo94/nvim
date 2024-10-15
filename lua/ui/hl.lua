@@ -178,10 +178,10 @@ return {
   StatusLineGitDelete = { fg = get_hl("GitSignsDelete", "fg"), bg = get_hl("StatusLine", "bg") },
 
   StatusLineFilename = { fg = get_hl("StatusLine", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineDimmed = { fg = "grey_fg", bg = "statusline_bg" },
+  StatusLineDimmed = { fg = { "statusline_bg", "white", 40 }, bg = "statusline_bg" },
 
   StatusLineFileError = { fg = get_hl("ErrorMsg", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineFileModified = { link = "String" },
+  StatusLineFileModified = { fg = "green", bg = "statusline_bg" },
 
   TSAnnotation = { fg = "purple" },
   TSAttribute = { fg = "purple" },
