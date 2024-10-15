@@ -68,6 +68,7 @@ M.base46 = {
     ["@punctuation.bracket"] = { fg = "lavender" },
     ["@punctuation.delimiter"] = { fg = "lavender" },
     ["@variable.parameter"] = { fg = "teal" },
+    -- ["@character"] = { fg = "nord_blue" },
 
     ["@keyword.repeat"] = { fg = "purple" },
     ["@variable.member"] = { fg = "nord_blue" },

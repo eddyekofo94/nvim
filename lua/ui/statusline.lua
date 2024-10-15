@@ -50,10 +50,10 @@ function statusline.diagnostics()
     return
   end
 
-  errors = (errors and errors > 0) and ("E" .. errors .. " ") or ""
-  warnings = (warnings and warnings > 0) and ("W" .. warnings .. " ") or ""
-  hints = (hints and hints > 0) and ("H" .. hints .. " ") or ""
-  info = (info and info > 0) and ("I" .. info .. " ") or ""
+  errors = (errors and errors > 0) and (" " .. errors .. " ") or ""
+  warnings = (warnings and warnings > 0) and (" " .. warnings .. " ") or ""
+  hints = (hints and hints > 0) and (" " .. hints .. " ") or ""
+  info = (info and info > 0) and (" " .. info .. " ") or ""
 
   local icons = string.format(
     "%s%s%s%s",
@@ -67,7 +67,7 @@ function statusline.diagnostics()
     return ""
   end
 
-  local diagnostic_icons = (vim.o.columns > 140 and " - " .. icons or "")
+  local diagnostic_icons = (vim.o.columns > 140 and icons or "")
 
   -- return utils.stl.hl(tostring(diagnostic_icons), "StatusLine")
   return tostring(diagnostic_icons)

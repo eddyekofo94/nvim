@@ -173,14 +173,19 @@ return {
 
   -- StatusLine
   StatusLine = { bg = "statusline_bg" },
-  StatusLineGitAdd = { fg = get_hl("GitSignsAdd", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineGitChange = { fg = get_hl("GitSignsChange", "fg"), bg = get_hl("StatusLine", "bg") },
-  StatusLineGitDelete = { fg = get_hl("GitSignsDelete", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineLspWarning = { fg = "yellow", bg = "statusline_bg" },
+  StatusLineLspInfo = { fg = get_hl("DiagnosticInfo", "fg"), bg = "statusline_bg" },
+  StatusLineLspError = { fg = get_hl("DiagnosticError", "fg"), bg = "statusline_bg" },
+  StatusLineLspHint = { fg = get_hl("DiagnosticHint", "fg"), bg = "statusline_bg" },
 
-  StatusLineFilename = { fg = get_hl("StatusLine", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineGitAdd = { fg = get_hl("GitSignsAdd", "fg"), bg = "statusline_bg" },
+  StatusLineGitChange = { fg = get_hl("GitSignsChange", "fg"), bg = "statusline_bg" },
+  StatusLineGitDelete = { fg = get_hl("GitSignsDelete", "fg"), bg = "statusline_bg" },
+
+  StatusLineFilename = { fg = get_hl("StatusLine", "fg"), bg = "statusline_bg" },
   StatusLineDimmed = { fg = { "statusline_bg", "white", 40 }, bg = "statusline_bg" },
 
-  StatusLineFileError = { fg = get_hl("ErrorMsg", "fg"), bg = get_hl("StatusLine", "bg") },
+  StatusLineFileError = { fg = get_hl("ErrorMsg", "fg"), bg = "statusline_bg" },
   StatusLineFileModified = { fg = "green", bg = "statusline_bg" },
 
   TSAnnotation = { fg = "purple" },
@@ -214,7 +219,7 @@ return {
   TSLabel = { fg = "sun" },
   TSLiteral = { link = "String" },
   TSMath = { fg = "blue" },
-  TSMethod = { fg = "blue" },
+  TSMethod = { fg = "sun" },
   TSMethodCall = { fg = "green" },
   TSNamespace = { link = "Rosewater" },
   TSNone = { fg = "white" },
