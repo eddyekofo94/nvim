@@ -220,7 +220,7 @@ return {
   TSNone = { fg = "white" },
   TSNumber = { fg = "purple" },
   TSOperator = { fg = "sun" },
-  TSParameter = { fg = "white" },
+  TSParameter = { fg = "baby_pink" },
   TSParameterReference = { fg = "white" },
   TSPreProc = { link = "PreProc" },
   TSProperty = { fg = "lavender" },
@@ -367,9 +367,15 @@ return {
   -- bash
   ["@function.builtin.bash"] = { fg = "purple", italic = true },
   --  INFO: 2024-10-14 - Lua
-  ["@lsp.type.parameter.lua"] = { link = "TSParameter" },
   -- bash
   ["@variable.parameter.bash"] = { fg = "white" }, -- INFO: chadrc
   -- lua
   ["@variable.member.lua"] = { fg = "blue" },
+  ["@constructor.lua"] = { link = "Rosewater" },
+  ["@variable.parameter.lua"] = { fg = "sun" }, -- INFO: chadrc
+  ["@function.lua"] = { fg = "blue" },
+  ["@lsp.type.variable.lua"] = { fg = "white" },
+  ["@lsp.type.parameter.lua"] = { fg = "sun" },
+  ["@lsp.type.function.lua"] = { link = "nord_blue" },
+  ["@lsp.type.property.lua"] = { link = "@lsp.type.function.lua" },
 }
