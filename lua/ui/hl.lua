@@ -114,18 +114,24 @@ return {
   WhichKeyFloat = { bg = "black2" },
 
   NeogitDiffDelete = {
-    link = "DiffDelete",
+    fg = { "red", "white", 10 },
+    bg = { "red", "black", 82 },
   },
 
   NeogitDiffDeleteHighlight = {
-    bg = { "red", "black", 70 },
-    fg = { "red", "red", 30 },
+    fg = "red",
+    bg = { "red", "black", 88 },
   },
+
   NeogitDiffDeleteCursor = { fg = "red", bg = "NONE" },
   NeogitChangeDeleted = {
     fg = "red",
     bold = true,
   },
+
+  NotifyINFOIcon = { fg = "cyan" },
+  NotifyINFOTitle = { link = "NotifyINFOIcon" },
+
   IblIndent = { fg = "line" },
   IblScope = { fg = "light_grey" },
 
@@ -395,7 +401,9 @@ return {
   ["@variable.parameter.lua"] = { fg = "sun" }, -- INFO: chadrc
   ["@function.lua"] = { fg = "blue" },
   ["@lsp.type.variable.lua"] = { fg = "white" },
-  ["@lsp.type.parameter.lua"] = { fg = "sun" },
+  ["@lsp.type.parameter.lua"] = { fg = "red" },
   ["@lsp.type.function.lua"] = { link = "blue" },
   ["@lsp.type.property.lua"] = { fg = "lavender" },
+  ["@lsp.type.method.lua"] = { fg = "blue" },
+  ["@lsp.typemod.variable.global.lua"] = { link = "Rosewater" },
 }
