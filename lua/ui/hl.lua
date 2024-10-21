@@ -2,6 +2,7 @@
 local hl = require "utils.hl"
 local get_hl = hl.get_hl
 local nv_bg = { "black", "darker_black", 30 }
+local diff_bg = { "red", "black", 30 }
 
 return {
   BaseDark00 = { fg = "base00" },
@@ -65,7 +66,7 @@ return {
   MiniIconsCyan = { link = "Cyan" },
   MiniIconsGreen = { link = "Green" },
   MiniIconsGrey = { link = "Grey" },
-  MiniIconsOrange = { link = "Sun" },
+  MiniIconsOrange = { link = "Orange" },
   MiniIconsPurple = { link = "Purple" },
   MiniIconsRed = { link = "Red" },
   MiniIconsYellow = { link = "Yellow" },
@@ -109,8 +110,22 @@ return {
   TelescopePreviewNormal = { bg = "darker_black" },
   TelescopePreviewTitle = { fg = "darker_black", bg = "darker_black" },
   TelescopeSelectionCaret = { fg = "pink" },
+
   WhichKeyFloat = { bg = "black2" },
 
+  NeogitDiffDelete = {
+    link = "DiffDelete",
+  },
+
+  NeogitDiffDeleteHighlight = {
+    bg = { "red", "black", 70 },
+    fg = { "red", "red", 30 },
+  },
+  NeogitDiffDeleteCursor = { fg = "red", bg = "NONE" },
+  NeogitChangeDeleted = {
+    fg = "red",
+    bold = true,
+  },
   IblIndent = { fg = "line" },
   IblScope = { fg = "light_grey" },
 
@@ -219,7 +234,7 @@ return {
   TSLabel = { fg = "sun" },
   TSLiteral = { link = "String" },
   TSMath = { fg = "blue" },
-  TSMethod = { fg = "sun" },
+  TSMethod = { link = "Rosewater" },
   TSMethodCall = { fg = "green" },
   TSNamespace = { link = "Rosewater" },
   TSNone = { fg = "white" },
@@ -278,7 +293,7 @@ return {
   ["@float"] = { link = "TSFloat" },
   ["@function"] = { link = "TSFunction" },
   ["@function.builtin"] = { link = "TSFuncBuiltin" },
-  ["@function.call"] = { link = "TSFunctionCall" },
+  ["@function.call"] = { link = "TSMethod" },
   ["@function.macro"] = { link = "TSFuncMacro" },
   ["@include"] = { link = "TSInclude" },
   ["@keyword"] = { link = "TSKeyword" },
@@ -381,6 +396,6 @@ return {
   ["@function.lua"] = { fg = "blue" },
   ["@lsp.type.variable.lua"] = { fg = "white" },
   ["@lsp.type.parameter.lua"] = { fg = "sun" },
-  ["@lsp.type.function.lua"] = { link = "nord_blue" },
-  ["@lsp.type.property.lua"] = { link = "@lsp.type.function.lua" },
+  ["@lsp.type.function.lua"] = { link = "blue" },
+  ["@lsp.type.property.lua"] = { fg = "lavender" },
 }

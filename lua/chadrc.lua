@@ -66,7 +66,7 @@ M.base46 = {
 
     --  INFO: 2024-10-10 - Treesitter
     ["@punctuation.bracket"] = { fg = "lavender" },
-    ["@punctuation.delimiter"] = { fg = "lavender" },
+    ["@punctuation.delimiter"] = { fg = "white" },
     ["@variable.parameter"] = { fg = "teal" },
     -- ["@character"] = { fg = "nord_blue" },
 
