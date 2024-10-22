@@ -7,6 +7,7 @@ local M = {}
 local stl = require "ui.statusline"
 -- local highlights = require "ui.highlights"
 local highlights = require "ui.hl"
+local get_hl = highlights.get_hl
 
 M.ui = {
   tabufline = {
@@ -58,6 +59,10 @@ M.base46 = {
     Include = { fg = "purple" },
     Operator = { fg = "pink" },
     Pmenu = { bg = "darker_black" },
+    Macro = { fg = "lavender" },
+
+    TroublePreview = { fg = "red", bg = "lightbg", bold = true },
+
     TelescopeResultsTitle = { fg = { "black", "darker_black", 30 }, bg = { "black", "darker_black", 30 } },
 
     --  INFO: 2024-10-09 - Plugins
@@ -68,8 +73,10 @@ M.base46 = {
     ["@punctuation.bracket"] = { fg = "lavender" },
     ["@punctuation.delimiter"] = { fg = "white" },
     ["@variable.parameter"] = { fg = "teal" },
+    -- ["@constant.builtin"] = { fg = "" },
     -- ["@character"] = { fg = "nord_blue" },
 
+    ["@function.macro"] = { fg = "lavender" },
     ["@keyword.repeat"] = { fg = "purple" },
     ["@variable.member"] = { fg = "nord_blue" },
     ["@variable.member.key"] = { fg = "nord_blue" },

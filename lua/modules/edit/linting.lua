@@ -20,6 +20,22 @@ return {
     -- or add custom linters.
     ---@type table<string,table>
     linters = {
+      luacheck = {
+        cmd = "luacheck",
+        stdin = true,
+        args = {
+          "--globals",
+          "vim",
+          "lvim",
+          "reload",
+          "--",
+        },
+        stream = "stdout",
+        ignore_exitcode = true,
+        -- parser = require("lint.parser").from_errorformat("%f:%l:%c: %m", {
+        --   source = "luacheck",
+        -- }),
+      },
       selene = {
         -- `condition` is another LazyVim extension that allows you to
         -- dynamically enable/disable linters based on the context.
