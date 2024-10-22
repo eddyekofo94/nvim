@@ -2,6 +2,7 @@ return {
   {
     "dgagn/diagflow.nvim",
     enabled = true,
+    event = "LspAttach",
     config = function()
       require("diagflow").setup {
         -- toggle_event = { "InsertLeave" },

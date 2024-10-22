@@ -117,17 +117,16 @@ return {
     fg = { "red", "white", 10 },
     bg = { "red", "black", 82 },
   },
-
   NeogitDiffDeleteHighlight = {
     fg = "red",
     bg = { "red", "black", 88 },
   },
-
   NeogitDiffDeleteCursor = { fg = "red", bg = "NONE" },
   NeogitChangeDeleted = {
     fg = "red",
     bold = true,
   },
+  NeogitStagedchanges = { fg = "green", bg = { "green", "black", 86 }, bold = true },
 
   NotifyINFOIcon = { fg = "cyan" },
   NotifyINFOTitle = { link = "NotifyINFOIcon" },
@@ -250,7 +249,7 @@ return {
   TSParameterReference = { fg = "white" },
   TSPreProc = { link = "PreProc" },
   TSProperty = { fg = "lavender" },
-  TSPunctBracket = { fg = "lavender" },
+  TSPunctBracket = { link = "Flamingo" },
   TSPunctDelimiter = { link = "Delimiter" },
   TSPunctSpecial = { fg = "blue" },
   TSRepeat = { fg = "red" },
@@ -364,8 +363,6 @@ return {
   ["@variable"] = { link = "TSVariable" },
   ["@variable.builtin"] = { link = "TSVariableBuiltin" },
 
-  ["@property.go"] = { fg = "cyan" },
-
   ["@lsp.type.class"] = { link = "TSType" },
   ["@lsp.type.comment"] = { link = "TSComment" },
   ["@lsp.type.decorator"] = { link = "TSFunction" },
@@ -390,6 +387,11 @@ return {
   ["@lsp.type.typeParameter"] = { link = "TSTypeDefinition" },
   ["@lsp.type.variable"] = { link = "Rosewater" },
 
+  -- go
+  ["@property.go"] = { fg = "yellow" },
+  ["@type.go"] = { link = "Flamingo" },
+  ["@type.builtin.go"] = { link = "Rosewater" },
+
   -- bash
   ["@function.builtin.bash"] = { fg = "purple", italic = true },
   --  INFO: 2024-10-14 - Lua
@@ -402,7 +404,7 @@ return {
   ["@function.lua"] = { fg = "blue" },
   ["@lsp.type.variable.lua"] = { fg = "white" },
   ["@lsp.type.parameter.lua"] = { fg = "red" },
-  ["@lsp.type.function.lua"] = { link = "blue" },
+  ["@lsp.type.function.lua"] = { link = "pink" },
   ["@lsp.type.property.lua"] = { fg = "lavender" },
   ["@lsp.type.method.lua"] = { fg = "blue" },
   ["@lsp.typemod.variable.global.lua"] = { link = "Rosewater" },
