@@ -1,11 +1,4 @@
-require "nvchad.mappings"
-local del_map = vim.keymap.del
---  INFO: 2024-10-24 - Delete nvchad keys
-
-del_map("n", "<C-h>")
-del_map("n", "<C-l>")
-del_map("n", "<C-j>")
-del_map("n", "<C-k>")
+-- require "nvchad.mappings"
 
 local Utils = require "utils.keymap.keymaps"
 local General = require "utils.general"
@@ -62,8 +55,8 @@ Keymap
     Buffer.close_all_empty_buffers()
   end, "Close hidden/empty buffers"))
   :bind(Keymap.new("n", "<leader>bx", function()
-    Buffer.close_buffer(0, false)
-  end, "Close all buffers except current"))
+    Buffer.bufremove(0)
+  end, "Close cur buffer"))
   :bind(Keymap.new("n", "<leader>bX", function()
     Buffer.close_all_buffers(true, true)
   end, "Close all buffers except current"))
@@ -470,3 +463,33 @@ vim.api.nvim_create_autocmd("CmdlineEnter", {
     return true
   end,
 })
+
+--  INFO: 2024-10-29 - NvChad maps
+map("n", "<C-s>", "<cmd>w<CR>", { desc = "general save file" })
+map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
+map("n", "<leader>ch", "<cmd>NvCheatsheet<CR>", { desc = "toggle nvcheatsheet" })
+
+map("n", "<tab>", function()
+  require("nvchad.tabufline").next()
+end, { desc = "buffer goto next" })
+
+map("n", "<S-tab>", function()
+  require("nvchad.tabufline").prev()
+end, { desc = "buffer goto prev" })
+
+map("n", "<leader>th", function()
+  require("nvchad.themes").open()
+end, { desc = "telescope nvchad themes" })
+
+-- terminal toggleable
+map({ "n", "t" }, "<A-v>", function()
+  require("nvchad.term").toggle { pos = "vsp", id = "vtoggleTerm" }
+end, { desc = "terminal toggleable vertical term" })
+
+-- map({ "n", "t" }, "<A-h>", function()
+--   require("nvchad.term").toggle { pos = "sp", id = "htoggleTerm" }
+-- end, { desc = "terminal toggleable horizontal term" })
+
+map({ "n", "t" }, "<A-i>", function()
+  require("nvchad.term").toggle { pos = "float", id = "floatTerm" }
+end, { desc = "terminal toggle floating term" })

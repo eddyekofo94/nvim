@@ -53,6 +53,7 @@ M.base46 = {
     ["@comment"] = { italic = true },
     Enum = { link = "Macro" },
     Method = { link = "blue" },
+    SpecialChar = { fg = "orange" },
     WarningMsg = { link = "DiagnosticWarn" },
     EndOfBuffer = { fg = "black" },
     Identifier = { fg = "lavender" },
