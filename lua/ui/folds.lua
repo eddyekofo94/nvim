@@ -1,5 +1,25 @@
 ---@class lazyvim.util.ui
 local M = {}
+local dots = "󰇘"
+
+function M.foldtext()
+  local ok = pcall(vim.treesitter.get_parser, vim.api.nvim_get_current_buf())
+  local ret = ok and vim.treesitter.foldtext and vim.treesitter.foldtext()
+  if not ret or type(ret) == "string" then
+    ret = { { vim.api.nvim_buf_get_lines(0, vim.v.lnum - 1, vim.v.lnum, false)[1], {} } }
+  end
+  table.insert(ret, { " " .. dots })
+
+  if not vim.treesitter.foldtext then
+    return table.concat(
+      vim.tbl_map(function(line)
+        return line[1]
+      end, ret),
+      " "
+    )
+  end
+  return ret
+end
 
 M.skip_foldexpr = {} ---@type table<number,boolean>
 local skip_check = assert(vim.loop.new_check())
@@ -12,8 +32,8 @@ function M.foldexpr()
     return "0"
   end
 
-  -- don't use treesitter folds for non-file buffers
-  if vim.bo[buf].buftype ~= "" then
+  -- don't use treesitter folds for terminal
+  if vim.bo[buf].buftype == "terminal" then
     return "0"
   end
 

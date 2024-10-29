@@ -205,6 +205,8 @@ return {
 
         vim.cmd.highlight "DiagnosticUnderlineError gui=undercurl" -- use undercurl for error, if supported by terminal
         vim.cmd.highlight "DiagnosticUnderlineWarn  gui=undercurl" -- use undercurl for warning, if supported by terminal
+        vim.cmd.highlight "DiagnosticUnderlineInfo gui=undercurl" -- use undercurl for warning, if supported by terminal
+        vim.cmd.highlight "DiagnosticUnderlineHint gui=undercurl" -- use undercurl for warning, if supported by terminal
       end,
     })
 

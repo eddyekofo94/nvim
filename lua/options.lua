@@ -130,6 +130,16 @@ vim.g.opt_statuscolumn = {
 -- INFO: Statuscolumn
 vim.opt.statuscolumn = [[%!v:lua.require'ui.statuscolumn'.statuscolumn()]]
 
+if vim.fn.has "nvim-0.10" == 1 then
+  opt.smoothscroll = true
+  opt.foldexpr = "v:lua.require'ui.folds'.foldexpr()"
+  opt.foldmethod = "expr"
+  opt.foldtext = ""
+else
+  opt.foldmethod = "indent"
+  opt.foldtext = "v:lua.require'ui.folds'.foldtext()"
+end
+
 opt.backup = true
 opt.backupdir:remove "."
 
