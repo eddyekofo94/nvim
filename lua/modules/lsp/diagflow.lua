@@ -1,7 +1,7 @@
 return {
   {
     "dgagn/diagflow.nvim",
-    enabled = true,
+    enabled = false,
     event = "LspAttach",
     config = function()
       require("diagflow").setup {

@@ -72,9 +72,13 @@ return {
   MiniIconsYellow = { link = "Yellow" },
 
   CmpItemMenu = { fg = "lavender" },
+
+  BlinkCmpMenuBorder = { link = "FloatBorder" },
+
   CursorLineNr = { fg = "white" },
-  FloatBorder = { bg = "black", fg = "line" },
+
   GitSignsChange = { fg = "sun" },
+
   LspInfoBorder = { link = "FloatBorder" },
   NormalFloat = { bg = "darker_black" },
   NormalNC = { link = "Normal" },
@@ -82,7 +86,7 @@ return {
   PmenuSel = { link = "Visual" },
   NvimSeparator = { link = "Debug" },
   EndOfBuffer = { fg = "black" }, -- INFO: buffer
-
+  FloatBorder = { bg = "NONE", fg = "line" },
   HighlightedYankRegion = {
     reverse = true,
   },
@@ -207,6 +211,7 @@ return {
 
   StatusLineFileError = { fg = get_hl("ErrorMsg", "fg"), bg = "statusline_bg" },
   StatusLineFileModified = { fg = "green", bg = "statusline_bg" },
+  StatusLineFileMacro = { fg = "green", bg = "statusline_bg" },
 
   TSAnnotation = { fg = "purple" },
   TSAttribute = { fg = "purple" },

@@ -177,7 +177,7 @@ function statusline.macro()
     return ""
   else
     -- return string.format(" %s%s%s ", "%#String#", "Recording @", recording_register)
-    return "%#String#" .. "Recording @" .. recording_register .. " "
+    return "%#StatusLineFileMacro#" .. "Recording @" .. recording_register .. " "
   end
 end
 
