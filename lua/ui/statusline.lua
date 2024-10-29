@@ -164,7 +164,7 @@ function statusline.file_info()
 
   local file_symbol = (#symbols > 0 and " " .. table.concat(symbols, "") or "")
   return string.format(
-    " %s%s%s",
+    "%s%s%s",
     "%#StatusLineDimmed#" .. fpath,
     "%#" .. fname_hl .. "#" .. icon .. " " .. filename,
     file_symbol

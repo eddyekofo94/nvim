@@ -116,9 +116,14 @@ opt.diffopt:append {
   "indent-heuristic",
 }
 
--- Use system clipboard
-opt.clipboard:append "unnamedplus"
+-- only set clipboard if not in ssh, to make sure the OSC 52
+-- integration works automatically. Requires Neovim >= 0.10.0
+opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus" -- Sync with system clipboard
 
+vim.g.opt_statuscolumn = {
+  folds_open = false, -- show fold sign when fold is open
+  folds_githl = false, -- highlight fold sign with git sign color
+}
 -- Align columns in quickfix window
 -- opt.quickfixtextfunc = [[v:lua.require'utils.misc'.qftf]]
 
@@ -148,16 +153,6 @@ vim.opt.fillchars = {
   eob = " ",
 }
 
--- opt.fillchars = {
---   fold      = '·',
---   foldsep   = ' ',
---   eob       = ' ',
--- }
--- opt.fillchars:append({
---   foldopen  = '',
---   foldclose = '',
--- })
-
 vim.cmd [[
   let &t_Cs = "\e[4:3m"
   let &t_Ce = "\e[4:0m"
@@ -184,6 +179,7 @@ g.fzf_layout = {
     pos = 'center',
   },
 }
+
 env.FZF_DEFAULT_OPTS = (env.FZF_DEFAULT_OPTS or '')
   .. ' --border=sharp --margin=0 --padding=0'
 
@@ -215,13 +211,13 @@ local function _load(runtime, flag, event)
   end
 end
 
-vim.api.nvim_create_autocmd({ "VimEnter" }, {
-  once = true,
-  group = vim.api.nvim_create_augroup("Highlights", {}),
-  callback = function()
-    require "ui.highlights"
-  end,
-})
+-- vim.api.nvim_create_autocmd({ "VimEnter" }, {
+--   once = true,
+--   group = vim.api.nvim_create_augroup("Highlights", {}),
+--   callback = function()
+--     require "ui.highlights"
+--   end,
+-- })
 
 local highlighturl_group = vim.api.nvim_create_augroup("highlighturl", { clear = true })
 vim.api.nvim_set_hl(0, "HighlightURL", { default = true, underline = true })

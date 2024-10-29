@@ -150,7 +150,7 @@ return {
   Statement = { fg = "red" },
 
   StorageClass = { fg = "sun" },
-  Tag = { fg = "sun" },
+  Tag = { fg = "cayn" },
   Label = { fg = "sun" },
   Structure = { fg = "sun" },
   Operator = { fg = "sun" },
@@ -390,7 +390,9 @@ return {
   -- go
   ["@property.go"] = { fg = "yellow" },
   ["@type.go"] = { link = "Flamingo" },
-  ["@type.builtin.go"] = { link = "Rosewater" },
+  ["@type.builtin.go"] = { fg = "yellow" },
+  ["@variable.member.go"] = { fg = "sun" },
+  ["@variable.parameter.go"] = { fg = "red" },
 
   -- bash
   ["@function.builtin.bash"] = { fg = "purple", italic = true },
@@ -403,8 +405,8 @@ return {
   ["@variable.parameter.lua"] = { fg = "sun" }, -- INFO: chadrc
   ["@function.lua"] = { fg = "blue" },
   ["@lsp.type.variable.lua"] = { fg = "white" },
-  ["@lsp.type.parameter.lua"] = { fg = "red" },
-  ["@lsp.type.function.lua"] = { link = "pink" },
+  ["@lsp.type.parameter.lua"] = { fg = "orange" },
+  ["@lsp.type.function.lua"] = { link = "nord_blue" },
   ["@lsp.type.property.lua"] = { fg = "lavender" },
   ["@lsp.type.method.lua"] = { fg = "blue" },
   ["@lsp.typemod.variable.global.lua"] = { link = "Rosewater" },

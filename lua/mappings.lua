@@ -1,4 +1,11 @@
--- require "nvchad.mappings"
+require "nvchad.mappings"
+local del_map = vim.keymap.del
+--  INFO: 2024-10-24 - Delete nvchad keys
+
+del_map("n", "<C-h>")
+del_map("n", "<C-l>")
+del_map("n", "<C-j>")
+del_map("n", "<C-k>")
 
 local Utils = require "utils.keymap.keymaps"
 local General = require "utils.general"
