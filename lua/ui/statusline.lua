@@ -4,6 +4,7 @@ local fs = require "utils.fs"
 local utils = require "utils"
 local General = require("utils").general
 local icon_provider = General.icon_provider
+local icons = require("utils").static.icons
 
 local groupid = vim.api.nvim_create_augroup("StatusLine", {})
 
@@ -51,8 +52,8 @@ function statusline.diagnostics()
   end
 
   errors = (errors and errors > 0) and (" " .. errors .. " ") or ""
-  warnings = (warnings and warnings > 0) and (" " .. warnings .. " ") or ""
-  hints = (hints and hints > 0) and (" " .. hints .. " ") or ""
+  warnings = (warnings and warnings > 0) and ("󰔶 " .. warnings .. " ") or ""
+  hints = (hints and hints > 0) and ("󰌶  " .. hints .. " ") or ""
   info = (info and info > 0) and (" " .. info .. " ") or ""
 
   local icons = string.format(
