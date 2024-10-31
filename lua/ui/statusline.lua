@@ -53,7 +53,7 @@ function statusline.diagnostics()
 
   errors = (errors and errors > 0) and (" " .. errors .. " ") or ""
   warnings = (warnings and warnings > 0) and ("󰔶 " .. warnings .. " ") or ""
-  hints = (hints and hints > 0) and ("󰌶  " .. hints .. " ") or ""
+  hints = (hints and hints > 0) and ("󰌶 " .. hints .. " ") or ""
   info = (info and info > 0) and (" " .. info .. " ") or ""
 
   local icons = string.format(
