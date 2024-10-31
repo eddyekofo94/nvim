@@ -85,7 +85,7 @@ M.base46 = {
     ["@variable.builtin"] = { fg = "pink", italic = true },
     ["@keyword.conditional"] = { fg = "red" },
     ["@function.method"] = { fg = "red" },
-    ["@function.builtin"] = { fg = "cyan" },
+    ["@function.builtin"] = { fg = "orange" },
     ["@property"] = { fg = "lavender" },
     --  INFO: 2024-10-14 - Markup
     ["@markup.link"] = { fg = "cyan" },

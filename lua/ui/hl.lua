@@ -410,7 +410,7 @@ return {
   ["@variable.parameter.lua"] = { fg = "sun" }, -- INFO: chadrc
   ["@function.lua"] = { fg = "blue" },
   ["@lsp.type.variable.lua"] = { fg = "white" },
-  ["@lsp.type.parameter.lua"] = { fg = "orange" },
+  ["@lsp.type.parameter.lua"] = { fg = "pink" },
   ["@lsp.type.function.lua"] = { link = "nord_blue" },
   ["@lsp.type.property.lua"] = { fg = "lavender" },
   ["@lsp.type.method.lua"] = { fg = "blue" },

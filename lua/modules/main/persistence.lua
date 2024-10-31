@@ -2,7 +2,7 @@ return {
   "folke/persistence.nvim",
   event = "BufReadPre",
   lazy = false,
-  enabled = true,
+  enabled = false,
   init = function()
     vim.api.nvim_create_autocmd("BufReadCmd", {
       once = true,
