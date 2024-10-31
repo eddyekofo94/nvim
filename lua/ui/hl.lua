@@ -61,15 +61,15 @@ return {
 
   -- Mini
   -- MiniFilesBorder = {},
-  MiniIconsAzure = { link = "NordBlue" },
-  MiniIconsBlue = { link = "Blue" },
-  MiniIconsCyan = { link = "Cyan" },
-  MiniIconsGreen = { link = "Green" },
-  MiniIconsGrey = { link = "Grey" },
-  MiniIconsOrange = { link = "Orange" },
-  MiniIconsPurple = { link = "Purple" },
-  MiniIconsRed = { link = "Red" },
-  MiniIconsYellow = { link = "Yellow" },
+  MiniIconsAzure = { fg = "nord_blue" },
+  MiniIconsBlue = { fg = "blue" },
+  MiniIconsCyan = { fg = "cyan" },
+  MiniIconsGreen = { fg = "green" },
+  MiniIconsGrey = { fg = "grey" },
+  MiniIconsOrange = { fg = "orange" },
+  MiniIconsPurple = { fg = "purple" },
+  MiniIconsRed = { fg = "red" },
+  MiniIconsYellow = { fg = "yellow" },
 
   CmpItemMenu = { fg = "lavender" },
 
@@ -261,7 +261,7 @@ return {
   TSStorageClass = { fg = "sun" },
   TSStorageClassLifetime = { fg = "sun" },
   TSStrike = { fg = "grey_fg" },
-  TSString = { fg = "String" },
+  TSString = { link = "String" },
   TSStringEscape = { fg = "green" },
   TSStringRegex = { fg = "green" },
   TSStringSpecial = { link = "SpecialChar" },
@@ -309,6 +309,7 @@ return {
   ["@keyword"] = { link = "TSKeyword" },
   ["@keyword.function"] = { link = "TSKeywordFunction" },
   ["@keyword.conditional"] = { link = "Maroon" },
+
   -- ["@spell"] = { fg = "orange" },
   ["@keyword.operator"] = { link = "TSKeywordOperator" },
   ["@keyword.return"] = { link = "TSKeywordReturn" },
@@ -367,6 +368,12 @@ return {
   ["@uri"] = { link = "TSURI" },
   ["@variable"] = { link = "TSVariable" },
   ["@variable.builtin"] = { link = "TSVariableBuiltin" },
+  ["@variable.member"] = { fg = "lavender" }, -- For fields.
+
+  -- Diff
+  ["@diff.plus"] = { link = "diffAdded" }, -- added text (for diff files)
+  ["@diff.minus"] = { link = "diffRemoved" }, -- deleted text (for diff files)
+  ["@diff.delta"] = { link = "diffChanged" }, -- deleted text (for diff files)
 
   ["@lsp.type.class"] = { link = "TSType" },
   ["@lsp.type.comment"] = { link = "TSComment" },
@@ -404,6 +411,13 @@ return {
   --  INFO: 2024-10-14 - Lua
   -- bash
   ["@variable.parameter.bash"] = { fg = "white" }, -- INFO: chadrc
+
+  --- zsh
+  zshKSHFunction = { link = "Function" },
+  zshFunction = { fg = "blue" }, -- INFO: chadrc
+  zshParentheses = { fg = "lavender" }, -- INFO: chadrc
+  zshBrackets = { fg = "lavender" }, -- INFO: chadrc
+
   -- lua
   ["@variable.member.lua"] = { fg = "blue" },
   ["@constructor.lua"] = { link = "Rosewater" },
