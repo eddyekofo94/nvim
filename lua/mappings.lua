@@ -47,7 +47,7 @@ Keymap
   end, "Hide window")
   :bind(Keymap.new("n", "<leader>wx", function()
     return Buffer.close_window()
-  end, "Close current windows "))
+  end, "Close current window"))
   :bind(Keymap.new("n", "<leader>wX", function()
     return Buffer.close_all_visible_window(false)
   end, "Close all windows but current"))
