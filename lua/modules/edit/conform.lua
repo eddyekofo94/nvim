@@ -84,7 +84,7 @@ local opts = {
 
 return {
   "stevearc/conform.nvim",
-  event = "VeryLazy",
+  event = "BufReadPre",
   dependencies = {
     "williamboman/mason.nvim",
     {

@@ -1,9 +1,10 @@
 return {
   "stefanwatt/trek.nvim",
+  lazy = false,
+  enabled = false,
   dependencies = {
     "nvim-tree/nvim-web-devicons",
   },
-  lazy = false,
   keys = {
     {
       "<leader>P",

@@ -72,6 +72,8 @@ return {
   MiniIconsYellow = { fg = "yellow" },
 
   CmpItemMenu = { fg = "lavender" },
+  CmpItemAbbrDeprecated = { fg = "light_grey", strikethrough = true },
+  CmpItemAbbrDeprecatedDefault = { link = "CmpItemAbbrDeprecated" },
 
   BlinkCmpMenuBorder = { link = "FloatBorder" },
 
@@ -80,6 +82,8 @@ return {
   GitSignsChange = { fg = "sun" },
 
   LspInfoBorder = { link = "FloatBorder" },
+  DiagnosticDeprecated = { fg = { "red", "black", 30 }, strikethrough = true },
+
   NormalFloat = { bg = "darker_black" },
   NormalNC = { link = "Normal" },
   Pmenu = { bg = "black2", fg = "" },
