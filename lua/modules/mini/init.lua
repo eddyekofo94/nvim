@@ -4,8 +4,6 @@ return {
     config = function()
       require("mini.bufremove").setup()
 
-      require("mini.trailspace").setup()
-
       require("mini.fuzzy").setup()
 
       -- map("n", "<leader>sn", MiniFuzzy.filtersort(word, candidate_array), opts)
@@ -14,6 +12,15 @@ return {
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
+    end,
+  },
+  {
+
+    "echasnovski/mini.trailspace",
+    enabled = true,
+    event = "BufReadPre",
+    config = function()
+      require("mini.trailspace").setup()
     end,
   },
 

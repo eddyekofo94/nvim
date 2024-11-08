@@ -61,7 +61,7 @@ function statusline.diagnostics()
     utils.stl.hl(tostring(errors), "StatusLineLspError"),
     utils.stl.hl(tostring(warnings), "StatusLineLspWarning"),
     utils.stl.hl(tostring(hints), "StatusLineLspHint"),
-    utils.stl.hl(tostring(info), "ErrorMsg")
+    utils.stl.hl(tostring(info), "StatusLineLspInfo")
   )
 
   if errors == "" and warnings == "" and hints == "" and info == "" then

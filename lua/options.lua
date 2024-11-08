@@ -128,7 +128,7 @@ vim.g.opt_statuscolumn = {
 -- opt.quickfixtextfunc = [[v:lua.require'utils.misc'.qftf]]
 
 -- INFO: Statuscolumn
-vim.opt.statuscolumn = [[%!v:lua.require'ui.statuscolumn'.statuscolumn()]]
+-- vim.opt.statuscolumn = [[%!v:lua.require'ui.statuscolumn'.statuscolumn()]]
 
 if vim.fn.has "nvim-0.10" == 1 then
   opt.smoothscroll = true

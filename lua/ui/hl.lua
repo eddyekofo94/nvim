@@ -96,7 +96,8 @@ return {
   },
 
   -- OverLength
-  OverLength = { fg = "NONE", bg = "#840000" },
+  -- OverLength = { fg = "NONE", bg = "#840000" },
+  OverLength = { fg = "NONE", bg = { "red", "darker_black", 85 } },
 
   -- Flash.nvim
   FlashLabel = { fg = "green" },
@@ -138,6 +139,11 @@ return {
 
   NotifyINFOIcon = { fg = "cyan" },
   NotifyINFOTitle = { link = "NotifyINFOIcon" },
+
+  FocusedWindowBg = { fg = "white", bg = { "black", "darker_black", 45 } },
+
+  FocusedWindow = { link = "FocusedWindowBg" },
+  UnfocusedWindow = { fg = { "white", "black", 20 } },
 
   IblIndent = { fg = "line" },
   IblScope = { fg = "light_grey" },

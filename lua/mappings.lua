@@ -165,9 +165,6 @@ Keymap
   :bind(Keymap.new({ "n", "x" }, "S", '"_S', "Don't save to register"))
   :bind(Keymap.new({ "n", "x" }, "x", '"_x'))
   :bind(Keymap.new("x", "X", '"_c'))
-  :bind(Keymap.new("n", "<M-l>", function()
-    return Utils.escapePair()
-  end, "move over a closing element in normal mode"))
   :bind(Keymap.new("n", "[q", vim.cmd.cprev, { desc = "Previous quickfix" }))
   :bind(Keymap.new("n", "]q", vim.cmd.cnext, { desc = "Next quickfix" }))
   -- :bind(Keymap.new("n", "<leader>qq", function() -- DISABLED: for quicker.nvim

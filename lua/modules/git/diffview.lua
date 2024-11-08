@@ -10,6 +10,19 @@ return {
     opts = function(_, opts)
       local actions = require "diffview.actions"
 
+      --       default = {
+      --         disable_diagnostics = true, -- Temporarily disable diagnostics for diff buffers while in the view.
+      --       },
+      --       merge_tool = {
+      --         disable_diagnostics = true, -- Temporarily disable diagnostics for diff buffers while in the view.
+      --       },
+      opts.enhanced_diff_hl = true
+
+      opts.default_args = {
+        DiffviewOpen = { "--untracked-files=no" },
+        DiffviewFileHistory = { "--base=LOCAL" },
+      }
+
       opts.enhanced_diff_hl = true
       opts.view = {
         default = { winbar_info = true },
@@ -42,6 +55,16 @@ return {
           { "n", prefix .. "B",  actions.conflict_choose_all("base"),    { desc = "Choose the BASE version of a conflict for the whole file" } },
           { "n", prefix .. "A",  actions.conflict_choose_all("all"),     { desc = "Choose all the versions of a conflict for the whole file" } },
           { "n", prefix .. "X",  actions.conflict_choose_all("none"),    { desc = "Delete the conflict region for the whole file" } },
+        },
+      }
+    end,
+    config = function()
+      require("diffview").setup {
+        default = {
+          disable_diagnostics = true, -- Temporarily disable diagnostics for diff buffers while in the view.
+        },
+        merge_tool = {
+          disable_diagnostics = true, -- Temporarily disable diagnostics for diff buffers while in the view.
         },
       }
     end,
