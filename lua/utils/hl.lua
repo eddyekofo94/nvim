@@ -185,6 +185,14 @@ function M.set_hl(hlgroup_name, attr)
   M.set(0, hlgroup_name, M.normalize(attr))
 end
 
+-- Set link highlight groups
+---@param hlgroup_name string of hlgroups
+---@param attr string of hlgroup
+function M.link(hlgroup_name, attr)
+  local link = { link = attr }
+  M.set(0, hlgroup_name, M.normalize(link))
+end
+
 -- Set highlight groups
 ---@param hlgroups table of hlgroups
 function M.sethl_groups(hlgroups)
