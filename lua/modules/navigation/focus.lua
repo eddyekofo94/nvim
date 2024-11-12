@@ -43,6 +43,7 @@ local function config()
   }
 
   local opts = {
+    commands = true,
     autoresize = {
       enable = true,
       quickfixheight = 60,
