@@ -123,17 +123,6 @@ return {
       end,
     },
   },
-  -- config = function()
-  --   require("snacks").setup {}
-  --
-  --   local Utils = require "utils.keymap.keymaps"
-  --   local map = Utils.set_keymap
-  --   local lmap = Utils.set_leader_keymap
-  --
-  --   map({ "t", "n" }, "<M-;>", function()
-  --     Snacks.terminal.toggle()
-  --   end, "Toggle terminal")
-  -- end,
   init = function()
     vim.api.nvim_create_autocmd("User", {
       pattern = "VeryLazy",

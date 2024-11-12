@@ -51,14 +51,19 @@ local function config()
     signcolumn = true,
     excluded_buftypes = ignore_filetypes,
     excluded_filetypes = ignore_filetypes,
-    compatible_filetrees = { "git-conflict" },
+    compatible_filetrees = { "git-conflict", "oil", "diffview" },
     ui = {
       absolutenumber_unfocussed = true,
       number = false, -- Display line numbers in the focussed window only
       relativenumber = false, -- Display relative line numbers in the focussed window only
       hybridnumber = false, -- Display hybrid line numbers in the focussed window only
-      signcolumn = true, -- Display signcolumn in the focussed window only
+      signcolumn = false, -- Display signcolumn in the focussed window only
       cursorline = true, -- Display a cursorline in the focussed window only
+      winhighlight = false, -- Enable auto highlighting for focussed/unfocussed windows
+      -- colorcolumn = {
+      --   enable = true,
+      --   list = "+1,+2",
+      -- },
     },
   }
 
@@ -109,13 +114,20 @@ local function config()
     desc = "Disable focus autoresize for FileType",
   })
 
+  local hl = require "utils.hl"
+
+  hl.link("FocusedWindow", "FocusedWindowBg")
+  hl.link("UnfocusedWindow", "VisualNOS")
+
+  -- hl.set_hl("UnfocusedWindow", { link = "VisualNOS" })
+
   require("focus").setup(opts)
 end
 
 return {
   "beauwilliams/focus.nvim",
   enabled = true,
-  event = "VimEnter",
+  event = "BufReadPre",
   cmd = {
     "FocusAutoresize",
   },
