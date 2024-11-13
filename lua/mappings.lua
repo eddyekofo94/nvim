@@ -10,9 +10,6 @@ local nxo = Utils.nxo
 
 local Keymap = {}
 
--- vim.g.mapleader = " "
--- vim.g.maplocalleader = " "
-
 map({ "n", "v" }, "<leader>ll", function()
   local state = vim.o.number
   vim.o.number = not state

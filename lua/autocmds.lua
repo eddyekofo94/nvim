@@ -2,9 +2,11 @@ local autocmd = vim.api.nvim_create_autocmd
 local groupid = vim.api.nvim_create_augroup
 local contains = vim.tbl_contains
 
-local utils = require "utils.general"
-local Buffer = require "utils.buffer"
-local special_filetypes = require("utils.fs").special_filetypes
+local Utils = require "utils"
+local General = Utils.general
+local Buffer = Utils.buffer
+local keymap = Utils.keymap.keymaps.set_keymap
+local special_filetypes = Utils.fs.special_filetypes
 -- local augroup = utils.create_augroup
 local opt = vim.opt
 
@@ -18,15 +20,6 @@ local function augroup(group, ...)
     autocmd(unpack(a))
   end
 end
-
--- Disabled
--- autocmd("BufWinEnter", {
---   callback = function(data)
---     Buffer.open_help(data.buf)
---   end,
---   -- group = general,
---   desc = "Redirect help to floating window",
--- })
 
 augroup("BigFileSettings", {
   "BufReadPre",
@@ -128,11 +121,7 @@ augroup("AutoCwd", {
       local win = vim.api.nvim_get_current_win()
 
       vim.schedule(function()
-        if
-          not vim.api.nvim_buf_is_valid(buf)
-          or not vim.api.nvim_win_is_valid(win)
-          or not vim.api.nvim_win_get_buf(win) == buf
-        then
+        if not Buffer.is_buf_valid(0) or not Buffer.is_win_valid(win) then
           return
         end
         vim.api.nvim_win_call(win, function()

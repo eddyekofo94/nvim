@@ -63,6 +63,10 @@ M.base46 = {
     Operator = { fg = "pink" },
     Pmenu = { bg = "darker_black" },
     Macro = { fg = "lavender" },
+    CursorLine = { bg = { "black2", "black", 30 } },
+
+    FocusedWindow = { fg = "white", bg = { "black", "darker_black", 45 } },
+    UnfocusedWindow = { fg = { "white", "black", 20 } },
 
     TroublePreview = { fg = "red", bg = "lightbg", bold = true },
 
