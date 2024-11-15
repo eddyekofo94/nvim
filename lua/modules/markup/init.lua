@@ -1,58 +1,59 @@
 return {
   {
-    'lervag/vimtex',
-    ft = { 'tex', 'markdown' },
+    "lervag/vimtex",
+    ft = { "tex", "markdown" },
     config = function()
-      require('configs.vimtex')
+      require "configs.vimtex"
     end,
   },
 
   {
-    'iamcco/markdown-preview.nvim',
-    enabled = not vim.g.no_nf,
-    ft = 'markdown',
-    build = 'cd app && npm install && cd - && git restore .',
+    "iamcco/markdown-preview.nvim",
+    enabled = false,
+    -- enabled = not vim.g.no_nf,
+    ft = "markdown",
+    build = "cd app && npm install && cd - && git restore .",
     config = function()
-      require('configs.markdown-preview')
+      require "configs.markdown-preview"
     end,
   },
 
   {
-    'dhruvasagar/vim-table-mode',
-    cmd = 'TableModToggle',
-    ft = 'markdown',
+    "dhruvasagar/vim-table-mode",
+    cmd = "TableModToggle",
+    ft = "markdown",
     config = function()
-      require('configs.vim-table-mode')
+      require "configs.vim-table-mode"
     end,
   },
 
   {
-    'jmbuhr/otter.nvim',
-    ft = { 'markdown' },
+    "jmbuhr/otter.nvim",
+    ft = { "markdown" },
     dependencies = {
-      'nvim-treesitter/nvim-treesitter',
+      "nvim-treesitter/nvim-treesitter",
     },
     config = function()
-      require('configs.otter')
+      require "configs.otter"
     end,
   },
 
   {
-    'benlubas/molten-nvim',
-    ft = 'python',
-    event = 'BufEnter *.ipynb',
-    build = ':UpdateRemotePlugins',
+    "benlubas/molten-nvim",
+    ft = "python",
+    event = "BufEnter *.ipynb",
+    build = ":UpdateRemotePlugins",
     config = function()
-      require('configs.molten')
+      require "configs.molten"
     end,
   },
 
   {
-    'lukas-reineke/headlines.nvim',
-    ft = { 'markdown', 'norg', 'org', 'qml' },
-    dependencies = 'nvim-treesitter/nvim-treesitter',
+    "lukas-reineke/headlines.nvim",
+    ft = { "markdown", "norg", "org", "qml" },
+    dependencies = "nvim-treesitter/nvim-treesitter",
     config = function()
-      require('configs.headlines')
+      require "configs.headlines"
     end,
   },
 }

@@ -139,6 +139,33 @@ augroup("AutoCwd", {
   },
 })
 
+local function smart_close()
+  if vim.fn.winnr "$" ~= 1 then
+    vim.api.nvim_win_close(0, true)
+    vim.cmd "wincmd p"
+  end
+end
+
+autocmd("FileType", {
+  desc = "Close certain filetypes by pressing q",
+  pattern = { "*" },
+  callback = function(event)
+    local is_unmapped = vim.fn.hasmapto("q", "n") == 0
+    local is_eligible = is_unmapped
+      or vim.wo.previewwindow
+      -- or contains(smart_close_buftypes, vim.bo.buftype)
+      or contains(special_filetypes, vim.bo.filetype)
+    if vim.bo.modifiable == false or vim.bo.readonly == true then
+      vim.bo[event.buf].buflisted = false
+      keymap("n", "q", smart_close, {
+        desc = "Close window",
+        buffer = event.buf,
+        nowait = true,
+      })
+    end
+  end,
+})
+
 augroup("PromptBufKeymaps", {
   "BufEnter",
   {
@@ -260,51 +287,51 @@ augroup("FixCmdLineIskeyword", {
 })
 
 -- INFO: This is where background (bg) of special buffers are set
--- augroup("SpecialBufHl", {
---   { "BufWinEnter", "BufNew", "FileType", "TermOpen" },
---   {
---     desc = "Set background color for special buffers.",
---     callback = function(info)
---       if vim.bo[info.buf].bt == "" then
---         return
---       end
---       -- Current window isn't necessarily the window of the buffer that
---       -- triggered the event, use `bufwinid()` to get the first window of
---       -- the triggering buffer. We can also use `win_findbuf()` to get all
---       -- windows that display the triggering buffer, but it is slower and using
---       -- `bufwinid()` is enough for our purpose.
---       local winid = vim.fn.bufwinid(info.buf)
---       if winid == -1 then
---         return
---       end
---       vim.api.nvim_win_call(winid, function()
---         local wintype = vim.fn.win_gettype()
---         if wintype == "popup" or wintype == "autocmd" then
---           return
---         end
---         vim.opt_local.winhl:append {
---           Normal = "NormalSpecial",
---           EndOfBuffer = "NormalSpecial",
---         }
---       end)
---     end,
---   },
--- }, {
---   { "UIEnter", "ColorScheme", "OptionSet" },
---   {
---     desc = "Set special buffer normal hl.",
---     callback = function(info)
---       if info.event == "OptionSet" and info.match ~= "background" then
---         return
---       end
---       local hl = require "utils.hl"
---       local blended = hl.blend("Normal", "NormalFloat")
---       hl.set_default(0, "NormalSpecial", blended)
---       hl.set_default(0, "EndOfBuffer", blended)
---       hl.set_default(0, "FloatBorder", blended)
---     end,
---   },
--- })
+augroup("SpecialBufHl", {
+  { "BufWinEnter", "BufNew", "FileType", "TermOpen" },
+  {
+    desc = "Set background color for special buffers.",
+    callback = function(info)
+      if vim.bo[info.buf].bt == "" then
+        return
+      end
+      -- Current window isn't necessarily the window of the buffer that
+      -- triggered the event, use `bufwinid()` to get the first window of
+      -- the triggering buffer. We can also use `win_findbuf()` to get all
+      -- windows that display the triggering buffer, but it is slower and using
+      -- `bufwinid()` is enough for our purpose.
+      local winid = vim.fn.bufwinid(info.buf)
+      if winid == -1 then
+        return
+      end
+      vim.api.nvim_win_call(winid, function()
+        local wintype = vim.fn.win_gettype()
+        if wintype == "popup" or wintype == "autocmd" then
+          return
+        end
+        vim.opt_local.winhl:append {
+          Normal = "NormalSpecial",
+          EndOfBuffer = "NormalSpecial",
+        }
+      end)
+    end,
+  },
+}, {
+  { "UIEnter", "ColorScheme", "OptionSet" },
+  {
+    desc = "Set special buffer normal hl.",
+    callback = function(info)
+      if info.event == "OptionSet" and info.match ~= "background" then
+        return
+      end
+      local hl = require "utils.hl"
+      local blended = hl.blend("Normal", "NormalFloat")
+      hl.set_default(0, "NormalSpecial", blended)
+      hl.set_hl("EndOfBuffer", { fg = hl.get_hl("NormalSpecial", "bg") })
+      -- hl.set_default(0, "EndOfBuffer", blended)
+    end,
+  },
+})
 
 -- Close certain filetypes by pressing q.
 -- autocmd({ "UIEnter", "ColorScheme", "OptionSet" }, {
