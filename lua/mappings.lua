@@ -332,11 +332,11 @@ end, "Tab close")
 --   Buffer.close_all_other_tabs()
 -- end, "Tab close")
 
-map({ "n", "x" }, "gt", tabswitch(vim.cmd.tabnext))
-map({ "n", "x" }, "gT", tabswitch(vim.cmd.tabprev))
-map({ "n", "x" }, "gy", tabswitch(vim.cmd.tabprev)) -- gT is too hard to press
+map({ "n", "x" }, "gt", tabswitch(vim.cmd.tabnext), "Next Tab")
+map({ "n", "x" }, "gT", tabswitch(vim.cmd.tabprev), "Prev Tab")
+map({ "n", "x" }, "gy", tabswitch(vim.cmd.tabprev), "Prev Tab") -- gT is too hard to press
 
-map({ "n", "x" }, "<Leader>0", "<Cmd>0tabnew<CR>")
+map({ "n", "x" }, "<Leader>0", "<Cmd>0tabnew<CR>", "New Tab")
 map({ "n", "x" }, "<Leader>1", tabswitch(vim.cmd.tabnext, 1))
 map({ "n", "x" }, "<Leader>2", tabswitch(vim.cmd.tabnext, 2))
 map({ "n", "x" }, "<Leader>3", tabswitch(vim.cmd.tabnext, 3))
