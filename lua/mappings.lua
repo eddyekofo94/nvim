@@ -429,7 +429,7 @@ map("!a", "balme", "blame")
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   once = true,
   callback = function()
-    if General.is_available "telescope.nvim" then
+    if General.is_plugin_available "telescope.nvim" then
       Utils.command_abbrev("tel", "Telescope")
     end
     -- local utils = require "utils"

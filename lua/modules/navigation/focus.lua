@@ -30,7 +30,7 @@ local function config()
     "Trouble",
     "diffview",
     "diffview*",
-    "oil",
+    -- "oil",
     "telescope",
     "toggleterm",
     "lazy",

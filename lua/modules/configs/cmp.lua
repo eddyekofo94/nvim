@@ -43,7 +43,7 @@ end
 local modified_priority = {
   [types.lsp.CompletionItemKind.Variable] = 1,
   [types.lsp.CompletionItemKind.Constant] = 1,
-  [types.lsp.CompletionItemKind.Keyword] = 1, -- top
+  [types.lsp.CompletionItemKind.Keyword] = 1,
   [types.lsp.CompletionItemKind.Snippet] = 2,
   [types.lsp.CompletionItemKind.Function] = types.lsp.CompletionItemKind.Method,
   [types.lsp.CompletionItemKind.Text] = 100, -- bottom
@@ -343,8 +343,9 @@ cmp.setup {
           return t1 < t2
         end
       end,
-      compare.offset,
+      compare.sort_text,
       compare.recently_used,
+      compare.offset,
       compare.exact,
       function(entry1, entry2) -- sort by compare kind (Variable, Function etc)
         local kind1 = modified_kind(entry1:get_kind())
@@ -361,7 +362,6 @@ cmp.setup {
         end
       end,
       compare.scopes,
-      compare.sort_text,
       compare.order,
       fuzzy_path_comparator,
     },
@@ -497,12 +497,12 @@ cmp.setup.cmdline(":", {
       max_item_count = 30,
       group_index = 2,
     },
-    { name = "cmdline_history", max_item_count = 10 },
     {
       name = "fuzzy_path",
       group_index = 1,
       option = { fd_timeout_msec = 1500 },
     },
+    { name = "cmdline_history", max_item_count = 10 },
     { name = "path", max_item_count = 20 },
   },
 })

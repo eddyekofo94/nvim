@@ -350,7 +350,7 @@ function M.close_buffer(bufnr, force)
     bufnr = vim.api.nvim_get_current_buf()
   end
   if
-    utils.is_available "mini.bufremove" and M.is_buf_valid(bufnr)
+    utils.is_plugin_available "mini.bufremove" and M.is_buf_valid(bufnr)
     -- and #vim.t.bufs > 1
   then
     if not force and vim.api.nvim_get_option_value("modified", { buf = bufnr }) then

@@ -57,7 +57,7 @@ M.base46 = {
     -- PreProc = { fg = "orange" },
     SpecialChar = { fg = "orange" },
     WarningMsg = { link = "DiagnosticWarn" },
-    DiagnosticInfo = { fg = "cyan" },
+    DiagnosticInfo = { fg = { "cyan", "white", 30 } },
     EndOfBuffer = { fg = "black" },
     Identifier = { fg = "lavender" },
     Include = { fg = "purple" },

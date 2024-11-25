@@ -1,4 +1,5 @@
 require "nvchad.options"
+local General = require "utils.general"
 
 -- Enable faster lua loader using byte-compilation
 -- https://github.com/neovim/neovim/commit/2257ade3dc2daab5ee12d27807c0b3bcf103cd29
@@ -128,7 +129,9 @@ vim.g.opt_statuscolumn = {
 -- opt.quickfixtextfunc = [[v:lua.require'utils.misc'.qftf]]
 
 -- INFO: Statuscolumn
--- vim.opt.statuscolumn = [[%!v:lua.require'ui.statuscolumn'.statuscolumn()]]
+if not General.is_plugin_available "snacks.nvim" then
+  vim.opt.statuscolumn = [[%!v:lua.require'ui.statuscolumn'.statuscolumn()]]
+end
 
 if vim.fn.has "nvim-0.10" == 1 then
   opt.smoothscroll = true
