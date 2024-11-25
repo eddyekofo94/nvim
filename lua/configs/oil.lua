@@ -397,36 +397,36 @@ oil.setup {
   },
 }
 
-local groupid = vim.api.nvim_create_augroup("OilSyncCwd", {})
-vim.api.nvim_create_autocmd({ "BufEnter", "TextChanged" }, {
-  desc = "Set cwd to follow directory shown in oil buffers.",
-  group = groupid,
-  pattern = "oil:///*",
-  callback = function(info)
-    if vim.bo[info.buf].filetype == "oil" then
-      local cwd = vim.fs.normalize(vim.fn.getcwd(vim.fn.winnr()))
-      local oildir = vim.fs.normalize(oil.get_current_dir())
-      if cwd ~= oildir and vim.uv.fs_stat(oildir) then
-        lcd(oildir)
-      end
-    end
-  end,
-})
-vim.api.nvim_create_autocmd("DirChanged", {
-  desc = "Let oil buffers follow cwd.",
-  group = groupid,
-  callback = function(info)
-    if vim.bo[info.buf].filetype == "oil" then
-      vim.defer_fn(function()
-        local cwd = vim.fs.normalize(vim.fn.getcwd(vim.fn.winnr()))
-        local oildir = vim.fs.normalize(oil.get_current_dir() or "")
-        if cwd ~= oildir and vim.bo.ft == "oil" then
-          oil.open(cwd)
-        end
-      end, 100)
-    end
-  end,
-})
+-- local groupid = vim.api.nvim_create_augroup("OilSyncCwd", {})
+-- vim.api.nvim_create_autocmd({ "BufEnter", "TextChanged" }, {
+--   desc = "Set cwd to follow directory shown in oil buffers.",
+--   group = groupid,
+--   pattern = "oil:///*",
+--   callback = function(info)
+--     if vim.bo[info.buf].filetype == "oil" then
+--       local cwd = vim.fs.normalize(vim.fn.getcwd(vim.fn.winnr()))
+--       local oildir = vim.fs.normalize(oil.get_current_dir())
+--       if cwd ~= oildir and vim.uv.fs_stat(oildir) then
+--         lcd(oildir)
+--       end
+--     end
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd("DirChanged", {
+--   desc = "Let oil buffers follow cwd.",
+--   group = groupid,
+--   callback = function(info)
+--     if vim.bo[info.buf].filetype == "oil" then
+--       vim.defer_fn(function()
+--         local cwd = vim.fs.normalize(vim.fn.getcwd(vim.fn.winnr()))
+--         local oildir = vim.fs.normalize(oil.get_current_dir() or "")
+--         if cwd ~= oildir and vim.bo.ft == "oil" then
+--           oil.open(cwd)
+--         end
+--       end, 100)
+--     end
+--   end,
+-- })
 
 vim.api.nvim_create_autocmd("BufEnter", {
   desc = "Set last cursor position in oil buffers when editing parent dir.",

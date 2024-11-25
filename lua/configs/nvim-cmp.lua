@@ -1,9 +1,21 @@
 local cmp = require "cmp"
 local cmp_core = require "cmp.core"
+local compare = require "cmp.config.compare"
+local types = require "cmp.types"
 local luasnip = require "luasnip"
-local tabout = require "plugin.tabout"
+local tabout = require "utils.tabout"
 local lspkind = require "lspkind"
+local utils = require "utils.cmp"
 local icons = require("utils.static").icons
+local visible_buffers = require("utils.buffer").visible_buffers
+local border = { "┌", "─", "┐", "│", "┘", "─", "└", "│" }
+
+local entry_filter_fuzzy_path, fuzzy_path_option, limit_lsp_types, has_words_before, check_backspace =
+  utils.fuzzy_path_option,
+  utils.entry_filter_fuzzy_path,
+  utils.limit_lsp_types,
+  utils.has_words_before,
+  utils.check_backspace
 
 ---Hack: `nvim_lsp` and `nvim_lsp_signature_help` source still use
 ---deprecated `vim.lsp.buf_get_clients()`, which is slower due to
@@ -12,6 +24,25 @@ local icons = require("utils.static").icons
 ---@diagnostic disable-next-line: duplicate-set-field
 function vim.lsp.buf_get_clients(bufnr)
   return vim.lsp.get_clients { buffer = bufnr }
+end
+
+local termcodes = function(str)
+  return vim.api.nvim_replace_termcodes(str, true, true, true)
+end
+
+---@type table<integer, integer>
+local modified_priority = {
+  [types.lsp.CompletionItemKind.Variable] = 1,
+  [types.lsp.CompletionItemKind.Constant] = 1,
+  [types.lsp.CompletionItemKind.Keyword] = 1, -- top
+  [types.lsp.CompletionItemKind.Snippet] = 2,
+  [types.lsp.CompletionItemKind.Function] = types.lsp.CompletionItemKind.Method,
+  [types.lsp.CompletionItemKind.Text] = 100, -- bottom
+}
+
+---@param kind integer: kind of completion entry
+local function modified_kind(kind)
+  return modified_priority[kind] or kind
 end
 
 ---@type string?
@@ -265,6 +296,26 @@ cmp.setup {
   performance = {
     async_budget = 64,
     max_view_entries = 64,
+    fetching_timeout = 250,
+  },
+  preselect = cmp.PreselectMode.None,
+  duplicates_default = 0,
+  confirm_opts = {
+    behavior = cmp.ConfirmBehavior.Replace,
+    select = true,
+  },
+  duplicates = {
+    nvim_lsp = 0,
+    luasnip = 1,
+    buffer = 1,
+    rg = 0,
+    path = 1,
+  },
+  experimental = {
+    ghost_text = false,
+    git = {
+      async = true,
+    },
   },
   formatting = {
     fields = { "kind", "abbr", "menu" },
@@ -336,12 +387,46 @@ cmp.setup {
       return cmp_item
     end,
   },
+  matching = {
+    disallow_fuzzy_matching = false,
+    disallow_fullfuzzy_matching = false,
+    disallow_partial_fuzzy_matching = true,
+    disallow_partial_matching = false,
+    disallow_prefix_unmatching = true,
+  },
   snippet = {
     expand = function(args)
       require("luasnip").lsp_expand(args.body)
     end,
   },
   mapping = {
+    ["<CR>"] = cmp.mapping.confirm {
+      i = function(fallback)
+        if cmp.visible() and cmp.get_active_entry() then
+          cmp.confirm {
+            behavior = cmp.ConfirmBehavior.Replace,
+            select = false,
+          }
+        else
+          fallback()
+        end
+      end,
+      c = function(fallback)
+        if cmp.visible() then
+          cmp.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true }
+        else
+          fallback()
+        end
+      end,
+      s = function(fallback)
+        if cmp.visible() then
+          cmp.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true }
+        else
+          fallback()
+        end
+      end,
+      -- s = cmp.mapping { select = true },
+    },
     ["<S-Tab>"] = {
       ["c"] = function()
         if tabout.get_jump_pos(-1) then
@@ -425,6 +510,47 @@ cmp.setup {
         end
       end,
     },
+    ["<C-j>"] = cmp.mapping {
+      s = function()
+        if cmp.visible() then
+          cmp.select_next_item { behavior = cmp.SelectBehavior.Replace }
+        else
+          vim.api.nvim_feedkeys(termcodes "<Down>", "n", true)
+        end
+      end,
+      c = function()
+        if cmp.visible() then
+          cmp.select_next_item { behavior = cmp.SelectBehavior.Replace }
+        else
+          vim.api.nvim_feedkeys(termcodes "<Down>", "n", true)
+        end
+      end,
+      i = function(fallback)
+        if cmp.visible() then
+          cmp.select_next_item()
+        elseif check_backspace() then
+          fallback()
+        else
+          fallback()
+        end
+      end,
+    },
+    ["<C-k>"] = cmp.mapping {
+      c = function()
+        if cmp.visible() then
+          cmp.select_prev_item { behavior = cmp.SelectBehavior.Replace }
+        else
+          vim.api.nvim_feedkeys(termcodes "<Up>", "n", true)
+        end
+      end,
+      i = function(fallback)
+        if cmp.visible() then
+          cmp.select_prev_item()
+        else
+          fallback()
+        end
+      end,
+    },
     ["<C-n>"] = {
       ["c"] = cmp.mapping.select_next_item(),
       ["i"] = function()
@@ -467,18 +593,58 @@ cmp.setup {
       },
       { "i", "c" }
     ),
+    ["<C-Space>"] = cmp.mapping {
+      i = cmp.mapping.complete(),
+      c = function(_)
+        if cmp.visible() then
+          if not cmp.confirm { select = true } then
+            return
+          end
+        else
+          cmp.complete()
+        end
+      end,
+    },
   },
   sources = {
-    { name = "luasnip", max_item_count = 3 },
+    {
+      name = "luasnip",
+      keyword_length = 2,
+      max_item_count = 3,
+      dup = 0,
+      option = {
+        use_show_condition = true,
+        show_autosnippets = true,
+      },
+      entry_filter = function()
+        local context = require "cmp.config.context"
+        return not context.in_treesitter_capture "string" and not context.in_syntax_group "String"
+      end,
+    },
+    { name = "nvim_lua" },
+    {
+      name = "treesitter",
+      keyword_length = 4,
+      max_item_count = 5,
+    },
     { name = "nvim_lsp_signature_help" },
     { name = "nvim_lsp", max_item_count = 20 },
     {
       name = "buffer",
-      max_item_count = 8,
+      max_item_count = 3,
+      keyword_length = 3,
+      dup = 0,
       option = {
-        get_bufnrs = get_bufnrs,
+        get_bufnrs = visible_buffers, -- Suggest words from all visible buffers
       },
     },
+    -- {
+    --   name = "buffer",
+    --   max_item_count = 8,
+    --   option = {
+    --     get_bufnrs = get_bufnrs,
+    --   },
+    -- },
     {
       name = "fuzzy_path",
       option = fuzzy_path_option,
@@ -492,22 +658,61 @@ cmp.setup {
     { name = "calc" },
   },
   sorting = {
+    priority_weight = 2,
     ---@type table[]|function[]
     comparators = {
-      fuzzy_path_comparator,
-      cmp.config.compare.kind,
       cmp.config.compare.locality,
-      cmp.config.compare.recently_used,
+      function(entry1, entry2) -- sort by length ignoring "=~"
+        local len1 = string.len(string.gsub(entry1.completion_item.label, "[=~()]", ""))
+        local len2 = string.len(string.gsub(entry2.completion_item.label, "[=~()]", ""))
+        if len1 ~= len2 then
+          return len1 - len2 < 0
+        end
+      end,
+      function(entry1, entry2) -- score by lsp, if available
+        local t1 = entry1.completion_item.sortText
+        local t2 = entry2.completion_item.sortText
+        if t1 ~= nil and t2 ~= nil and t1 ~= t2 then
+          return t1 < t2
+        end
+      end,
+      compare.kind,
+      compare.scopes,
+      compare.offset,
+      function(entry1, entry2) -- sort by compare kind (Variable, Function etc)
+        local kind1 = modified_kind(entry1:get_kind())
+        local kind2 = modified_kind(entry2:get_kind())
+        if kind1 ~= kind2 then
+          return kind1 - kind2 < 0
+        end
+      end,
+      compare.sort_text,
+      compare.recently_used,
+      fuzzy_path_comparator,
       cmp.config.compare.exact,
       cmp.config.compare.score,
     },
   },
+  completion = {
+    completeopt = "menu,menuone,noinsert",
+    autocomplete = { types.cmp.TriggerEvent.TextChanged },
+    keyword_length = 1,
+  },
   -- cmp floating window config
   window = {
-    documentation = {
+    completion = cmp.config.window.bordered {
+      border = border,
+      winhighlight = "CmpPmenu:FloatBorder,CursorLine:CmpSel,Search:None",
+      col_offset = -3,
+      side_padding = 0,
+      scrolloff = vim.go.scrolloff,
+    },
+    documentation = cmp.config.window.bordered {
+      border = border,
+      winhighlight = "CmpPmenu:FloatBorder,CursorLine:CmpSel,Search:None",
       max_width = 80,
       max_height = 20,
-      border = "solid",
+      -- border = "solid",
     },
   },
 }
@@ -535,6 +740,7 @@ cmp.setup.cmdline("?", {
     },
   },
 })
+
 -- Use cmdline & path source for ':'.
 cmp.setup.cmdline(":", {
   enabled = true,
@@ -551,11 +757,59 @@ cmp.setup.cmdline(":", {
       },
       group_index = 2,
     },
+    { name = "cmdline_history", max_item_count = 10 },
   },
 })
 
 cmp.setup.filetype({ "NeogitCommitMessage", "TelescopePrompt" }, {
   sources = {},
+})
+
+cmp.setup.filetype({ "oil" }, {
+  enabled = true,
+  sources = {
+    {
+      name = "rg",
+      priority_weight = 60,
+      max_item_count = 10,
+      keyword_length = 5,
+      option = {
+        additional_arguments = "--smart-case",
+      },
+    },
+    {
+      name = "spell",
+      keyword_length = 3,
+      priority = 5,
+      keyword_pattern = [[\w\+]],
+    },
+  },
+})
+
+cmp.setup.cmdline("@", {
+  enabled = true,
+  sources = {
+    {
+      name = "fuzzy_path",
+      group_index = 1,
+      -- entry_filter = entry_filter_fuzzy_path,
+      -- option = fuzzy_path_option,
+    },
+    {
+      name = "cmdline",
+      group_index = 2,
+      option = {
+        ignore_cmds = {},
+      },
+    },
+    {
+      name = "buffer",
+      group_index = 3,
+      option = {
+        get_bufnrs = visible_buffers,
+      },
+    },
+  },
 })
 
 -- cmp does not work with cmdline with type other than `:`, '/', and '?', e.g.

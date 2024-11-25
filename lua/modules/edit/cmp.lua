@@ -76,6 +76,7 @@ return {
     },
     config = function()
       require "modules.configs.cmp"
+      -- require "configs.nvim-cmp" -- INFO: macro-nvim
     end,
   },
 }
