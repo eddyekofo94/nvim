@@ -17,12 +17,8 @@ return {
       "TSEditQuery",
       "TSEditQueryUserAfter",
     },
+    priority = 1000,
     event = "FileType",
-    config = function()
-      vim.schedule(function()
-        require "configs.nvim-treesitter"
-      end)
-    end,
     dependencies = {
       { "nvim-treesitter/nvim-treesitter-textobjects", priority = 1000, event = "BufWinEnter" },
       "JoosepAlviste/nvim-ts-context-commentstring",
@@ -63,6 +59,11 @@ return {
         end,
       },
     },
+    config = function()
+      vim.schedule(function()
+        require "configs.nvim-treesitter"
+      end)
+    end,
   },
 
   {
