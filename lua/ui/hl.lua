@@ -85,6 +85,7 @@ return {
   DiagnosticDeprecated = { fg = { "red", "black", 30 }, strikethrough = true },
 
   NormalFloat = { bg = "darker_black" },
+  NormalSpecial = { bg = "darker_black" },
   NormalNC = { link = "Normal" },
   Pmenu = { bg = "black2", fg = "" },
   PmenuSel = { link = "Visual" },

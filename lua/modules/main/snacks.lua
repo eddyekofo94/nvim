@@ -84,6 +84,14 @@ return {
       desc = "Toggle Terminal",
     },
     {
+      mode = { "n", "t" },
+      "<M-'>",
+      function()
+        Snacks.terminal.toggle(_, { cwd = Snacks.git.get_root(0) })
+      end,
+      desc = "Toggle Terminal",
+    },
+    {
       "<c-_>",
       function()
         Snacks.terminal()

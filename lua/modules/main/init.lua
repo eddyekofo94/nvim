@@ -101,7 +101,7 @@ return {
   {
     "utilyre/sentiment.nvim",
     version = "*",
-    enabled = true,
+    enabled = false,
     event = "VeryLazy", -- keep for lazy loading
     opts = {
       -- config
@@ -113,8 +113,8 @@ return {
   },
   {
     "andymass/vim-matchup",
-    enabled = false,
-    event = "VeryLazy",
+    enabled = true,
+    event = "BufReadPre",
     init = function()
       vim.g.matchup_matchparen_offscreen = { method = "popup" }
     end,
