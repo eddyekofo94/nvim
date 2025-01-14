@@ -20,6 +20,7 @@ local options = {
       "beautysh",
       "shfmt",
     },
+    fish = { "fish_indent" },
     zsh = {
       "beautysh",
     },

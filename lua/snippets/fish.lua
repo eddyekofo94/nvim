@@ -234,6 +234,24 @@ M.syntax = {
     trig = "def",
     desc = "#define preproc",
   }, t "#define "),
+  us.sn(
+    {
+      trig = "if",
+      desc = "if statement",
+      priority = 999,
+    },
+    un.fmtad(
+      [[
+        if <cond>
+        <body>
+        end
+      ]],
+      {
+        cond = i(1),
+        body = un.body(2, 1),
+      }
+    )
+  ),
   us.ssn(
     {
       trig = "if",
@@ -251,9 +269,10 @@ M.syntax = {
       }
     )
   ),
-  us.ssn(
+  us.sn(
     {
       trig = "ift",
+      priority = 900,
       desc = "if test",
     },
     un.fmtad(
@@ -291,24 +310,6 @@ M.syntax = {
           return sn(nil, i(1))
         end),
         body = un.body(2, 0),
-      }
-    )
-  ),
-  us.sn(
-    {
-      trig = "if",
-      desc = "if statement",
-      priority = 999,
-    },
-    un.fmtad(
-      [[
-        if (<cond>) {
-        <body>
-        }
-      ]],
-      {
-        cond = i(1),
-        body = un.body(2, 1),
       }
     )
   ),

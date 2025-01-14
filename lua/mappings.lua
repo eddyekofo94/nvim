@@ -341,11 +341,11 @@ map({ "n", "x" }, "<Leader>1", tabswitch(vim.cmd.tabnext, 1))
 map({ "n", "x" }, "<Leader>2", tabswitch(vim.cmd.tabnext, 2))
 map({ "n", "x" }, "<Leader>3", tabswitch(vim.cmd.tabnext, 3))
 map({ "n", "x" }, "<Leader>4", tabswitch(vim.cmd.tabnext, 4))
-map({ "n", "x" }, "<Leader>5", tabswitch(vim.cmd.tabnext, 5))
-map({ "n", "x" }, "<Leader>6", tabswitch(vim.cmd.tabnext, 6))
-map({ "n", "x" }, "<Leader>7", tabswitch(vim.cmd.tabnext, 7))
-map({ "n", "x" }, "<Leader>8", tabswitch(vim.cmd.tabnext, 8))
-map({ "n", "x" }, "<Leader>9", tabswitch(vim.cmd.tabnext, 9))
+-- map({ "n", "x" }, "<Leader>5", tabswitch(vim.cmd.tabnext, 5))
+-- map({ "n", "x" }, "<Leader>6", tabswitch(vim.cmd.tabnext, 6))
+-- map({ "n", "x" }, "<Leader>7", tabswitch(vim.cmd.tabnext, 7))
+-- map({ "n", "x" }, "<Leader>8", tabswitch(vim.cmd.tabnext, 8))
+-- map({ "n", "x" }, "<Leader>9", tabswitch(vim.cmd.tabnext, 9))
 
 -- Complete line
 -- map("i", "<C-l>", "<C-x><C-l>")
@@ -460,7 +460,6 @@ vim.api.nvim_create_autocmd("CmdlineEnter", {
 
 --  INFO: 2024-10-29 - NvChad maps
 map("n", "<C-s>", "<cmd>w<CR>", { desc = "general save file" })
-map("n", "<C-c>", "<cmd>%y+<CR>", { desc = "general copy whole file" })
 map("n", "<leader>ch", "<cmd>NvCheatsheet<CR>", { desc = "toggle nvcheatsheet" })
 
 map("n", "<tab>", function()

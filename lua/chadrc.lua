@@ -21,7 +21,6 @@ M.ui = {
     modules = {
       -- cursor_pos = stl.line_info(),
       info = stl.info(),
-      cursor_pos = stl.line_info(),
       -- file_info = stl.file_info(),
       macro = stl.macro(),
       -- git = stl.git_diff(),
@@ -110,6 +109,10 @@ M.base46 = {
       },
     },
   },
+}
+
+M.term = {
+  winopts = { winfixbuf = true },
 }
 
 return M

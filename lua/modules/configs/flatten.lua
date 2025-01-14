@@ -3,11 +3,7 @@
 ---@return boolean
 local function should_block_file(fpath)
   fpath = vim.fs.normalize(fpath)
-  return (
-    fpath:find(".git/rebase-merge", 1, true)
-    or fpath:find(".git/COMMIT_EDITMSG", 1, true)
-    or fpath:find "^/tmp"
-  )
+  return (fpath:find(".git/rebase-merge", 1, true) or fpath:find(".git/COMMIT_EDITMSG", 1, true) or fpath:find "^/tmp")
       and true
     or false
 end
@@ -26,11 +22,7 @@ require("flatten").setup {
     should_nest = function()
       local pid = vim.fn.getpid()
       local parent_pid = vim.env.NVIM and vim.env.NVIM:match "nvim%.(%d+)"
-      if
-        vim.env["NVIM_ROOT_" .. pid]
-        and parent_pid
-        and not vim.env["NVIM_ROOT_" .. parent_pid]
-      then
+      if vim.env["NVIM_ROOT_" .. pid] and parent_pid and not vim.env["NVIM_ROOT_" .. parent_pid] then
         return true
       end
     end,

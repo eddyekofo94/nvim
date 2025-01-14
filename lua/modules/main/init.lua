@@ -210,6 +210,7 @@ return {
   {
     "arsham/indent-tools.nvim",
     event = "VeryLazy",
+    priority = 999,
     dependencies = {
       "arsham/arshlib.nvim",
       "nvim-treesitter/nvim-treesitter-textobjects",
@@ -231,28 +232,6 @@ return {
       map("n", "#", ":lua require'starlite'.hash()<cr>", default_options)
       map("n", "g#", ":lua require'starlite'.g_hash()<cr>", default_options)
     end,
-  },
-  {
-    "gabrielpoca/replacer.nvim",
-    event = "VeryLazy",
-    enabled = false,
-    opts = { rename_files = true },
-    keys = {
-      {
-        "<leader>qf",
-        function()
-          require("replacer").run()
-        end,
-        desc = "run replacer.nvim",
-      },
-      {
-        "<leader>qs",
-        function()
-          require("replacer").save()
-        end,
-        desc = "save replacer.nvim",
-      },
-    },
   },
   {
     "ten3roberts/qf.nvim",
@@ -297,11 +276,6 @@ return {
     event = "VeryLazy",
     config = true,
     opts = require "modules.configs.early-retirement",
-  },
-
-  {
-    "VidocqH/auto-indent.nvim",
-    opts = {},
   },
 
   {

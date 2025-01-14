@@ -79,6 +79,7 @@ return {
         config = function()
           require("project_nvim").setup {
             scope_chdir = "global",
+            exclude_dirs = { os.getenv "HOME" },
           }
         end,
       },

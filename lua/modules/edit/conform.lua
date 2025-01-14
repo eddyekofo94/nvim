@@ -26,6 +26,7 @@ local opts = {
       },
     },
     zsh = { "beautysh" },
+    fish = { "fish_indent" },
     -- Use the "*" filetype to run formatters on all filetypes.
     ["*"] = { "codespell" },
     -- Use the "_" filetype to run formatters on filetypes that don't

@@ -16,7 +16,7 @@ require("flatten").setup {
   window = {
     open = "current",
   },
-  callbacks = {
+  hooks = {
     -- Nest when child nvim is root but parent nvim (current session) is not
     -- to avoid opening files in current session without write permission
     should_nest = function()
