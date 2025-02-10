@@ -107,6 +107,13 @@ return {
   FlashPrompt = { link = "NormalFloat" },
   FlashBackdrop = { fg = "light_grey" },
 
+  SnacksPickerDir = { link = "Comment" },
+  SnacksPickerBorder = { bg = "darker_black", fg = "darker_black" },
+  SnacksPickerPreview = { bg = "darker_black" },
+  SnacksPickerPreviewBorder = { fg = "darker_black", bg = "darker_black" },
+  SnacksPickerList = { bg = nv_bg },
+  SnacksPickerListBorder = { fg = nv_bg, bg = nv_bg },
+
   TelescopePromptBorder = { bg = "line", fg = "black2" },
   TelescopePromptCounter = { fg = "grey" },
   TelescopePromptNormal = { bg = "line" },

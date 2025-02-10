@@ -9,7 +9,9 @@ return {
       enabled = true,
       timeout = 3000,
     },
+    input = { enabled = true },
     quickfile = { enabled = true },
+    scroll = { enabled = true },
     statuscolumn = { enabled = true },
     words = { enabled = true },
     styles = {
@@ -19,6 +21,20 @@ return {
     },
   },
   keys = {
+    {
+      "<leader>zz",
+      function()
+        Snacks.zen()
+      end,
+      desc = "Toggle Zen Mode",
+    },
+    {
+      "<leader>ww",
+      function()
+        Snacks.zen.zoom()
+      end,
+      desc = "Toggle Zoom",
+    },
     {
       "<leader>un",
       function()

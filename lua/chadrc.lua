@@ -58,7 +58,7 @@ M.base46 = {
     WarningMsg = { link = "DiagnosticWarn" },
     DiagnosticInfo = { fg = { "cyan", "white", 30 } },
     EndOfBuffer = { fg = "black" },
-    Search = { fg = "black", bg = "purple" },
+    Search = { fg = "black", bg = "teal" },
     Identifier = { fg = "lavender" },
     Include = { fg = "purple" },
     Operator = { fg = "pink" },

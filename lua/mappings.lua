@@ -148,8 +148,10 @@ Keymap
   :bind(Keymap.new("n", "<leader>L", "<cmd>Lazy<CR>", "Lazy"))
   :bind(Keymap.new("n", "<leader>N", "<cmd>Noice<CR>", "Noice"))
   :bind(Keymap.new("n", "<leader>mM", "<cmd>Mason<CR>", "Mason"))
-  :bind(Keymap.new("n", "<leader>zz", "<cmd>ZenMode<cr>", "Zen mode"))
-  :bind(Keymap.new("n", "<leader>ya", ": %y+<CR>", "COPY EVERYTHING/ALL"))
+  -- :bind(Keymap.new("n", "<leader>zz", "<cmd>ZenMode<cr>", "Zen mode"))
+  :bind(
+    Keymap.new("n", "<leader>ya", ": %y+<CR>", "COPY EVERYTHING/ALL")
+  )
   :bind(Keymap.new("v", "/", '"fy/\\V<C-R>f<CR>'))
   :bind(Keymap.new("v", "*", '"fy/\\V<C-R>f<CR>'))
   :bind(Keymap.new(nxo, "gh", "g^", " move to start of line"))

@@ -69,7 +69,7 @@ local function config()
 
   map("<C-\\>", "<cmd>FocusAutoresize<cr>", "Activate focus")
 
-  map("<leader>ww", "<cmd>FocusMaxOrEqual<cr>", "Maximise window")
+  -- map("<leader>ww", "<cmd>FocusMaxOrEqual<cr>", "Maximise window")
 
   -- map("<leader>tn", "<cmd>FocusSplitNicely cmd term<cr>", "Create Term Nicely")
 
