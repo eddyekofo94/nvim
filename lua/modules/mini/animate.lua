@@ -1,6 +1,6 @@
 return {
   "echasnovski/mini.animate",
-  enabled = true,
+  enabled = false,
   event = "BufReadPre",
   keys = {
     {

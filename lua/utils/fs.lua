@@ -2,6 +2,7 @@ local M = {}
 
 M.root_patterns = {
   ".git/",
+  "go.mod",
   ".svn/",
   ".bzr/",
   ".hg/",

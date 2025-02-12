@@ -1,6 +1,7 @@
 return {
   {
     "nvim-telescope/telescope.nvim",
+    enabled = false,
     event = "VimEnter",
     init = function()
       --   local telescope = require "telescope"

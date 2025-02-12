@@ -158,6 +158,7 @@ return {
   {
     "folke/zen-mode.nvim",
     event = "VeryLazy",
+    enabled = false,
     dependencies = {
       {
         "folke/twilight.nvim",
@@ -175,7 +176,7 @@ return {
   {
     "NMAC427/guess-indent.nvim",
     event = "VeryLazy",
-    enabled = true,
+    enabled = false,
     config = function()
       require("guess-indent").setup {}
       local guess_indent = require "guess-indent"

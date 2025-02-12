@@ -132,9 +132,10 @@ return {
   {
     "willothy/flatten.nvim",
     event = "BufReadPre",
-    config = function()
-      require "configs.flatten"
-    end,
+    config = true,
+    -- config = function()
+    --   require "configs.flatten"
+    -- end,
   },
   {
     "fei6409/log-highlight.nvim",
