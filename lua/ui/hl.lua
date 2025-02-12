@@ -113,6 +113,8 @@ return {
   SnacksPickerPreviewBorder = { fg = "darker_black", bg = "darker_black" },
   SnacksPickerList = { bg = nv_bg },
   SnacksPickerListBorder = { fg = nv_bg, bg = nv_bg },
+  SnacksPickerPrompt = { fg = "red" },
+  SnacksPickerMatch = { fg = { "red", "pink", 50 } },
 
   TelescopePromptBorder = { bg = "line", fg = "black2" },
   TelescopePromptCounter = { fg = "grey" },
