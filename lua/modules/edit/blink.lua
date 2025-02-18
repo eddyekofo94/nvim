@@ -7,6 +7,13 @@ return {
     "niuiic/blink-cmp-rg.nvim",
     "rafamadriz/friendly-snippets",
     "xzbdmw/colorful-menu.nvim",
+    {
+      "edte/blink-go-import.nvim",
+      ft = "go",
+      config = function()
+        require("blink-go-import").setup()
+      end,
+    },
   },
 
   -- use a release tag to download pre-built binaries
@@ -60,7 +67,7 @@ return {
         accept = { auto_brackets = { enabled = true } },
         menu = {
           min_width = 35,
-          border = vim.g.border_style,
+          border = "single",
           scrolloff = 2,
           scrollbar = true,
           draw = {
@@ -95,7 +102,7 @@ return {
         documentation = {
           auto_show = true,
           window = {
-            border = vim.g.border_style,
+            border = "single",
             min_width = 35,
             direction_priority = {
               menu_north = { "e", "w" },
@@ -143,7 +150,7 @@ return {
         end,
       },
       sources = {
-        default = { "lsp", "snippets", "path", "lazydev", "buffer" },
+        default = { "lsp", "snippets", "path", "lazydev", "buffer", "ripgrep", "go_pkgs" },
         min_keyword_length = 0,
         providers = {
           ripgrep = {
@@ -173,6 +180,17 @@ return {
             module = "lazydev.integrations.blink",
             score_offset = 100,
             fallbacks = { "lsp" },
+          },
+          go_pkgs = {
+            module = "blink-go-import",
+            name = "Import",
+          },
+          path = {
+            opts = {
+              get_cwd = function(_)
+                return vim.fn.getcwd()
+              end,
+            },
           },
         },
       },
