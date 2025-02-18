@@ -91,7 +91,7 @@ return {
   PmenuSel = { link = "Visual" },
   NvimSeparator = { link = "Debug" },
   EndOfBuffer = { fg = "black" }, -- INFO: buffer
-  FloatBorder = { bg = "NONE", fg = "line" },
+  FloatBorder = { bg = "darker_black", fg = "line" },
   HighlightedYankRegion = {
     reverse = true,
   },
