@@ -382,7 +382,7 @@ return {
     },
     -- LSP
     {
-      "gd",
+      "c-]",
       function()
         Snacks.picker.lsp_definitions()
       end,
