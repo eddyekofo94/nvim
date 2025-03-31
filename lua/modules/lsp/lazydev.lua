@@ -7,6 +7,7 @@ return {
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
         -- { path = "wezterm-types", mods = { "wezterm" } },
         { path = "snacks.nvim", words = { "Snacks" } },
+        "lazy.nvim",
         vim.fn.expand "$VIMRUNTIME/lua",
         vim.fn.expand "$VIMRUNTIME/lua/vim/lsp",
         vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy",

@@ -36,9 +36,14 @@ for _, v in ipairs(vim.fn.readdir(vim.g.base46_cache)) do
   dofile(vim.g.base46_cache .. v)
 end
 
+-- Enable each language server by filename under the lsp/ folder
+
 require "options"
 require "nvchad.autocmds"
 require "autocmds"
+
+vim.lsp.enable { "gopls", "basedpyright", "lua_ls" }
+require "lsp"
 
 vim.schedule(function()
   require "mappings"
