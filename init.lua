@@ -42,7 +42,7 @@ require "options"
 require "nvchad.autocmds"
 require "autocmds"
 
-vim.lsp.enable { "gopls", "basedpyright", "lua_ls" }
+vim.lsp.enable { "gopls", "basedpyright", "luals" }
 require "lsp"
 
 vim.schedule(function()
