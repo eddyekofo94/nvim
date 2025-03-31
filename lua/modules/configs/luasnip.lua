@@ -33,7 +33,7 @@ local function lazy_load_snippets()
     local ft = fn.fnamemodify(path, ":t:r")
     -- Load snippet immediately if ft matches the filetype of any opened buffer
     if opened_file_ftlist[ft] then
-      print("ft: " .. ft)
+      -- print("ft: " .. ft)
       load_snippets(ft)
     else -- Otherwise, load snippet when filetype is detected
       vim.api.nvim_create_autocmd("FileType", {
@@ -41,7 +41,7 @@ local function lazy_load_snippets()
         pattern = ft,
         group = groupid,
         callback = function()
-          print("ft: 44 - " .. ft)
+          -- print("ft: 44 - " .. ft)
           load_snippets(ft)
           return true
         end,

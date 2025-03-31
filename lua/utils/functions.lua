@@ -155,17 +155,6 @@ function M.map(mode, l, r, opts)
   vim.keymap.set(mode, l, r, opts)
 end
 
----@param on_attach fun(client, buffer)
-function M.on_attach(on_attach)
-  vim.api.nvim_create_autocmd("LspAttach", {
-    callback = function(args)
-      local buffer = args.buf
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      on_attach(client, buffer)
-    end,
-  })
-end
-
 ---returns OS dependent path separator
 ---@return string
 M.path_separator = function()
@@ -180,7 +169,10 @@ end
 ---load user config file .nvim_config.lua
 ---@return table
 M.load_user_config = function()
-  local home = os.getenv "XDG_CONFIG_HOME" or os.getenv "HOME" or os.getenv "USERPROFILE" or (os.getenv "HOMEDRIVE" .. os.getenv "HOMEPATH")
+  local home = os.getenv "XDG_CONFIG_HOME"
+    or os.getenv "HOME"
+    or os.getenv "USERPROFILE"
+    or (os.getenv "HOMEDRIVE" .. os.getenv "HOMEPATH")
   local config_file = home .. M.path_separator() .. ".nvim_config.lua"
   local ok, err = pcall(dofile, config_file)
   if not ok then

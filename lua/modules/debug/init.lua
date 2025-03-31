@@ -1,43 +1,40 @@
 return {
   {
-    'mfussenegger/nvim-dap',
+    "mfussenegger/nvim-dap",
     cmd = {
-      'DapContinue',
-      'DapLoadLaunchJSON',
-      'DapRestartFrame',
-      'DapSetLogLevel',
-      'DapShowLog',
-      'DapToggleBreakPoint',
+      "DapContinue",
+      "DapLoadLaunchJSON",
+      "DapRestartFrame",
+      "DapSetLogLevel",
+      "DapShowLog",
+      "DapToggleBreakPoint",
     },
-    keys = { '<F5>', '<F8>', '<F9>', '<F21>', '<F45>' },
+    keys = { "<F5>", "<F8>", "<F9>", "<F21>", "<F45>" },
     dependencies = {
-      'rcarriga/cmp-dap',
-      'rcarriga/nvim-dap-ui',
+      -- 'rcarriga/cmp-dap',
+      "rcarriga/nvim-dap-ui",
     },
+  },
+
+  {
+    "jbyuki/one-small-step-for-vimkind",
+    cmd = "DapOSVLaunchServer",
+    dependencies = "mfussenegger/nvim-dap",
     config = function()
-      require('configs.nvim-dap')
+      require "configs.one-small-step-for-vimkind"
     end,
   },
 
   {
-    'jbyuki/one-small-step-for-vimkind',
-    cmd = 'DapOSVLaunchServer',
-    dependencies = 'mfussenegger/nvim-dap',
-    config = function()
-      require('configs.one-small-step-for-vimkind')
-    end,
-  },
-
-  {
-    'rcarriga/nvim-dap-ui',
+    "rcarriga/nvim-dap-ui",
     lazy = true,
     dependencies = {
-      'mfussenegger/nvim-dap',
-      'nvim-neotest/nvim-nio',
-      'kyazdani42/nvim-web-devicons',
+      "mfussenegger/nvim-dap",
+      "nvim-neotest/nvim-nio",
+      "kyazdani42/nvim-web-devicons",
     },
     config = function()
-      require('configs.nvim-dap-ui')
+      require "configs.nvim-dap-ui"
     end,
   },
 }

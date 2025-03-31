@@ -41,6 +41,7 @@ return {
   {
     "benlubas/molten-nvim",
     ft = "python",
+    enabled = false,
     event = "BufEnter *.ipynb",
     build = ":UpdateRemotePlugins",
     config = function()

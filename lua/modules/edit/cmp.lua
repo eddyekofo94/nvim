@@ -1,7 +1,7 @@
 return {
   {
     "hrsh7th/nvim-cmp",
-    enabled = true,
+    enabled = false,
     event = { "InsertEnter", "CmdlineEnter" },
     opts = function(_, opts)
       opts.sources = opts.sources or {}

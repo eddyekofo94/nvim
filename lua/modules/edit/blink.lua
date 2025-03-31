@@ -7,6 +7,7 @@ return {
     "niuiic/blink-cmp-rg.nvim",
     "rafamadriz/friendly-snippets",
     "xzbdmw/colorful-menu.nvim",
+    dependencies = { "L3MON4D3/LuaSnip", version = "v2.*" },
     {
       "edte/blink-go-import.nvim",
       ft = "go",
@@ -36,6 +37,7 @@ return {
       },
 
       keymap = {
+        preset = "super-tab",
         ["<C-e>"] = { "hide" },
         ["<CR>"] = { "select_and_accept", "fallback" },
         ["<C-y>"] = {
@@ -72,17 +74,9 @@ return {
           scrollbar = true,
           draw = {
             columns = { { "kind_icon" }, { "label", "kind", "source_name", gap = 1 } },
+            treesitter = { "lsp" },
             align_to = "none",
             components = {
-              label = {
-                text = function(ctx)
-                  return require("colorful-menu").blink_components_text(ctx)
-                end,
-                highlight = function(ctx)
-                  return require("colorful-menu").blink_components_highlight(ctx)
-                end,
-                width = { min = 20, fill = true },
-              }, -- default is true
               label_description = { width = { fill = true } },
               kind = {
                 width = { fill = true },
@@ -195,17 +189,17 @@ return {
       },
 
       snippets = {
-        -- Function to use when expanding LSP provided snippets
         expand = function(snippet)
-          vim.snippet.expand(snippet)
+          require("luasnip").lsp_expand(snippet)
         end,
-        -- Function to use when checking if a snippet is active
         active = function(filter)
-          return vim.snippet.active(filter)
+          if filter and filter.direction then
+            return require("luasnip").jumpable(filter.direction)
+          end
+          return require("luasnip").in_snippet()
         end,
-        -- Function to use when jumping between tab stops in a snippet, where direction can be negative or positive
         jump = function(direction)
-          vim.snippet.jump(direction)
+          require("luasnip").jump(direction)
         end,
       },
 

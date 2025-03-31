@@ -176,14 +176,20 @@ return {
   {
     "NMAC427/guess-indent.nvim",
     event = "VeryLazy",
-    enabled = false,
+    enabled = true,
     config = function()
       require("guess-indent").setup {}
       local guess_indent = require "guess-indent"
       guess_indent.set_from_buffer(_, _, true)
     end,
   },
-
+  {
+    "rachartier/tiny-glimmer.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- your configuration
+    },
+  },
   {
     "kevinhwang91/nvim-ufo",
     dependencies = "kevinhwang91/promise-async",
@@ -247,6 +253,7 @@ return {
     event = "InsertEnter",
     config = function()
       require("better_escape").setup {
+        timeout = 300,
         mappings = {
           i = {
             j = {

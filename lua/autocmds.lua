@@ -558,6 +558,48 @@ vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "QuickFixCmdPost" }, {
   end,
 })
 
+vim.api.nvim_create_autocmd({ "VimResized" }, {
+  group = augroup "resize_splits",
+  desc = "resize splits if window got resized",
+  callback = function()
+    local current_tab = vim.fn.tabpagenr()
+    vim.cmd "tabdo wincmd ="
+    vim.cmd("tabnext " .. current_tab)
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup "wrap_spell",
+  pattern = { "text", "plaintex", "typst", "gitcommit", "markdown" },
+  desc = "wrap and check for spell in text filetypes",
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.spell = true
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "FileType" }, {
+  group = augroup "json_conceal",
+  pattern = { "json", "jsonc", "json5" },
+  desc = "Fix conceallevel for json files",
+  callback = function()
+    vim.opt_local.conceallevel = 0
+  end,
+})
+
+-- Auto create dir when saving a file, in case some intermediate directory does not exist
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+  group = augroup "auto_create_dir",
+  desc = "Auto create dir when saving a file, in case some intermediate directory does not exist",
+  callback = function(event)
+    if event.match:match "^%w%w+:[\\/][\\/]" then
+      return
+    end
+    local file = vim.uv.fs_realpath(event.match) or event.match
+    vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
+  end,
+})
+
 vim.api.nvim_create_autocmd({ "FileChangedShellPost", "DiagnosticChanged", "LspProgress" }, {
   group = vim.api.nvim_create_augroup("StatusLine", {}),
   command = "redrawstatus",

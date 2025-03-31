@@ -2,7 +2,7 @@ local M = {}
 
 ---@type lsp_client_config_t
 ---@diagnostic disable-next-line: missing-fields
-M.default_config = { root_patterns = require('utils.fs').root_patterns }
+M.default_config = { root_patterns = require("utils.fs").root_patterns }
 
 ---@class vim.lsp.ClientConfig: lsp_client_config_t
 ---@class lsp_client_config_t
@@ -35,27 +35,22 @@ M.default_config = { root_patterns = require('utils.fs').root_patterns }
 ---@param opts table?
 ---@return integer? client_id id of attached client or nil if failed
 function M.start(config, opts)
-  if vim.b.bigfile or vim.bo.bt == 'nofile' or vim.g.vscode then
+  if vim.b.bigfile or vim.bo.bt == "nofile" or vim.g.vscode then
     return
   end
 
   local cmd_type = type(config.cmd)
-  local cmd_exec = cmd_type == 'table' and config.cmd[1]
-  if cmd_type == 'table' and vim.fn.executable(cmd_exec or '') == 0 then
+  local cmd_exec = cmd_type == "table" and config.cmd[1]
+  if cmd_type == "table" and vim.fn.executable(cmd_exec or "") == 0 then
     return
   end
 
   local name = cmd_exec
   local bufname = vim.api.nvim_buf_get_name(0)
   local root_dir = vim.fn.fnamemodify(
-    vim.fs.root(
-      bufname,
-      vim.list_extend(
-        config.root_patterns or {},
-        M.default_config.root_patterns or {}
-      )
-    ) or vim.fs.dirname(bufname),
-    '%:p'
+    vim.fs.root(bufname, vim.list_extend(config.root_patterns or {}, M.default_config.root_patterns or {}))
+      or vim.fs.dirname(bufname),
+    "%:p"
   )
 
   if not vim.uv.fs_stat(root_dir) then
@@ -63,7 +58,7 @@ function M.start(config, opts)
   end
 
   return vim.lsp.start(
-    vim.tbl_deep_extend('keep', config or {}, {
+    vim.tbl_deep_extend("keep", config or {}, {
       name = name,
       root_dir = root_dir,
     }, M.default_config),
@@ -80,9 +75,7 @@ end
 ---@param client_or_id integer|vim.lsp.Client
 ---@param opts lsp_soft_stop_opts_t?
 function M.soft_stop(client_or_id, opts)
-  local client = type(client_or_id) == 'number'
-      and vim.lsp.get_client_by_id(client_or_id)
-    or client_or_id --[[@as vim.lsp.Client]]
+  local client = type(client_or_id) == "number" and vim.lsp.get_client_by_id(client_or_id) or client_or_id --[[@as vim.lsp.Client]]
   if not client then
     return
   end
@@ -111,9 +104,7 @@ end
 ---Restart and reattach LSP client
 ---@param client_or_id integer|vim.lsp.Client
 function M.restart(client_or_id)
-  local client = type(client_or_id) == 'number'
-      and vim.lsp.get_client_by_id(client_or_id)
-    or client_or_id --[[@as vim.lsp.Client]]
+  local client = type(client_or_id) == "number" and vim.lsp.get_client_by_id(client_or_id) or client_or_id --[[@as vim.lsp.Client]]
   if not client then
     return
   end
@@ -129,6 +120,17 @@ function M.restart(client_or_id)
           M.start(config)
         end)
       end
+    end,
+  })
+end
+
+---@param on_attach fun(client, buffer)
+function M.on_attach(on_attach)
+  vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(args)
+      local buffer = args.buf
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      on_attach(client, buffer)
     end,
   })
 end

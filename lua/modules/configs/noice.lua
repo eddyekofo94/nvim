@@ -19,6 +19,9 @@ require("noice").setup {
       filter = {
         event = "msg_show",
         find = "substitutions",
+        -- { find = "%d+L, %d+B" },
+        -- { find = "; after #%d+" },
+        -- { find = "; before #%d+" },
       },
     },
     { filter = { find = "fewer lines;" }, opts = { skip = true } },
@@ -219,4 +222,15 @@ require("noice").setup {
   status = {}, --- @see section on statusline components
   ---@type NoiceFormatOptions
   format = {}, --- @see section on formatting
+  keys = {
+    -- { "<leader>sn", "", desc = "+noice" },
+    {
+      "<S-Enter>",
+      function()
+        require("noice").redirect(vim.fn.getcmdline())
+      end,
+      mode = "c",
+      desc = "Redirect Cmdline",
+    },
+  },
 }

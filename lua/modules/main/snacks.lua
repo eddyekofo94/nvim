@@ -23,6 +23,7 @@ return {
     },
     picker = {
       projects = {
+        -- patterns = { "go.mod", "CMakeLists.txt", "LICENCE.md", ".vscode" },
         patterns = { ".git", "go.mod", "_darcs", ".hg", ".bzr", ".svn", "package.json", "Makefile" },
       },
       win = {
@@ -40,6 +41,10 @@ return {
         history_bonus = true, -- give more weight to chronological order
       },
     },
+    zen = {
+      minimal = true,
+      backdrop = { transparent = false, blend = 40 },
+    },
   },
   keys = {
     {
@@ -56,22 +61,22 @@ return {
       end,
       desc = "List Buffers",
     },
-    {
-      "]]",
-      function()
-        Snacks.words.jump(vim.v.count1)
-      end,
-      desc = "Next Reference",
-      mode = { "n", "t" },
-    },
-    {
-      "[[",
-      function()
-        Snacks.words.jump(-vim.v.count1)
-      end,
-      desc = "Prev Reference",
-      mode = { "n", "t" },
-    },
+    -- {
+    --   "]]",
+    --   function()
+    --     Snacks.words.jump(vim.v.count1)
+    --   end,
+    --   desc = "Next Reference",
+    --   mode = { "n", "t" },
+    -- },
+    -- {
+    --   "[[",
+    --   function()
+    --     Snacks.words.jump(-vim.v.count1)
+    --   end,
+    --   desc = "Prev Reference",
+    --   mode = { "n", "t" },
+    -- },
     {
       "<leader>sL",
       function()
@@ -89,7 +94,7 @@ return {
       desc = ".dotfiles",
     },
     {
-      "<leader>/",
+      "<leader>ss",
       function()
         Snacks.picker.grep()
       end,
@@ -146,19 +151,26 @@ return {
       desc = "Find Git Files",
     },
     {
-      "<leader>fp",
+      "<leader>sp",
       function()
         Snacks.picker.projects()
       end,
       desc = "Projects",
     },
     {
-      "<leader>fr",
+      "<leader>so",
       function()
-        Snacks.picker.recent()
+        Snacks.picker.recent { cwd = Snacks.git.get_root(0) }
       end,
       desc = "Recent",
     },
+    -- {
+    --   "<leader>sR",
+    --   function()
+    --     Snacks.picker.recent()
+    --   end,
+    --   desc = "Recent",
+    -- },
     -- git
     {
       "<leader>gb",
@@ -182,7 +194,7 @@ return {
       desc = "Git Log Line",
     },
     {
-      "<leader>gs",
+      "<leader>sx",
       function()
         Snacks.picker.git_status()
       end,
@@ -233,6 +245,14 @@ return {
     },
     {
       "<leader>sw",
+      function()
+        Snacks.picker.grep_word()
+      end,
+      desc = "Visual selection or word",
+      mode = { "n", "x" },
+    },
+    {
+      "<leader>*",
       function()
         Snacks.picker.grep_word()
       end,
@@ -346,7 +366,7 @@ return {
       desc = "Man Pages",
     },
     {
-      "<leader>sp",
+      "<leader>sP",
       function()
         Snacks.picker.lazy()
       end,
@@ -417,13 +437,13 @@ return {
       end,
       desc = "Goto T[y]pe Definition",
     },
-    {
-      "<leader>ss",
-      function()
-        Snacks.picker.lsp_symbols()
-      end,
-      desc = "LSP Symbols",
-    },
+    -- {
+    --   "<leader>s/",
+    --   function()
+    --     Snacks.picker.lsp_symbols()
+    --   end,
+    --   desc = "LSP Symbols",
+    -- },
     {
       "<leader>sS",
       function()
@@ -524,22 +544,8 @@ return {
       end,
       desc = "which_key_ignore",
     },
-    -- {
-    --   "]]",
-    --   function()
-    --     Snacks.words.jump(vim.v.count1)
-    --   end,
-    --   desc = "Next Reference",
-    -- },
-    -- {
-    --   "[[",
-    --   function()
-    --     Snacks.words.jump(-vim.v.count1)
-    --   end,
-    --   desc = "Prev Reference",
-    -- },
     {
-      "<leader>N",
+      "<leader>nN",
       desc = "Neovim News",
       function()
         Snacks.win {
