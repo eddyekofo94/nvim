@@ -15,22 +15,9 @@ local lazy_config = require "configs.lazy"
 
 -- load plugins
 require("lazy").setup({
-  {
-    "NvChad/NvChad",
-    lazy = false,
-    branch = "v2.5",
-    import = "nvchad.plugins",
-  },
-
   { import = "plugins" },
   { import = "modules" },
 }, lazy_config)
-
--- load theme
--- dofile(vim.g.base46_cache .. "defaults")
--- dofile(vim.g.base46_cache .. "statusline")
--- dofile(vim.g.base46_cache .. "syntax")
--- dofile(vim.g.base46_cache .. "treesitter")
 
 for _, v in ipairs(vim.fn.readdir(vim.g.base46_cache)) do
   dofile(vim.g.base46_cache .. v)
@@ -39,7 +26,6 @@ end
 -- Enable each language server by filename under the lsp/ folder
 
 require "options"
-require "nvchad.autocmds"
 require "autocmds"
 
 vim.lsp.enable { "gopls", "basedpyright", "luals" }
