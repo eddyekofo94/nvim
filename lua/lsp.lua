@@ -82,10 +82,7 @@ capabilities = require("blink.cmp").get_lsp_capabilities(capabilities)
 
 vim.lsp.config("*", {
   capabilities = capabilities,
-  virtual_lines = { current_line = true },
   root_markers = root_patterns,
-
-  virtual_text = false,
   jump = {
     float = false,
   },
@@ -97,12 +94,6 @@ vim.lsp.config("*", {
       [vim.diagnostic.severity.INFO] = small_dot,
       [vim.diagnostic.severity.HINT] = small_dot,
     },
-    linehl = {
-      [vim.diagnostic.severity.ERROR] = "ErrorMsg",
-    },
-    numhl = {
-      [vim.diagnostic.severity.WARN] = "WarningMsg",
-    },
   },
 })
 
@@ -113,7 +104,13 @@ vim.diagnostic.config {
       [vim.diagnostic.severity.ERROR] = icons.Diamond,
       [vim.diagnostic.severity.WARN] = "",
       [vim.diagnostic.severity.INFO] = "󰋼",
-      [vim.diagnostic.severity.HINT] = "󰌵"
+      [vim.diagnostic.severity.HINT] = "󰌵",
+    },
+    linehl = {
+      [vim.diagnostic.severity.ERROR] = "ErrorMsg",
+    },
+    numhl = {
+      [vim.diagnostic.severity.WARN] = "WarningMsg",
     },
   },
   float = {

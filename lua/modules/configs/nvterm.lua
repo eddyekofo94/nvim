@@ -21,10 +21,28 @@ end, "Terminal new float term")
 --   return require("nvterm.terminal").new "horizontal"
 -- end, "Terminal new hor term")
 
-nmap("<leader>tn", function()
-  return require("nvterm.terminal").new "horizontal"
-end, "Terminal new hor term")
+-- nmap("<leader>tn", function()
+--   return require("nvterm.terminal").new "horizontal"
+-- end, "Terminal new hor term")
 
 nmap("<leader>tv", function()
   return require("nvterm.terminal").new "vertical"
 end, "Terminal new ver term")
+
+nmap("<leader>crc", function()
+  return require("nvchad.term").runner {
+    id = "boo",
+    pos = "sp",
+
+    cmd = function()
+      local file = vim.fn.expand "%"
+
+      local ft_cmds = {
+        python = "python3 " .. file,
+        cpp = "clear && g++ -o out " .. file .. " && ./out",
+      }
+
+      return ft_cmds[vim.bo.ft]
+    end,
+  }
+end, "code run code")

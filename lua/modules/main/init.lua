@@ -5,6 +5,7 @@ return {
   { import = "modules.git" },
   { import = "modules.lsp" },
   { import = "modules.main" },
+  { import = "modules.ui" },
   {
     "NvChad/nvterm",
     enabled = true,

@@ -1,4 +1,3 @@
-require "nvchad.options"
 local General = require "utils.general"
 
 -- Enable faster lua loader using byte-compilation
@@ -234,6 +233,7 @@ end
 
 local highlighturl_group = vim.api.nvim_create_augroup("highlighturl", { clear = true })
 vim.api.nvim_set_hl(0, "HighlightURL", { default = true, underline = true })
+
 vim.api.nvim_create_autocmd("ColorScheme", {
   group = highlighturl_group,
   desc = "Set up HighlightURL hlgroup",
@@ -241,6 +241,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     vim.api.nvim_set_hl(0, "HighlightURL", { default = true, underline = true })
   end,
 })
+
 vim.api.nvim_create_autocmd({ "VimEnter", "FileType", "BufEnter", "WinEnter" }, {
   group = highlighturl_group,
   desc = "Highlight URLs",

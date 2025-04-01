@@ -29,6 +29,7 @@ return {
           keys = {
             -- to close the picker on ESC instead of going to normal mode,
             ["<Esc>"] = { "close", mode = { "n", "i" } },
+            ["<c-s>"] = { "edit_split", mode = { "i", "n" } },
           },
         },
       },
