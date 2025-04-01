@@ -22,10 +22,7 @@ return {
       },
     },
     picker = {
-      projects = {
-        -- patterns = { "go.mod", "CMakeLists.txt", "LICENCE.md", ".vscode" },
-        patterns = { ".git", "go.mod", "_darcs", ".hg", ".bzr", ".svn", "package.json", "Makefile" },
-      },
+      projects = {},
       win = {
         -- input window
         input = {
