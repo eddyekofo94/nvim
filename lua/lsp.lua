@@ -102,7 +102,7 @@ vim.diagnostic.config {
   signs = {
     text = {
       [vim.diagnostic.severity.ERROR] = icons.Diamond,
-      [vim.diagnostic.severity.WARN] = "",
+      [vim.diagnostic.severity.WARN] = "󰔶 ",
       [vim.diagnostic.severity.INFO] = "󰋼",
       [vim.diagnostic.severity.HINT] = "󰌵",
     },

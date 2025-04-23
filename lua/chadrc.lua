@@ -33,7 +33,7 @@ M.ui = {
 }
 
 M.base46 = {
-  theme = "onenord",
+  theme = "catppuccin",
   hl_add = highlights,
   integrations = {
     "cmp",

@@ -217,7 +217,7 @@ return {
 
   -- StatusLine
   StatusLine = { bg = "statusline_bg" },
-  StatusLineLspWarning = { fg = "yellow", bg = "statusline_bg" },
+  StatusLineLspWarning = { fg = { "yellow", "orange", 80 }, bg = "statusline_bg" },
   StatusLineLspInfo = { fg = get_hl("DiagnosticInfo", "fg"), bg = "statusline_bg" },
   StatusLineLspError = { fg = get_hl("DiagnosticError", "fg"), bg = "statusline_bg" },
   StatusLineLspHint = { fg = get_hl("DiagnosticHint", "fg"), bg = "statusline_bg" },
