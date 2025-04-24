@@ -19,12 +19,10 @@ local opts = {
       end
     end,
     sh = {
-      {
         "beautysh",
         "shellcheck",
         "shfmt",
       },
-    },
     zsh = { "beautysh" },
     fish = { "fish_indent" },
     -- Use the "*" filetype to run formatters on all filetypes.

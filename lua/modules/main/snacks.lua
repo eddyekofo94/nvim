@@ -128,11 +128,11 @@ return {
       desc = "Buffers",
     },
     {
-      "<leader>fc",
+      "<leader>sN",
       function()
         Snacks.picker.files { cwd = vim.fn.stdpath "config" }
       end,
-      desc = "Find Config File",
+      desc = "Nvim Config File",
     },
     {
       "<leader>sf",
