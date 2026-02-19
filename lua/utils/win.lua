@@ -137,4 +137,75 @@ function M.is_empty(win)
   return require('utils.buf').is_empty(vim.api.nvim_win_get_buf(win))
 end
 
+--- Closes all windows in the current tab except the active one.
+M.only = function()
+  local success, err = pcall(vim.cmd, 'only')
+
+  if success then
+    vim.api.nvim_echo({ { 'Focusing current window', 'Normal' } }, false, {})
+  else
+    vim.notify('Could not close all windows: ' .. tostring(err), vim.log.levels.ERROR)
+  end
+end
+
+M.smart_close = function(force)
+  local win_id = vim.api.nvim_get_current_win()
+  local win_config = vim.api.nvim_win_get_config(win_id)
+  local tab_wins = vim.api.nvim_tabpage_list_wins(0)
+  local buftype = vim.api.nvim_get_option_value('buftype', { buf = 0 })
+  local fs = require 'utils.fs'
+
+  if win_config.relative ~= '' then
+    vim.api.nvim_win_close(win_id, false)
+    return
+  end
+
+  if #tab_wins > 1 then
+    local display_path = fs.get_project_path()
+    local cmd = (force or buftype == 'terminal') and 'hide' or 'confirm close'
+
+    local success, _ = pcall(vim.cmd, cmd)
+    if success then
+      vim.api.nvim_echo({
+        { ' 󰖭  Closed Split: ', 'Special' },
+        { display_path, 'Directory' },
+      }, false, {})
+    end
+    return
+  end
+
+  require('utils.buf').close_tab()
+end
+
+M.close_others = function()
+  local main_win = vim.api.nvim_get_current_win()
+  local all_wins = vim.api.nvim_tabpage_list_wins(0)
+  local names_to_report = {}
+
+  for _, w in ipairs(all_wins) do
+    if vim.api.nvim_win_is_valid(w) and w ~= main_win then
+      local b = vim.api.nvim_win_get_buf(w)
+      if b and vim.api.nvim_buf_is_valid(b) then
+        local n = vim.api.nvim_buf_get_name(b)
+        table.insert(names_to_report, (n ~= '') and vim.fn.fnamemodify(n, ':t') or '[No Name]')
+      end
+    end
+  end
+
+  local ok = pcall(function()
+    vim.cmd 'confirm only'
+  end)
+
+  if ok and #names_to_report > 0 then
+    local chunks = { { ' 󰖭  Closed: ', 'Special' } }
+    for i, name in ipairs(names_to_report) do
+      table.insert(chunks, { name, 'Directory' })
+      if i < #names_to_report then
+        table.insert(chunks, { ', ', 'Normal' })
+      end
+    end
+    vim.api.nvim_echo(chunks, false, {})
+  end
+end
+
 return M

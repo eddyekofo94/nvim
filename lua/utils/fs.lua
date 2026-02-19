@@ -195,6 +195,12 @@ function M.is_root_dir(dir)
   return dir == vim.fs.dirname(dir)
 end
 
+function M.is_git_repo()
+  vim.fn.system 'git rev-parse --is-inside-work-tree'
+
+  return vim.v.shell_error == 0
+end
+
 ---Home directory
 ---@type string?
 local home
@@ -218,6 +224,139 @@ function M.is_full_path(path)
   -- `foo/` and `foo` are treated equally
   return vim.fs.normalize(vim.fn.fnamemodify(path, ':p'))
     == vim.fs.normalize(path)
+end
+
+function M.is_new_file()
+  local filename = vim.fn.expand '%'
+  return filename ~= '' and vim.bo.buftype == '' and vim.fn.filereadable(filename) == 0
+end
+
+function M.get_project_path()
+  local full_path = vim.api.nvim_buf_get_name(0)
+  if full_path == '' then
+    return '[No Name]'
+  end
+
+  local git_root = vim.fs.root(0, '.git')
+
+  if not git_root then
+    return vim.fn.fnamemodify(full_path, ':.')
+  end
+
+  local project_name = vim.fn.fnamemodify(git_root, ':t')
+  local rel_to_root = vim.fn.fnamemodify(full_path, ':p'):sub(#git_root + 2)
+  return project_name .. '/' .. rel_to_root
+end
+
+function M.get_filename()
+  local current = vim.api.nvim_get_current_win()
+  local filename = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(current))
+  local icon = ''
+  local icon_highlight = ''
+
+  if filename ~= '' then
+    local devicons_present, devicons = pcall(require, 'nvim-web-devicons')
+
+    if devicons_present then
+      local ft_icon, icon_hl = devicons.get_icon(filename)
+      icon = (ft_icon ~= nil and ft_icon) or icon
+      icon_highlight = icon_hl
+    end
+    filename = vim.fn.fnamemodify(filename, ':~:.')
+    filename = string.format('%s%s', icon .. ' ', filename)
+  else
+    filename = string.format(' %s%s ', icon, vim.bo.filetype):upper()
+  end
+
+  return filename, icon_highlight
+end
+
+---@param path string
+---@param sep string path separator
+---@param max_len integer maximum length of the full filename string
+---@return string
+function M.shorten_path(path, sep, max_len)
+  local len = #path
+  if len <= max_len then
+    return path
+  end
+
+  local segments = vim.split(path, sep)
+
+  if M.is_git_repo() and max_len == 0 then
+    return segments[#segments]
+  end
+
+  for idx = 1, #segments - 1 do
+    if len <= max_len then
+      break
+    end
+
+    local segment = segments[idx]
+    local shortened = segment:sub(1, vim.startswith(segment, '.') and 2 or 1)
+    segments[idx] = shortened
+    len = len - (#segment - #shortened)
+  end
+
+  return table.concat(segments, sep)
+end
+
+---Compute project directory for given path.
+---@param path string?
+---@param patterns string[]? root patterns
+---@return string? nil if not found
+function M.cwd_dir(path, patterns)
+  if not path or path == '' then
+    return nil
+  end
+
+  path = path:gsub('^oil://', ''):gsub('/$', '')
+
+  patterns = patterns or M.root_markers
+
+  local stat = vim.uv.fs_stat(path)
+  if not stat then
+    return nil
+  end
+
+  local start_dir = stat.type == 'directory' and path or vim.fs.dirname(path)
+
+  for _, group in ipairs(patterns or {}) do
+    local matches = vim.fs.find(group, {
+      path = start_dir,
+      upward = true,
+      stop = vim.uv.os_homedir(),
+    })
+
+    if matches[1] then
+      local root = vim.fs.dirname(matches[1])
+      return vim.uv.fs_realpath(root)
+    end
+  end
+
+  return nil
+end
+
+---@param base string
+---@param path string
+---@return string
+function M.relative(base, path)
+  local n_base = vim.fs.normalize(base)
+  local n_path = vim.fs.normalize(path)
+
+  if n_path == n_base then
+    return '.'
+  end
+
+  if not n_base:match('[/\\]$') then
+    n_base = n_base .. '/'
+  end
+
+  if n_path:find('^' .. vim.pesc(n_base), 1, true) then
+    return n_path:sub(#n_base + 1)
+  end
+
+  return path
 end
 
 return M

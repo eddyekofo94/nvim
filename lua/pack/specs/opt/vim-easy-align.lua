@@ -4,12 +4,12 @@ return {
   data = {
     keys = {
       {
-        lhs = 'gl',
+        lhs = 'cel',
         mode = { 'n', 'x' },
         opts = { desc = 'Align text' },
       },
       {
-        lhs = 'gL',
+        lhs = 'ceL',
         mode = { 'n', 'x' },
         opts = { desc = 'Align text interactively' },
       },
@@ -28,13 +28,13 @@ return {
 
       vim.keymap.set(
         { 'n', 'x' },
-        'gl',
+        'cel',
         '<Plug>(EasyAlign)',
         { noremap = false, desc = 'Align text' }
       )
       vim.keymap.set(
         { 'n', 'x' },
-        'gL',
+        'ceL',
         '<Plug>(LiveEasyAlign)',
         { noremap = false, desc = 'Align text interactively' }
       )

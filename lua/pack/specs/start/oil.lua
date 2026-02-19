@@ -823,7 +823,23 @@ return {
           ['g?'] = 'actions.show_help',
           ['K'] = preview_mapping,
           ['<C-k>'] = preview_mapping,
+          ['<C-P>'] = preview_mapping,
+          ['<LocalLeader>0'] = {
+            function()
+              local utils = require 'utils'
+              local current_dir = require('oil').get_current_dir()
+              local root = utils.fs.cwd_dir(current_dir) or vim.fn.getcwd()
+              require('oil').open(root)
+            end,
+            mode = 'n',
+            nowait = true,
+            desc = 'Oil: Open Project Root',
+          },
           ['-'] = 'actions.parent',
+          ['<C-->'] = 'actions.parent',
+          ['<C-h>'] = 'actions.parent',
+          ['<C-l>'] = 'actions.select',
+          ['q'] = 'actions.close',
           ['='] = 'actions.select',
           ['+'] = 'actions.select',
           ['<CR>'] = 'actions.select',
@@ -952,6 +968,19 @@ return {
         vim.cmd.Oil,
         { desc = "Edit current file's directory" }
       )
+
+      -- Open project root with <leader>0
+      vim.keymap.set('n', '<leader>0', function()
+        local path
+        if vim.bo.filetype == 'oil' then
+          path = require('oil').get_current_dir()
+        else
+          path = vim.api.nvim_buf_get_name(0)
+        end
+
+        local root = require('utils').fs.cwd_dir(path) or vim.fn.getcwd()
+        require('oil').open(root)
+      end, { desc = 'Oil: Open Root', silent = true })
 
       local groupid = vim.api.nvim_create_augroup('oil', {})
       vim.api.nvim_create_autocmd('BufEnter', {

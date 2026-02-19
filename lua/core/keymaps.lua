@@ -472,6 +472,89 @@ local map = KM.map
         end
       )
     end, { desc = 'Delete plugin' })
+
+    -- Buffer operations (from backup)
+    local function copy_all()
+      local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+      local content = table.concat(lines, '\n')
+      vim.fn.setreg('+', content)
+      vim.notify('Copied entire buffer to system clipboard', vim.log.levels.INFO)
+    end
+
+    local function paste_all()
+      local content = vim.fn.getreg '+'
+      if content == '' then
+        vim.notify('Clipboard is empty!', vim.log.levels.WARN)
+        return
+      end
+      local lines = vim.split(content, '[\r\n]')
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+      vim.notify('Buffer replaced from clipboard', vim.log.levels.INFO)
+    end
+
+    local function delete_all()
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, {})
+      vim.notify('Buffer cleared', vim.log.levels.INFO)
+    end
+
+    map('n', '<Leader>da', delete_all, { desc = 'Delete all in buffer' })
+    map('n', '<Leader>ya', copy_all, { desc = 'Copy entire buffer' })
+    map('n', '<Leader>cpa', paste_all, { desc = 'Replace buffer with clipboard' })
+
+    -- Smart line movement
+    local function smart_line_move(key)
+      return function()
+        if vim.v.count == 0 then
+          return 'g' .. key
+        else
+          return key
+        end
+      end
+    end
+
+    map({ 'n', 'x' }, 'gh', function()
+      local current_line = vim.api.nvim_get_current_line()
+      local cursor_pos = vim.api.nvim_win_get_cursor(0)
+      local current_col = cursor_pos[2] + 1
+      local first_non_blank_match = current_line:match '^(%s*)%S'
+      local first_non_blank_col = 1
+      if first_non_blank_match then
+        first_non_blank_col = #first_non_blank_match + 1
+      end
+      if current_col == first_non_blank_col then
+        return '0'
+      else
+        return 'g^'
+      end
+    end, { expr = true, desc = 'Smart start of line' })
+    map({ 'n', 'x' }, 'gl', smart_line_move '$', { expr = true, desc = 'Smart end of line' })
+
+    -- Add lines native
+    _G.add_line_handler = function()
+      local direction = vim.g.add_line_dir or 0
+      local count = vim.v.count1
+      local row = vim.api.nvim_win_get_cursor(0)[1]
+      local target = row + direction
+      local lines = {}
+      for _ = 1, count do
+        table.insert(lines, '')
+      end
+      vim.api.nvim_buf_set_lines(0, target, target, false, lines)
+    end
+
+    local function add_lines_native(direction)
+      return function()
+        vim.g.add_line_dir = direction
+        vim.go.operatorfunc = 'v:lua.add_line_handler'
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('g@l', true, true, true), 'n', false)
+      end
+    end
+
+    map('n', '<Leader>oo', add_lines_native(0), { desc = 'Insert line below (native)' })
+    map('n', '<Leader>OO', add_lines_native(-1), { desc = 'Insert line above (native)' })
+
+    -- Undotree (alternate key)
+    map('n', '<Leader>uT', '<Cmd>Undotree<CR>', { desc = 'Toggle undotree' })
   end)
 )
 
@@ -494,5 +577,17 @@ require('utils.load').on_events(
     key.command_abbrev('mkdir', '!mkdir')
     key.command_abbrev('touch', '!touch')
     key.command_abbrev('chmod', '!chmod')
+    key.command_abbrev('ture', 'true')
+    key.command_abbrev('Ture', 'True')
+    key.command_abbrev('flase', 'false')
+    key.command_abbrev('fasle', 'false')
+    key.command_abbrev('Flase', 'False')
+    key.command_abbrev('Fasle', 'False')
+    key.command_abbrev('lcaol', 'local')
+    key.command_abbrev('lcoal', 'local')
+    key.command_abbrev('locla', 'local')
+    key.command_abbrev('sahre', 'share')
+    key.command_abbrev('saher', 'share')
+    key.command_abbrev('balme', 'blame')
   end
 )
