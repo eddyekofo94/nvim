@@ -3,7 +3,7 @@
 --
 -- https://pkg.go.dev/github.com/sqs/goreturns
 
----@type my.lsp.config
+---@type lsp.config
 return {
   filetypes = { 'go' },
   cmd = { 'efm-langserver' },

@@ -2,7 +2,7 @@ if vim.g.loaded_markdown_title ~= nil then
   return
 end
 
-local utils = require('my.utils')
+local utils = require('utils')
 
 if vim.g.md_fmt_title == nil then
   vim.g.md_fmt_title = true
@@ -137,7 +137,7 @@ end
 local buf = vim.api.nvim_get_current_buf()
 vim.api.nvim_create_autocmd('TextChangedI', {
   group = vim.api.nvim_create_augroup(
-    string.format('my.ft.markdown.format_title.buf.%d', buf),
+    string.format('ft.markdown.format_title.buf.%d', buf),
     {}
   ),
   buffer = buf,

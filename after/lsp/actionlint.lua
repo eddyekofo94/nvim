@@ -1,7 +1,7 @@
 -- Static checker for GitHub Actions workflow files
 -- https://github.com/rhysd/actionlint/tree/v1.7.7
 
----@type my.lsp.config
+---@type lsp.config
 return {
   -- Only attach to GitHub action/workflow YAML files, see
   -- `after/ftplugin/yaml.lua`

@@ -10,7 +10,7 @@ if vim.g[loaded_flag] ~= nil then
 end
 vim.g[loaded_flag] = true
 
-local ns_name = string.format('my.ft.%s.codeblock', ft)
+local ns_name = string.format('ft.%s.codeblock', ft)
 local ns = vim.api.nvim_create_namespace(ns_name)
 
 local has_quantified_captures = vim.fn.has('nvim-0.11.0') == 1
@@ -140,7 +140,7 @@ vim.api.nvim_create_autocmd('Syntax', {
   end,
 })
 
-local hl = require('my.utils.hl')
+local hl = require('utils.hl')
 
 hl.persist(function()
   hl.set(0, 'CodeBlock', { link = 'CursorLine', default = true })

@@ -1,7 +1,7 @@
 -- Shell script formatter for sh/bash/mksh
 -- https://github.com/patrickvane/shfmt
 
----@type my.lsp.config
+---@type lsp.config
 return {
   filetypes = { 'sh' },
   cmd = { 'efm-langserver' },

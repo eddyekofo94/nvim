@@ -17,7 +17,7 @@ local root_markers = {
 -- with efm-langserver to avoid scattering untracked watchman config files
 -- everywhere
 if vim.fn.executable('efm-langserver') == 1 then
-  ---@type my.lsp.config
+  ---@type lsp.config
   return {
     filetypes = { 'python' },
     cmd = { 'efm-langserver' },
@@ -42,7 +42,7 @@ if vim.fn.executable('efm-langserver') == 1 then
   }
 end
 
----@type my.lsp.config
+---@type lsp.config
 return {
   filetypes = { 'python' },
   cmd = { 'pyre', 'persistent' },
@@ -56,6 +56,6 @@ return {
       return
     end
     -- Pyre lsp requires a watchman config under project root directory
-    require('my.utils.json').write(wm_config, {})
+    require('utils.json').write(wm_config, {})
   end,
 }

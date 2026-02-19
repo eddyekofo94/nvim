@@ -1,4 +1,4 @@
----@type my.lsp.config
+---@type lsp.config
 return {
   filetypes = { 'rust' },
   cmd = { 'rust-analyzer' },

@@ -19,7 +19,7 @@ return {
         return
       end
       return unpack(vim
-        .iter(require('my.utils.cmd').split(vim.env.JDTLS_JVM_ARGS))
+        .iter(require('utils.cmd').split(vim.env.JDTLS_JVM_ARGS))
         :map(function(arg)
           return string.format('--jvm-arg=%s', arg)
         end)

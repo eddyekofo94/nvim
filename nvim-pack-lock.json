@@ -16,6 +16,10 @@
       "rev": "b03a031",
       "src": "https://github.com/sainnhe/everforest"
     },
+    "focus.nvim": {
+      "rev": "36ebedeebe82ebea250c9d671769194caa033902",
+      "src": "https://github.com/beauwilliams/focus.nvim"
+    },
     "fugitive-gitlab.vim": {
       "rev": "3584cf7",
       "src": "https://github.com/shumphrey/fugitive-gitlab.vim"

@@ -43,27 +43,27 @@ local function clear_intro()
   end
 end
 
-local groupid = vim.api.nvim_create_augroup('my.intro', {})
+local groupid = vim.api.nvim_create_augroup('intro', {})
 
 vim.api.nvim_create_autocmd('UIEnter', {
   group = groupid,
   once = true,
   desc = 'Show the intro message on entering the UI.',
   callback = function()
-    ---@class my.intro.chunk
+    ---@class intro.chunk
     ---@field text string
     ---@field hl string
     ---@field len integer? byte-indexed text length
     ---@field width integer? display width of text
 
-    ---@class my.intro.line
-    ---@field chunks my.intro.chunk[]
+    ---@class intro.line
+    ---@field chunks intro.chunk[]
     ---@field text string?
     ---@field width integer?
     ---@field offset integer?
 
     ---Lines of text and highlight groups to display as intro message
-    ---@type my.intro.line[]
+    ---@type intro.line[]
     local lines = {
       {
         chunks = {

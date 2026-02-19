@@ -2,7 +2,7 @@
 -- https://stackoverflow.com/questions/30248259/swig-go-c-source-files-not-allowed-when-not-using-cgo
 vim.env.CGO_ENABLED = 0
 
----@type my.lsp.config
+---@type lsp.config
 return {
   filetypes = { 'go' },
   cmd = { 'gopls' },
