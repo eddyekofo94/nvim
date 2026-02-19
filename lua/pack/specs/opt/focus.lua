@@ -43,7 +43,6 @@ return {
         "DiffviewFilePanel",
         "DiffviewPanel",
         "diffview*",
-        -- "oil",
         "telescope",
         "toggleterm",
         "lazy",

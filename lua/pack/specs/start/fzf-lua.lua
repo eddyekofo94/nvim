@@ -53,6 +53,7 @@ return {
       { lhs = '<Leader>fd', opts = { desc = 'Find document diagnostics' } },
       { lhs = '<Leader>fD', opts = { desc = 'Find workspace diagnostics' } },
       { lhs = '<Leader>ff', opts = { desc = 'Find files' } },
+      { lhs = '<Leader><space>', opts = { desc = 'Find files' } },
       { lhs = '<Leader>fa', opts = { desc = 'Find args' } },
       { lhs = '<Leader>fl', opts = { desc = 'Find location list' } },
       { lhs = '<Leader>fq', opts = { desc = 'Find quickfix list' } },
@@ -1024,8 +1025,12 @@ return {
             ['alt-a'] = 'toggle-all',
             ['alt-}'] = 'last',
             ['alt-{'] = 'first',
+            ['tab'] = 'toggle',
+            ['shift-tab'] = 'toggle+select-all',
+            ['ctrl-l'] = 'toggle',
           },
         },
+        multiselect = true,
         actions = {
           files = {
             ['alt-s'] = actions.file_split,

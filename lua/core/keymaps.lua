@@ -5,11 +5,8 @@ require('utils.load').on_events(
   'UIEnter',
   'keymaps',
   vim.schedule_wrap(function()
-    local keymaps = {} ---@type table<string, table<string, true>>
-    local buf_keymaps = {} ---@type table<integer, table<string, table<string, true>>>
-
-local KM = require "utils.key"
-local map = KM.map
+    local Key = require "utils.key"
+    local map = Key.map
 
     local key = require('utils.key')
 
@@ -196,10 +193,36 @@ local map = KM.map
 
     -- More consistent behavior when &wrap is set
     -- stylua: ignore start
-    map({ 'n', 'x' }, 'j', 'v:count ? "j" : "gj"', { expr = true, desc = 'Move down' })
-    map({ 'n', 'x' }, 'k', 'v:count ? "k" : "gk"', { expr = true, desc = 'Move up' })
-    map({ 'n', 'x' }, '<Down>', 'v:count ? "<Down>" : "g<Down>"', { expr = true, replace_keycodes = false, desc = 'Move down' })
-    map({ 'n', 'x' }, '<Up>',   'v:count ? "<Up>"   : "g<Up>"',   { expr = true, replace_keycodes = false, desc = 'Move up' })
+
+-- Modernized Smart Move
+-- Using a direct logic string for expr maps is often faster in the input loop
+local function smart_move(key)
+  return function()
+    -- Check if we are in a mode where 'gj' makes sense
+    -- and ensure we handle the 'v:count' correctly.
+    if vim.v.count == 0 then
+      return "g" .. key
+    end
+    return key
+  end
+end
+
+-- Refactored Mappings
+-- We can group these to avoid repeated :bind calls if your class supports tables,
+-- but staying within your style:
+local move_keys = { j = "j", k = "k", ["<Down>"] = "j", ["<Up>"] = "k" }
+
+for map_key, real_key in pairs(move_keys) do
+  map({ "n", "x" }, map_key, smart_move(real_key), {
+    expr = true,
+    silent = true,
+    desc = "Smart " .. (real_key == "j" and "down" or "up"),
+  })
+end
+    -- map({ 'n', 'x' }, 'j', 'v:count ? "j" : "gj"', { expr = true, desc = 'Move down' })
+    -- map({ 'n', 'x' }, 'k', 'v:count ? "k" : "gk"', { expr = true, desc = 'Move up' })
+    -- map({ 'n', 'x' }, '<Down>', 'v:count ? "<Down>" : "g<Down>"', { expr = true, replace_keycodes = false, desc = 'Move down' })
+    -- map({ 'n', 'x' }, '<Up>',   'v:count ? "<Up>"   : "g<Up>"',   { expr = true, replace_keycodes = false, desc = 'Move up' })
     map({ 'i' }, '<Down>', '<Cmd>norm! g<Down><CR>', { desc = 'Move down' })
     map({ 'i' }, '<Up>',   '<Cmd>norm! g<Up><CR>',   { desc = 'Move up' })
     -- stylua: ignore end
@@ -442,10 +465,10 @@ local map = KM.map
     -- Fzf keymaps
     map('n', '<Leader>.', '<Cmd>FZF<CR>', { desc = 'Find files' })
     map('n', '<Leader>ff', '<Cmd>FZF<CR>', { desc = 'Find files' })
-    map('n', '<Leader><space>', '<Cmd>FZF<CR>', { desc = 'Find files' })
+    map('n', '<Leader><space>', '<Cmd>FzfLua files<CR>', { desc = 'Find files' })
 
     -- Nvim's new built-in undotree plugin
-    map('n', '<Leader>u', '<Cmd>packadd nvim.undotree|Undotree<CR>', {
+    map('n', '<Leader>uT', '<Cmd>packadd nvim.undotree|Undotree<CR>', {
       desc = 'Toggle undotree',
     })
 
@@ -555,6 +578,8 @@ local map = KM.map
 
     -- Undotree (alternate key)
     map('n', '<Leader>uT', '<Cmd>Undotree<CR>', { desc = 'Toggle undotree' })
+
+    map("n", "<leader>ii", Key.universal_smart_toggle, { desc = "Universal Smart Toggle" })
   end)
 )
 

@@ -8,6 +8,7 @@ return {
     postload = function()
       local icons = require('utils.static.icons')
       local gs = require('gitsigns')
+          local map = require("utils.key").map
 
       gs.setup({
         preview_config = {
@@ -22,7 +23,7 @@ return {
           topdelete = { text = vim.trim(icons.GitSignTopdelete) },
           changedelete = { text = vim.trim(icons.GitSignChangedelete) },
         },
-        signs_staged_enable = false,
+        signs_staged_enable = true,
         current_line_blame = false,
         current_line_blame_opts = {
           virt_text = true,
@@ -42,10 +43,43 @@ return {
       -- Setup keymaps
       -- Navigation
       -- stylua: ignore start
-      vim.keymap.set({ 'n', 'x' }, '[g', function() gs.nav_hunk('prev') end, { desc = 'Go to previous git hunk' })
-      vim.keymap.set({ 'n', 'x' }, ']g', function() gs.nav_hunk('next') end, { desc = 'Go to next git hunk' })
       vim.keymap.set({ 'n', 'x' }, '[G', function() gs.nav_hunk('first') end, { desc = 'Go to first git hunk' })
       vim.keymap.set({ 'n', 'x' }, ']G', function() gs.nav_hunk('last') end, { desc = 'Go to last git hunk' })
+
+          map({ "n", "x" }, "]x", function()
+            if vim.wo.diff then
+              vim.api.nvim_feedkeys(vim.v.count1 .. "]x", "n", true)
+              return
+            end
+            for _ = 1, vim.v.count1 do
+              gs.nav_hunk("next")
+            end
+          end, "Next Hunk")
+
+          map({ "n", "x" }, "[x", function()
+            if vim.wo.diff then
+              vim.api.nvim_feedkeys(vim.v.count1 .. "xc", "n", true)
+              return
+            end
+            for _ = 1, vim.v.count1 do
+              gs.nav_hunk"prev"
+            end
+          end, "Prev Hunk")
+
+          map("x", "<leader>gg", function()
+            gs.stage_hunk {
+              vim.fn.line ".",
+              vim.fn.line "v",
+            }
+          end, "Stage Hunk")
+
+          map("x", "<leader>gx", function()
+            gs.reset_hunk {
+              vim.fn.line ".",
+              vim.fn.line "v",
+            }
+          end, "Reset Hunk")
+
       -- stylua: ignore end
 
       -- Actions

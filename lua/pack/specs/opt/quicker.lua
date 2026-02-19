@@ -58,6 +58,16 @@ return {
         on_qf = function(buf)
           -- Disable custom qf syntax, see `syntax/qf.vim`
           vim.bo[buf].syntax = ''
+          local map = require('utils.key').map
+          map('n', 'q', function()
+            quicker.close()
+          end, { buffer = buf, desc = 'qf close' })
+
+          map('n', '<leader>qq', function()
+            quicker.toggle()
+          end, {
+            desc = 'Toggle quickfix',
+          })
         end,
         max_filename_width = function()
           return math.max(32, math.ceil(vim.go.columns / 4))

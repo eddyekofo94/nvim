@@ -38,7 +38,7 @@ return {
       'DDelete',
     },
     keys = {
-      { lhs = '<Leader>gg', opts = { desc = 'Git summary' } },
+      { lhs = '<Leader>gs', opts = { desc = 'Git summary' } },
       { lhs = '<Leader>gw', opts = { desc = 'Git show latest commit' } },
       { lhs = '<Leader>gP', opts = { desc = 'Git push' } },
       {
@@ -73,7 +73,7 @@ return {
       ]])
 
       -- stylua: ignore start
-      vim.keymap.set('n', '<Leader>gg',       '<Cmd>Git<CR>',                                  { desc = 'Git summary' })
+      vim.keymap.set('n', '<Leader>gG',       '<Cmd>Git<CR>',                                  { desc = 'Git summary' })
       vim.keymap.set('n', '<Leader>gd',       '<Cmd>Gdiff<CR>',                                { desc = 'Git diff current file' })
       vim.keymap.set('n', '<Leader>gw',       '<Cmd>Git show<CR>',                             { desc = 'Git show latest commit' })
       vim.keymap.set('n', '<Leader>gP',       '<Cmd>Git push<CR>',                             { desc = 'Git push' })
@@ -90,12 +90,12 @@ return {
         pattern = 'FugitiveIndex',
         group = group,
         callback = function(args)
-          vim.keymap.set({ 'n', 'x' }, '[g', '[c', {
+          vim.keymap.set({ 'n', 'x' }, '[x', '[c', {
             desc = 'Go to previous hunk',
             buffer = args.buf,
             remap = true,
           })
-          vim.keymap.set({ 'n', 'x' }, ']g', ']c', {
+          vim.keymap.set({ 'n', 'x' }, ']x', ']c', {
             desc = 'Go to next hunk',
             buffer = args.buf,
             remap = true,
