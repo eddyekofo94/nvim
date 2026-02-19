@@ -52,6 +52,10 @@
       "rev": "4fd7be6",
       "src": "https://github.com/benlubas/molten-nvim"
     },
+    "nvim-bqf": {
+      "rev": "f65fba733268ffcf9c5b8ac381287eca7c223422",
+      "src": "https://github.com/kevinhwang91/nvim-bqf"
+    },
     "nvim-colorizer.lua": {
       "rev": "338409dd8a6ed74767bad3eb5269f1b903ffb3cf",
       "src": "https://github.com/NvChad/nvim-colorizer.lua"
