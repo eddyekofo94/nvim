@@ -253,6 +253,7 @@ local hlgroups = {
   ErrorMsg = { fg = red },
   InfoMsg = { link = "DiagnosticInfo" },
   HintMsg = { link = "DiagnosticHint" },
+  HighlightURL = { fg = teal, undercurl = true },
 
   -- Blended colors handled by selecting nearest NvChad equivalent
   EndOfBuffer = { fg = black },

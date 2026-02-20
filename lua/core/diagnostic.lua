@@ -9,10 +9,7 @@ vim.diagnostic.config({
   float = {
     source = true,
   },
-  virtual_text = {
-    spacing = 4,
-    prefix = vim.trim(icons.AngleLeft),
-  },
+  virtual_text = false, -- Disabled: diagflow handles inline diagnostics
   signs = {
     text = {
       [vim.diagnostic.severity.ERROR] = icons.DiagnosticSignError,
@@ -28,85 +25,6 @@ vim.diagnostic.config({
     },
   },
 })
-
--- Diagnostic handlers overrides
-do
-  ---Filter out diagnostics that overlap with diagnostics from other sources
-  ---For each diagnostic, checks if there exists another diagnostic from a different
-  ---namespace that has the same start line and column
-  ---
-  ---If multiple diagnostics overlap, prefer the one with higher severity
-  ---
-  ---This helps reduce redundant diagnostics when multiple language servers
-  ---(usually a language server and a linter hooked to an lsp wrapper) report
-  ---the same issue for the same range
-  ---@param diags vim.Diagnostic[]
-  ---@return vim.Diagnostic[]
-  local function filter_overlapped(diags)
-    ---Diagnostics cache, indexed by buffer number and line number (0-indexed)
-    ---to avoid calling `vim.diagnostic.get()` for the same buffer and line
-    ---repeatedly
-    ---@type table<integer, table<integer, table<integer, vim.Diagnostic>>>
-    local diags_cache = vim.defaulttable(function(bufnr)
-      local ds = vim.defaulttable() -- mapping from lnum to diagnostics
-      -- Avoid using another layer of default table index by lnum using
-      -- `vim.diagnostic.get(bufnr, { lnum = lnum })` to get diagnostics
-      -- by line number since it requires traversing all diagnostics in
-      -- the buffer each time
-      for _, d in ipairs(vim.diagnostic.get(bufnr)) do
-        table.insert(ds[d.lnum], d)
-      end
-      return ds
-    end)
-
-    return vim
-      .iter(diags)
-      :filter(function(diag) ---@param diag diagnostic
-        ---@class diagnostic : vim.Diagnostic
-        ---@field _hidden boolean whether the diagnostic is shown as virtual text
-
-        diag._hidden = vim
-          .iter(diags_cache[diag.bufnr][diag.lnum])
-          :any(function(d) ---@param d diagnostic
-            return not d._hidden
-              and d.namespace ~= diag.namespace
-              and d.severity <= diag.severity
-              and d.col == diag.col
-          end)
-
-        return not diag._hidden
-      end)
-      :totable()
-  end
-
-  ---Truncates multi-line diagnostic messages to their first line
-  ---@param diags vim.Diagnostic[]
-  ---@return vim.Diagnostic[]
-  local function truncate_multiline(diags)
-    return vim
-      .iter(diags)
-      :map(function(d) ---@param d vim.Diagnostic
-        local first_line = vim.gsplit(d.message, '\n')()
-        if not first_line or first_line == d.message then
-          return d
-        end
-        return vim.tbl_extend('keep', {
-          message = first_line,
-        }, d)
-      end)
-      :totable()
-  end
-
-  vim.diagnostic.handlers.virtual_text.show = (function(cb)
-    ---@param ns integer
-    ---@param buf integer
-    ---@param diags vim.Diagnostic[]
-    ---@param opts vim.diagnostic.OptsResolved
-    return function(ns, buf, diags, opts)
-      return cb(ns, buf, truncate_multiline(filter_overlapped(diags)), opts)
-    end
-  end)(vim.diagnostic.handlers.virtual_text.show)
-end
 
 -- stylua: ignore start
 vim.keymap.set({ 'n', 'x' }, '<Leader>d', function() vim.diagnostic.setloclist() end, { desc = 'Show document diagnostics' })

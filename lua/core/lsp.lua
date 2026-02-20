@@ -1,6 +1,14 @@
 local lsp = require('utils.lsp')
 
-vim.lsp.config('*', lsp.default_config)
+vim.lsp.config('*', vim.tbl_deep_extend('force', lsp.default_config, {
+  capabilities = {
+    textDocument = {
+      sync = {
+        changes = false,
+      },
+    },
+  },
+}))
 
 -- Override to perform additional checks on starting language servers
 vim.lsp.start = lsp.start

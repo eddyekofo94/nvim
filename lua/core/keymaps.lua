@@ -5,7 +5,7 @@ require('utils.load').on_events(
   'UIEnter',
   'keymaps',
   vim.schedule_wrap(function()
-    local Key = require "utils.key"
+    local Key = require('utils.key')
     local map = Key.map
 
     local key = require('utils.key')
@@ -71,6 +71,59 @@ require('utils.load').on_events(
     map({ 'x', 'n' }, '<C-w>+', 'v:count ? "<C-w>+" : "2<C-w>+"', { expr = true, desc = 'Increase window height' })
     map({ 'x', 'n' }, '<C-w>-', 'v:count ? "<C-w>-" : "2<C-w>-"', { expr = true, desc = 'Decrease window height' })
     -- stylua: ignore end
+
+    local win = require('utils.win')
+
+    map('n', '<leader>wx', function()
+      win.smart_close(false)
+    end, { desc = 'Window: Close (hide buffer)' })
+
+    map('n', '<leader>wX', function()
+      win.close_others()
+    end, { desc = 'Window: Close others' })
+
+    map(
+      'n',
+      '<leader>wv',
+      '<cmd>vsplit<CR>',
+      { desc = 'Window: Split Vertical' }
+    )
+    map(
+      'n',
+      '<leader>ws',
+      '<cmd>split<CR>',
+      { desc = 'Window: Split Horizontal' }
+    )
+
+    local function copy_all()
+      local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+      local content = table.concat(lines, '\n')
+      vim.fn.setreg('+', content)
+      vim.notify(
+        'Copied entire buffer to system clipboard',
+        vim.log.levels.INFO
+      )
+    end
+
+    local function paste_all()
+      local content = vim.fn.getreg('+')
+      if content == '' then
+        vim.notify('Clipboard is empty!', vim.log.levels.WARN)
+        return
+      end
+      local lines = vim.split(content, '[\r\n]')
+      vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+      vim.notify('Buffer replaced from clipboard', vim.log.levels.INFO)
+      vim.cmd.format()
+    end
+
+    map('n', '<leader>ya', copy_all, { desc = 'Copy entire buffer' })
+    map(
+      'n',
+      '<leader>cpa',
+      paste_all,
+      { desc = 'Replace entire buffer with clipboard' }
+    )
 
     -- Search within visual selection, see:
     -- - https://stackoverflow.com/a/3264324/16371328
@@ -465,13 +518,48 @@ end
     -- Fzf keymaps
     map('n', '<Leader>.', '<Cmd>FZF<CR>', { desc = 'Find files' })
     map('n', '<Leader>ff', '<Cmd>FZF<CR>', { desc = 'Find files' })
-    map('n', '<Leader><space>', '<Cmd>FzfLua files<CR>', { desc = 'Find files' })
+    map(
+      'n',
+      '<Leader><space>',
+      '<Cmd>FzfLua files<CR>',
+      { desc = 'Find files' }
+    )
+    map('n', '<leader>mm', '<cmd>messages<cr>', 'Show Neovim messages')
 
+    map(
+      'i',
+      '<C-l>',
+      Key.escape_pair,
+      'Move over a closing element in insert mode'
+    )
+    map('c', '<CR>', function()
+      local cmdtype = vim.fn.getcmdtype()
+      if cmdtype == '/' or cmdtype == '?' then
+        return '<CR>zzzv'
+      end
+      return '<CR>'
+    end, { expr = true, desc = 'Execute command or search and center' })
     -- Nvim's new built-in undotree plugin
     map('n', '<Leader>uT', '<Cmd>packadd nvim.undotree|Undotree<CR>', {
       desc = 'Toggle undotree',
     })
+    map(
+      'n',
+      'dd',
+      function()
+        -- to avoid complex logic over multiple lines.
+        if vim.v.count > 0 then
+          return 'dd'
+        end
 
+        local line = vim.api.nvim_get_current_line()
+        if line:match('^%s*$') then
+          return '"_dd'
+        end
+        return 'dd'
+      end,
+      { expr = true, desc = "Don't yank empty lines into the main register" }
+    )
     map('n', '<Leader>Pu', vim.pack.update, { desc = 'Update plugins' })
     map('n', '<Leader>Pr', function()
       vim.pack.update(nil, { target = 'lockfile' })
@@ -501,11 +589,14 @@ end
       local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
       local content = table.concat(lines, '\n')
       vim.fn.setreg('+', content)
-      vim.notify('Copied entire buffer to system clipboard', vim.log.levels.INFO)
+      vim.notify(
+        'Copied entire buffer to system clipboard',
+        vim.log.levels.INFO
+      )
     end
 
     local function paste_all()
-      local content = vim.fn.getreg '+'
+      local content = vim.fn.getreg('+')
       if content == '' then
         vim.notify('Clipboard is empty!', vim.log.levels.WARN)
         return
@@ -522,7 +613,12 @@ end
 
     map('n', '<Leader>da', delete_all, { desc = 'Delete all in buffer' })
     map('n', '<Leader>ya', copy_all, { desc = 'Copy entire buffer' })
-    map('n', '<Leader>cpa', paste_all, { desc = 'Replace buffer with clipboard' })
+    map(
+      'n',
+      '<Leader>cpa',
+      paste_all,
+      { desc = 'Replace buffer with clipboard' }
+    )
 
     -- Smart line movement
     local function smart_line_move(key)
@@ -539,7 +635,7 @@ end
       local current_line = vim.api.nvim_get_current_line()
       local cursor_pos = vim.api.nvim_win_get_cursor(0)
       local current_col = cursor_pos[2] + 1
-      local first_non_blank_match = current_line:match '^(%s*)%S'
+      local first_non_blank_match = current_line:match('^(%s*)%S')
       local first_non_blank_col = 1
       if first_non_blank_match then
         first_non_blank_col = #first_non_blank_match + 1
@@ -550,7 +646,12 @@ end
         return 'g^'
       end
     end, { expr = true, desc = 'Smart start of line' })
-    map({ 'n', 'x' }, 'gl', smart_line_move '$', { expr = true, desc = 'Smart end of line' })
+    map(
+      { 'n', 'x' },
+      'gl',
+      smart_line_move('$'),
+      { expr = true, desc = 'Smart end of line' }
+    )
 
     -- Add lines native
     _G.add_line_handler = function()
@@ -569,17 +670,36 @@ end
       return function()
         vim.g.add_line_dir = direction
         vim.go.operatorfunc = 'v:lua.add_line_handler'
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('g@l', true, true, true), 'n', false)
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes('g@l', true, true, true),
+          'n',
+          false
+        )
       end
     end
 
-    map('n', '<Leader>oo', add_lines_native(0), { desc = 'Insert line below (native)' })
-    map('n', '<Leader>OO', add_lines_native(-1), { desc = 'Insert line above (native)' })
+    map(
+      'n',
+      '<Leader>oo',
+      add_lines_native(0),
+      { desc = 'Insert line below (native)' }
+    )
+    map(
+      'n',
+      '<Leader>OO',
+      add_lines_native(-1),
+      { desc = 'Insert line above (native)' }
+    )
 
     -- Undotree (alternate key)
     map('n', '<Leader>uT', '<Cmd>Undotree<CR>', { desc = 'Toggle undotree' })
 
-    map("n", "<leader>ii", Key.universal_smart_toggle, { desc = "Universal Smart Toggle" })
+    map(
+      'n',
+      '<leader>ii',
+      Key.universal_smart_toggle,
+      { desc = 'Universal Smart Toggle' }
+    )
   end)
 )
 

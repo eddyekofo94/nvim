@@ -9,9 +9,6 @@ local function augroup(group, ...)
   end
 end
 
--- This can only handle cases where the big file exists on disk before opening
--- it but not big buffers without corresponding files
--- TODO: Handle big buffers without corresponding files
 do
   vim.g.bigfile_max_size = vim.g.bigfile_max_size or 1048576
   vim.g.bigfile_max_lines = vim.g.bigfile_max_lines or 32768
@@ -56,8 +53,6 @@ do
         ---@diagnostic disable-next-line: duplicate-set-field
         function vim.treesitter.get_parser(buf, ...)
           buf = vim._resolve_bufnr(buf)
-          -- HACK: Getting parser for a big buffer can freeze nvim, so return a
-          -- fake parser on an empty buffer if current buffer is big
           if vim.api.nvim_buf_is_valid(buf) and vim.b[buf].bigfile then
             return vim.treesitter._create_parser(
               vim.api.nvim_create_buf(false, true),
@@ -116,7 +111,7 @@ augroup('yank_highlight', {
     callback = function()
       pcall(vim.highlight.on_yank, {
         higroup = 'Visual',
-        timeout = 200,
+        timeout = 250,
       })
     end,
   },
@@ -128,7 +123,6 @@ augroup('auto_save', {
     nested = true,
     desc = 'Autosave on focus change.',
     callback = function(args)
-      -- Don't auto-save non-file buffers
       vim.uv.fs_stat(args.file, function(err, stat)
         if err or not stat or stat.type ~= 'file' then
           return
@@ -162,11 +156,6 @@ augroup('last_pos_jmp', {
   {
     desc = 'Last position jump.',
     callback = function(args)
-      -- `BufReadPre` can be triggered multiple times for the same buffer due
-      -- to lazy-loading
-      -- We should skip re-triggered events to prevent re-setting cursor pos
-      -- which can unexpectedly override target line number given in cmdline,
-      -- i.e. `nvim <file> +<linenr>`
       if vim.b[args.buf].lpj then
         return
       end
@@ -203,8 +192,6 @@ do
         local file = args.file
         local buf = args.buf
 
-        -- Don't automatically change cwd in special buffers, e.g. help buffers
-        -- or oil preview buffers
         if file == '' or vim.bo[buf].bt ~= '' then
           return
         end
@@ -227,8 +214,6 @@ do
 
         for _, win in ipairs(vim.fn.win_findbuf(buf)) do
           vim.api.nvim_win_call(win, function()
-            -- Prevent unnecessary directory change, which triggers
-            -- DirChanged autocmds that may update winbar unexpectedly
             if root_dir == vim.fn.getcwd(0) then
               return
             end
@@ -280,7 +265,6 @@ do
     {
       desc = 'Record window ratio.',
       callback = function()
-        -- Don't record ratio if window resizing is caused by vim resizing
         if vim.g._vim_resized then
           return
         end
@@ -298,16 +282,9 @@ do
   })
 end
 
--- Fix bug where windows with fixed height are resized after opening/closing
--- windows with winbar attached, see https://github.com/neovim/neovim/issues/30955
---
--- This does not fix windows with fixed height being resized on `<C-w>=` if
--- multiple horizontal splits are opened/closed after the creation of the
--- fixed-height window
 do
   local win_heights = {}
 
-  ---Save heights for fixed-height widows
   local function win_save_fixed_heights()
     require('utils.win').save_heights(
       win_heights,
@@ -325,16 +302,11 @@ do
     {
       desc = 'Save heights for windows with a fixed height.',
       callback = function()
-        -- Set flag to indicate that a new window is created or an existing
-        -- window is closed, so that we can distinguish between manual resizing
-        -- and resizing due to window creation/deletion
         vim.g._win_list_changed = true
         vim.schedule(function()
           vim.g._win_list_changed = nil
         end)
 
-        -- Schedule to wait for `winfixheight` to be set after opening a new
-        -- window
         vim.schedule(win_save_fixed_heights)
       end,
     },
@@ -350,9 +322,6 @@ do
     {
       desc = 'Restore heights for windows with a fixed height.',
       callback = function()
-        -- Update window height instead of restoring it on manual resizing,
-        -- else the fixed-height window will be restored to height before the
-        -- manual resizing after win open/close
         if not vim.g._win_list_changed then
           win_save_fixed_heights()
           return
@@ -366,9 +335,6 @@ do
       desc = 'Set quickfix window initial height.',
       pattern = 'qf',
       callback = function(args)
-        -- Quickfix window height can be incorrectly set to a value larger
-        -- than 10 (the default value) if there's vertical splits with winbar
-        -- attached above the quickfix window
         vim.api.nvim_win_set_height(vim.fn.bufwinid(args.buf), 10)
       end,
     },
@@ -381,9 +347,6 @@ augroup('fix_cmdline_iskeyword', {
     desc = 'Have consistent &iskeyword and &lisp in Ex command-line mode.',
     pattern = '[:>/?=@]',
     callback = function(args)
-      -- Don't reset 'iskeyword' and 'lisp' in insert or append command-line
-      -- mode ('-'): if we are inserting into a lisp file, we want to have the
-      -- same behavior as in insert mode
       vim.g._isk_lisp_buf = args.buf
       vim.g._isk_save = vim.bo[args.buf].isk
       vim.g._lisp_save = vim.bo[args.buf].lisp
@@ -412,7 +375,6 @@ augroup('fix_cmdline_iskeyword', {
   },
 })
 
--- Make `colorcolumn` follow `textwidth` automatically
 augroup('dynamic_cc', {
   { 'BufNew', 'BufEnter' },
   {
@@ -445,7 +407,6 @@ augroup('dynamic_cc', {
       local cc_is_relative = vim.wo.cc:find('+', 1, true)
       local wins = vim.fn.win_findbuf(vim.api.nvim_get_current_buf())
 
-      -- `textwidth` is set, make `colorcolumn` follow it
       if vim.v.option_new > 0 and not cc_is_relative then
         vim.b.cc = vim.wo.cc
         for _, win in ipairs(wins) do
@@ -456,7 +417,6 @@ augroup('dynamic_cc', {
         return
       end
 
-      -- `textwidth` is unset, restore `colorcolumn`
       if vim.v.option_new == 0 and cc_is_relative and vim.b.cc then
         for _, win in ipairs(wins) do
           if vim.wo.cc ~= '' then
@@ -472,7 +432,6 @@ augroup('dynamic_cc', {
 do
   local hl = require('utils.hl')
 
-  ---Set default value for `hl-NormalSpecial`
   hl.persist(function()
     hl.set(
       0,
@@ -489,17 +448,11 @@ do
     { 'BufEnter', 'BufNew', 'FileType', 'TermOpen' },
     {
       desc = 'Set background color for special buffers.',
-      -- Schedule for window to open for the newly created special buffer
       callback = vim.schedule_wrap(function(args)
         local buf = args.buf
         if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt == '' then
           return
         end
-        -- Current window isn't necessarily the window of the buffer that
-        -- triggered the event, use `bufwinid()` to get the first window of
-        -- the triggering buffer. We can also use `win_findbuf()` to get all
-        -- windows that display the triggering buffer, but it is slower and using
-        -- `bufwinid()` is enough for our purpose.
         local winid = vim.fn.bufwinid(buf)
         if winid == -1 then
           return
@@ -509,8 +462,6 @@ do
           return
         end
         vim.api.nvim_win_call(winid, function()
-          -- Don't remap `hl-Normal` to `NormalSpecial` if it is already mapped
-          -- to another hlgroup
           if vim.opt_local.winhighlight:get().Normal then
             return
           end
@@ -518,6 +469,11 @@ do
             Normal = 'NormalSpecial',
             EndOfBuffer = 'NormalSpecial',
           })
+
+          vim.opt_local.number = false
+          vim.opt_local.relativenumber = false
+          vim.opt_local.signcolumn = "no" -- Removes the gutter on the left
+          vim.opt_local.fillchars:append({ eob = " " })
         end)
       end),
     },
@@ -525,16 +481,10 @@ do
 end
 
 do
-  ---Check if a window is normal (has empty win type)
-  ---@param win integer
-  ---@return boolean
   local function win_is_normal(win)
     return vim.fn.win_gettype(win) == ''
   end
 
-  ---Get list of normal windows in given tabpage
-  ---@param tab integer tabpage id
-  ---@return integer[]
   local function tabpage_list_normal_wins(tab)
     return vim
       .iter(vim.api.nvim_tabpage_list_wins(tab))
@@ -550,15 +500,13 @@ do
       callback = function()
         local whitelist = {} ---@type table<integer, true>
 
-        -- Don't wipe out buffers in tabpages that shows <= 1 valid buffers, else
-        -- the tabpage will be closed or the layout will change
         for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
           local buf = nil ---@type integer?
 
           for _, win in ipairs(tabpage_list_normal_wins(tab)) do
             local win_buf = vim.api.nvim_win_get_buf(win)
             buf = buf or win_buf
-            if buf ~= win_buf then -- second buf in tabpage found
+            if buf ~= win_buf then
               goto continue
             end
           end
@@ -569,7 +517,6 @@ do
           ::continue::
         end
 
-        -- Wipe out invalid buffers
         for _, buf in ipairs(vim.api.nvim_list_bufs()) do
           if whitelist[buf] or not require('utils.buf').is_empty(buf) then
             goto continue
@@ -578,9 +525,6 @@ do
           if bufname:match('://') then
             goto continue
           end
-          -- Don't use async fs_stat and delete the buffer in callback here,
-          -- else the buffer won't be deleted because nvim api cannot be called
-          -- in a fast event context, see `:h E5560`
           if not vim.uv.fs_stat(bufname) then
             pcall(vim.api.nvim_buf_delete, buf, {})
           end
@@ -597,8 +541,6 @@ do
   local colors_config_file =
     vim.fs.joinpath(vim.fn.stdpath('state'), 'colors.json')
 
-  ---Restore dark/light background and colorscheme from json so that nvim
-  ---'remembers' the background and colorscheme when it is restarted.
   local function restore_colorscheme()
     local colors_config = vim.tbl_deep_extend(
       'keep',
@@ -608,7 +550,6 @@ do
 
     vim.go.bg = colors_config.bg
 
-    -- Colorschemes provided by plugins are not loaded before fully startup
     if vim.v.vim_did_enter == 1 then
       vim.cmd.colorscheme({
         args = { colors_config.colors_name },
@@ -617,16 +558,12 @@ do
     end
   end
 
-  -- Nvim cannot reliably detect bg in some terminals, e.g. tmux, see:
-  -- https://github.com/neovim/neovim/issues/27725
-  -- Manually set bg early so that nvim will not try to detect and set bg by
-  -- itself in tmux
   restore_colorscheme()
 
   augroup('colorscheme_restore', {
     'UIEnter',
     {
-      nested = true, -- invoke Colorscheme event for winbar plugin to clear bg for nvim < 0.11
+      nested = true,
       callback = restore_colorscheme,
     },
   }, {
@@ -676,3 +613,254 @@ do
     },
   })
 end
+
+augroup('auto_formatoptions', {
+  'BufEnter',
+  {
+    desc = 'Disable New Line Comment',
+    callback = function()
+      vim.opt.formatoptions:remove { 'c', 'r', 'o' }
+    end,
+  },
+})
+
+augroup('highlight_url', {
+  { 'VimEnter', 'FileType', 'BufEnter', 'WinEnter' },
+  {
+    desc = 'Highlight URLs',
+    callback = function()
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        require('utils.general').set_url_match(win)
+      end
+    end,
+  },
+})
+
+local q_close_group = vim.api.nvim_create_augroup("QCloseSpecial", { clear = true })
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  group = q_close_group,
+  callback = function(event)
+    -- If the window is floating (relative is not empty), map 'q'
+    local win_config = vim.api.nvim_win_get_config(0)
+    if win_config.relative ~= "" then
+      vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+    end
+  end,
+})
+
+augroup('terminal_clean_exit', {
+  'VimLeavePre',
+  {
+    desc = 'Force close all terminal buffers on exit to prevent hang',
+    callback = function()
+      local buffers = vim.api.nvim_list_bufs()
+      for _, buf in ipairs(buffers) do
+        if vim.bo[buf].buftype == 'terminal' then
+          vim.api.nvim_buf_delete(buf, { force = true })
+        end
+      end
+    end,
+  },
+})
+
+augroup('terminal_settings', {
+  'TermOpen',
+  {
+    desc = 'Set terminal buffer options',
+    callback = function()
+      vim.opt_local.confirm = false
+      vim.bo.modified = false
+    end,
+  },
+})
+
+augroup('auto_center', {
+  { 'CmdLineLeave', 'WinEnter' },
+  {
+    desc = 'Center cursor after commands',
+    callback = function()
+      if vim.api.nvim_get_mode().mode == 'i' or vim.bo.buftype ~= '' then
+        return
+      end
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(0) then
+          pcall(vim.cmd.normal, { 'zz', bang = true })
+        end
+      end)
+    end,
+  },
+})
+
+augroup('substitute_notify', {
+  'CmdlineLeave',
+  {
+    desc = 'Notify number of changes after substitute',
+    callback = function(ctx)
+      if not ctx.match == ':' then
+        return
+      end
+      local cmdline = vim.fn.getcmdline()
+      local isSubstitution = cmdline:find 's ?/.+/.-/%a*$'
+      if isSubstitution then
+        vim.cmd(cmdline .. 'ne')
+      end
+    end,
+  },
+})
+
+augroup('quickfix_auto_open', {
+  'QuickFixCmdPost',
+  {
+    desc = 'Open quickfix window if there are results.',
+    callback = function(info)
+      if #vim.fn.getqflist() > 1 then
+        vim.schedule(vim.cmd[info.match:find '^l' and 'lwindow' or 'cwindow'])
+      end
+    end,
+  },
+})
+
+augroup('cleanup_no_name', {
+  'BufHidden',
+  {
+    desc = 'Delete [No Name] buffers when they are no longer displayed',
+    callback = function(data)
+      if data.file == '' and vim.bo[data.buf].buftype == '' and not vim.bo[data.buf].modified then
+        vim.schedule(function()
+          if vim.api.nvim_buf_is_valid(data.buf) and vim.fn.bufwinid(data.buf) == -1 then
+            pcall(vim.api.nvim_buf_delete, data.buf, { force = false })
+          end
+        end)
+      end
+    end,
+  },
+})
+
+augroup('statusline_redraw', {
+  { 'FileChangedShellPost', 'DiagnosticChanged', 'LspProgress' },
+  {
+    desc = 'Redraw statusline on changes',
+    callback = function()
+      vim.cmd('redrawstatus')
+    end,
+  },
+})
+
+augroup('git_work_tree_refresh', {
+  { 'BufEnter', 'FocusGained' },
+  {
+    desc = 'Clear git work tree cache',
+    callback = function()
+      vim.b.git_work_tree = nil
+      vim.b.git_dir = nil
+    end,
+  },
+})
+
+augroup('unlist_quickfix', {
+  'FileType',
+  {
+    desc = 'Unlist quickfix buffers',
+    pattern = 'qf',
+    callback = function()
+      vim.opt_local.buflisted = false
+    end,
+  },
+})
+
+augroup('fix_virtual_edit_cursor', {
+  'CursorMoved',
+  {
+    desc = 'Record cursor position in visual mode if virtualedit is set.',
+    callback = function()
+      if vim.wo.ve:find 'all' then
+        vim.w.ve_cursor = vim.fn.getcurpos()
+      end
+    end,
+  },
+})
+
+augroup('cleanup_history', {
+  'CmdlineLeave',
+  {
+    desc = 'Clean up line-jump from command history',
+    callback = function(ctx)
+      if not ctx.match == ':' then
+        return
+      end
+      vim.defer_fn(function()
+        local lineJump = vim.fn.histget(':', -1):match '^%d+$'
+        if lineJump then
+          vim.fn.histdel(':', -1)
+        end
+      end, 100)
+    end,
+  },
+})
+
+augroup('auto_delete_dirs', {
+  'FocusLost',
+  {
+    once = true,
+    desc = 'Clean up old view and undo directories',
+    callback = function()
+      if os.date '%a' == 'Mon' then
+        vim.fn.system { 'find', vim.opt.viewdir:get(), '-mtime', '+60d', '-delete' }
+        vim.fn.system { 'find', vim.opt.undodir:get()[1], '-mtime', '+30d', '-delete' }
+      end
+    end,
+  },
+})
+
+local group = vim.api.nvim_create_augroup("WinCloseJmp", { clear = true })
+vim.api.nvim_create_autocmd("WinClosed", {
+  group = group,
+  nested = true,
+  desc = "Jump to last accessed window on closing the current one.",
+  callback = function(args)
+    -- args.match contains the window ID being closed
+    local closed_win = tonumber(args.match)
+    if closed_win == vim.api.nvim_get_current_win() then
+      vim.cmd("wincmd p")
+    end
+  end,
+})
+
+augroup('change_to_cur_dir', {
+  { 'FileChangedShellPost', 'BufWinEnter' },
+  {
+    desc = 'Automatically change local current directory.',
+    callback = function(info)
+      if info.file == '' or info.file:match('://') or vim.bo[info.buf].bt ~= '' then
+        return
+      end
+
+      local buf = info.buf
+      local win = vim.api.nvim_get_current_win()
+
+      vim.schedule(function()
+        if
+          not vim.api.nvim_buf_is_valid(buf)
+          or not vim.api.nvim_win_is_valid(win)
+          or vim.api.nvim_win_get_buf(win) ~= buf
+        then
+          return
+        end
+
+        vim.api.nvim_win_call(win, function()
+          local current_dir = vim.fn.getcwd(0)
+          local project_root = require('utils.fs').cwd_dir(info.file)
+          local target_dir = project_root or vim.fs.dirname(info.file)
+
+          if target_dir then
+            local stat = vim.uv.fs_stat(target_dir)
+            if stat and stat.type == 'directory' and current_dir ~= target_dir then
+              vim.notify_once('cd to ' .. target_dir)
+              pcall(vim.cmd.lcd, target_dir)
+            end
+          end
+        end)
+      end)
+    end,
+  },
+})

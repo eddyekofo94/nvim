@@ -5,6 +5,10 @@ return {
     optional = vim.g.vscode,
     deps = {
       {
+        src = 'https://github.com/niuiic/blink-cmp-rg.nvim',
+        data = { optional = true },
+      },
+      {
         src = 'https://github.com/L3MON4D3/LuaSnip',
         data = { optional = true },
       },
@@ -89,13 +93,33 @@ return {
           menu = {
             min_width = vim.go.pumwidth > 0 and vim.go.pumwidth or nil, ---@diagnostic disable-line: assign-type-mismatch
             max_height = vim.go.pumheight > 0 and vim.go.pumheight or nil, ---@diagnostic disable-line: assign-type-mismatch
+            scrolloff = 2,
+            treesitter = { 'lsp' },
+            align_to = 'none',
             draw = {
-              columns = not vim.g.has_nf and {
-                { 'label' },
+              columns = {
                 { 'kind_icon' },
-                { 'label_description' },
-              } or nil,
+                { 'label', 'kind', 'source_name', gap = 1 },
+              },
+              -- columns = not vim.g.has_nf and {
+              --   { 'label' },
+              --   { 'kind_icon' },
+              --   { 'label_description' },
+              -- } or nil,
               components = {
+                label_description = { width = { fill = true } },
+                kind = {
+                  width = { fill = true },
+                  text = function(ctx)
+                    return '' .. ctx.kind .. ''
+                  end,
+                },
+                source_name = {
+                  width = { fill = true },
+                  text = function(ctx)
+                    return '[' .. ctx.source_name .. ']'
+                  end,
+                },
                 kind_icon = {
                   ellipsis = false,
                   -- Show different icons for files/directories, use
@@ -171,6 +195,8 @@ return {
           -- Conflict with readline's keymap, see `lua/plugin/readline.lua`
           ['<C-k>'] = false,
           ['<C-s>'] = { 'show_signature', 'fallback' },
+          ['<CR>'] = { 'select_and_accept', 'fallback' },
+          ['<C-space>'] = { 'show', 'show_documentation', 'hide', 'fallback' },
           -- Hide both signature help and completion menu with `<C-e>`
           ['<C-e>'] = {
             function(cmp)
@@ -181,7 +207,52 @@ return {
             'fallback',
           },
         },
+        signature = {
+          enabled = true,
+        },
+        snippets = {
+          preset = has_ls and 'luasnip' or 'default',
+        },
         cmdline = {
+          keymap = {
+            preset = 'default',
+            ['<C-space>'] = {
+              'show',
+              'show_documentation',
+              'hide',
+              'fallback',
+            },
+            -- Recommended: Add a secondary trigger just in case your terminal
+            -- is swallowing C-space
+            ['<C-@>'] = { 'show', 'hide', 'fallback' }, -- <C-@> is often what <C-space> sends
+            ['<C-y>'] = {
+              function(cmp)
+                cmp.accept({ index = 1 })
+              end,
+            },
+            ['<C-e>'] = { 'hide', 'fallback' },
+            ['<Tab>'] = {
+              'show',
+              'select_next',
+              'snippet_forward',
+              'fallback',
+            },
+            ['<S-Tab>'] = { 'select_prev', 'snippet_backward', 'fallback' },
+            ['<Down>'] = { 'select_next', 'fallback' },
+            ['<Up>'] = { 'select_prev', 'fallback' },
+            ['<C-j>'] = { 'select_next', 'fallback' },
+            ['<C-k>'] = { 'select_prev', 'fallback' },
+            ['<C-h>'] = { 'scroll_documentation_down', 'fallback' },
+            ['<C-l>'] = { 'scroll_documentation_up', 'fallback' },
+          },
+          sources = function()
+            local type = vim.fn.getcmdtype()
+            if type == '/' or type == '?' then
+              return { 'buffer' }
+            else
+              return { 'cmdline', 'path' }
+            end
+          end,
           completion = {
             list = {
               selection = {
@@ -189,21 +260,19 @@ return {
                 auto_insert = true,
               },
             },
+            menu = { auto_show = true },
           },
-        },
-        signature = {
-          enabled = true,
-        },
-        snippets = {
-          preset = has_ls and 'luasnip' or 'default',
         },
         sources = {
           default = {
             'snippets',
             'lsp',
+            'lazydev',
             'path',
             'buffer',
+            'ripgrep',
           },
+          min_keyword_length = 0,
           providers = {
             lsp = {
               -- Don't wait for LSP completions for a long time before fallback to
@@ -226,6 +295,62 @@ return {
                 end
                 return items
               end,
+            },
+            ripgrep = {
+              module = 'blink-cmp-rg',
+              name = 'Ripgrep',
+              score_offset = -10, -- Negative value pulls it to the bottom
+              opts = {
+                prefix_min_len = 4,
+                get_command = function(_, prefix)
+                  return {
+                    'rg',
+                    '--no-config',
+                    '--json',
+                    '--word-regexp',
+                    '--ignore-case',
+                    '--',
+                    prefix .. '[\\w_-]+',
+                    vim.fs.root(0, '.git') or vim.fn.getcwd(),
+                  }
+                end,
+                get_prefix = function(context)
+                  return context.line
+                    :sub(1, context.cursor[2])
+                    :match('[%w_-]+$') or ''
+                end,
+              },
+            },
+            lazydev = {
+              name = 'LazyDev',
+              module = 'lazydev.integrations.blink',
+              score_offset = 100,
+              fallbacks = { 'lsp' },
+            },
+            go_pkgs = {
+              module = 'blink-go-import',
+              name = 'Import',
+            },
+            buffer = {
+              name = 'Buffer',
+              module = 'blink.cmp.sources.buffer',
+              opts = {
+                get_bufnrs = function()
+                  return vim
+                    .iter(vim.api.nvim_list_wins())
+                    :map(function(win)
+                      return vim.api.nvim_win_get_buf(win)
+                    end)
+                    :totable()
+                end,
+              },
+            },
+            path = {
+              opts = {
+                get_cwd = function(_)
+                  return vim.fn.getcwd()
+                end,
+              },
             },
           },
         },

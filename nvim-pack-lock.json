@@ -16,6 +16,14 @@
       "rev": "1606e9d",
       "src": "https://github.com/Eandrju/cellular-automaton.nvim"
     },
+    "conform.nvim": {
+      "rev": "c2526f1cde528a66e086ab1668e996d162c75f4f",
+      "src": "https://github.com/stevearc/conform.nvim"
+    },
+    "diagflow.nvim": {
+      "rev": "b13321b517ff64bf42eeac2214085d3c76d83a0d",
+      "src": "https://github.com/dgagn/diagflow.nvim"
+    },
     "everforest": {
       "rev": "b03a031",
       "src": "https://github.com/sainnhe/everforest"
@@ -44,6 +52,10 @@
       "rev": "b6ddfb97b5600d99afe3452d707444afda658aca",
       "src": "https://github.com/HakonHarnes/img-clip.nvim"
     },
+    "log-highlight.nvim": {
+      "rev": "ca88628f6dd3b9bb46f9a7401669e24cf7de47a4",
+      "src": "https://github.com/fei6409/log-highlight.nvim"
+    },
     "markdown-preview.nvim": {
       "rev": "a923f5f",
       "src": "https://github.com/iamcco/markdown-preview.nvim"
@@ -51,6 +63,22 @@
     "molten-nvim": {
       "rev": "4fd7be6",
       "src": "https://github.com/benlubas/molten-nvim"
+    },
+    "namu.nvim": {
+      "rev": "e7afbdf63a75ace6ccc6202d58a4f6f9ac09db92",
+      "src": "https://github.com/bassamsdata/namu.nvim"
+    },
+    "noice.nvim": {
+      "rev": "7bfd942445fb63089b59f97ca487d605e715f155",
+      "src": "https://github.com/folke/noice.nvim"
+    },
+    "nui.nvim": {
+      "rev": "de740991c12411b663994b2860f1a4fd0937c130",
+      "src": "https://github.com/MunifTanjim/nui.nvim"
+    },
+    "numb.nvim": {
+      "rev": "12ef3913dea8727d4632c6f2ed47957a993de627",
+      "src": "https://github.com/nacro90/numb.nvim"
     },
     "nvim-bqf": {
       "rev": "f65fba733268ffcf9c5b8ac381287eca7c223422",
@@ -68,6 +96,10 @@
       "rev": "cf91d5e",
       "src": "https://github.com/rcarriga/nvim-dap-ui"
     },
+    "nvim-early-retirement": {
+      "rev": "05f50eb61d3303678981c7510c126204ac5af4f0",
+      "src": "https://github.com/chrisgrieser/nvim-early-retirement"
+    },
     "nvim-metals": {
       "rev": "7ed47cd",
       "src": "https://github.com/scalameta/nvim-metals"
@@ -75,6 +107,10 @@
     "nvim-nio": {
       "rev": "21f5324",
       "src": "https://github.com/nvim-neotest/nvim-nio"
+    },
+    "nvim-spider": {
+      "rev": "33faf3c5a3f6e9d568bcd63edd949a942d45362b",
+      "src": "https://github.com/chrisgrieser/nvim-spider"
     },
     "nvim-surround": {
       "rev": "1098d7b",
@@ -129,6 +165,10 @@
     "quicker.nvim": {
       "rev": "fc04183",
       "src": "https://github.com/stevearc/quicker.nvim"
+    },
+    "todo-comments.nvim": {
+      "rev": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668",
+      "src": "https://github.com/folke/todo-comments.nvim"
     },
     "treesj": {
       "rev": "186084d",

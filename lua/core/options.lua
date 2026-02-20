@@ -4,24 +4,39 @@ vim.g.has_nf = vim.env.TERM ~= 'linux' and vim.env.NVIM_NF ~= nil
 vim.opt.exrc = true
 vim.opt.confirm = true
 vim.opt.timeout = false
+vim.opt.shortmess:append({
+  I = true,
+  c = true,
+  W = true,
+  F = true,
+})
 vim.opt.colorcolumn = '80'
-vim.opt.cursorlineopt = 'number'
+vim.opt.cursorlineopt = 'both'
 vim.opt.cursorline = true
+vim.opt.termsync = false
 vim.opt.helpheight = 10
 vim.opt.showmode = false
 vim.opt.mousemoveevent = true
 vim.opt.number = true
 vim.opt.ruler = true
-vim.opt.pumheight = 16
-vim.opt.scrolloff = 2
+vim.opt.pumheight = 12
+vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
 vim.opt.signcolumn = 'yes:1'
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.swapfile = false
+
+local undo_path = vim.fn.stdpath('data') .. '/undo'
+if vim.fn.isdirectory(undo_path) == 0 then
+  vim.fn.mkdir(undo_path, 'p')
+end
+vim.opt.undodir = undo_path
 vim.opt.undofile = true
 vim.opt.wrap = false
 vim.opt.linebreak = true
+vim.o.termguicolors = true
+vim.g.markdown_recommened_style = 1
 vim.opt.breakindent = true
 vim.opt.smoothscroll = true
 vim.opt.ignorecase = true
@@ -29,12 +44,45 @@ vim.opt.smartcase = true
 vim.opt.completeopt = 'menuone'
 vim.opt.selection = 'old'
 vim.opt.tabclose = 'uselast'
+vim.opt.relativenumber = true
+vim.opt.splitkeep = 'cursor'
+vim.opt.equalalways = false
+vim.opt.conceallevel = 2
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.autoindent = true
+vim.opt.autowriteall = true
+vim.opt.virtualedit = 'block'
+vim.opt.jumpoptions = 'stack,view'
+vim.opt.inccommand = 'split'
+vim.opt.history = 10000
+vim.opt.laststatus = 3
 
--- Defer shada reading
+vim.o.grepprg = 'rg --vimgrep --no-heading --smart-case'
+vim.o.grepformat = '%f:%l:%c:%m,%f:%l:%m'
+
+vim.opt.timeoutlen = 500
+
+vim.opt.sessionoptions = {
+  'resize',
+  'winpos',
+  'winsize',
+  'terminal',
+  'localoptions',
+  'buffers',
+  'curdir',
+  'tabpages',
+  'winsize',
+  'help',
+  'globals',
+  'skiprtp',
+  'folds',
+}
+
 do
   vim.opt.shada = ''
 
-  ---Restore 'shada' option and read from shada once
   local function rshada()
     vim.opt.shada = vim.api.nvim_get_option_info2('shada', {}).default
     pcall(vim.cmd.rshada)
@@ -48,36 +96,26 @@ do
   )
 end
 
--- Folding
 vim.opt.foldlevelstart = 99
 vim.opt.foldtext = ''
 vim.opt.foldmethod = 'indent'
-vim.opt.foldopen:remove('block') -- make `{`/`}` skip over folds
+vim.opt.foldopen:remove('block')
 
--- Recognize numbered lists when formatting text and
--- continue comments on new lines
---
--- Don't auto-wrap non-comment text by default
 vim.opt.formatoptions:append('normc')
 vim.opt.formatoptions:remove('t')
 
--- Treat number as signed/unsigned based on preceding whitespaces when
--- incrementing/decrementing numbers
 vim.opt.nrformats:append('blank')
 
--- Spell check
 do
   vim.opt.spellsuggest = 'best,9'
   vim.opt.spellcapcheck = ''
-  vim.opt.spelllang = 'en,cjk'
+  vim.opt.spelllang = 'en'
   vim.opt.spelloptions = 'camel'
 
   require('utils.load').on_events(
     'UIEnter',
     'opt.spell',
     vim.schedule_wrap(function()
-      ---Buffers where spellcheck is enabled
-      ---@type table<integer, true>
       local bufs = {}
 
       for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -91,7 +129,6 @@ do
         ::continue::
       end
 
-      -- Restart treesitter to correctly apply `@spell` nodes
       for buf, _ in pairs(bufs) do
         if require('utils.ts').is_active(buf) then
           pcall(vim.treesitter.start, buf)
@@ -101,35 +138,21 @@ do
   )
 end
 
-vim.opt.gcr = {
-  'i-c-ci-ve:blinkoff500-blinkon500-block-TermCursor',
-  'i-ci:ver30-Cursor-blinkwait500-blinkon400-blinkoff300',
-  'n-v:block-Curosr/lCursor',
-  'o:hor50-Curosr/lCursor',
-  'r-cr:hor20-Curosr/lCursor',
-}
-
--- Use histogram algorithm for diffing, generates more readable diffs in
--- situations where two lines are swapped
 vim.opt.diffopt:append({
   'algorithm:histogram',
   'indent-heuristic',
   'linematch:60',
 })
 
--- Use system clipboard
-vim.api.nvim_create_autocmd('UIEnter', {
-  once = true,
-  callback = vim.schedule_wrap(function()
-    vim.opt.clipboard:append('unnamedplus')
-  end),
-})
+vim.g.opt_statuscolumn = {
+  folds_open = false,
+  folds_githl = false,
+}
 
--- Align columns in quickfix window
+vim.opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus'
+
 vim.opt.quickfixtextfunc = [[v:lua.require'utils.opts'.qftf]]
 
----@param args table
----@return string[]
 function _G._qftf(args)
   local qflist = args.quickfix == 1
       and vim.fn.getqflist({ id = args.id, items = 0 }).items
@@ -151,14 +174,6 @@ function _G._qftf(args)
   local type_width_cache = {}
   local nr_width_cache = {}
 
-  ---Traverse the qflist and get the maximum display width of the
-  ---transformed string; cache the transformed string and its width
-  ---in table `str_cache` and `width_cache` respectively
-  ---@param trans fun(item: table): string|number
-  ---@param max_width_allowed integer?
-  ---@param str_cache table
-  ---@param width_cache table
-  ---@return integer
   local function _traverse(trans, max_width_allowed, str_cache, width_cache)
     max_width_allowed = max_width_allowed or math.huge
     local max_width_seen = 0
@@ -174,8 +189,6 @@ function _G._qftf(args)
     return math.min(max_width_allowed, max_width_seen)
   end
 
-  ---@param item table
-  ---@return string
   local function _fname_trans(item)
     local bufnr = item.bufnr
     local module = item.module
@@ -185,8 +198,6 @@ function _G._qftf(args)
       or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':~:.')
   end
 
-  ---@param item table
-  ---@return string|integer
   local function _lnum_trans(item)
     if item.lnum == item.end_lnum or item.end_lnum == 0 then
       return item.lnum
@@ -194,8 +205,6 @@ function _G._qftf(args)
     return string.format('%s-%s', item.lnum, item.end_lnum)
   end
 
-  ---@param item table
-  ---@return string|integer
   local function _col_trans(item)
     if item.col == item.end_col or item.end_col == 0 then
       return item.col
@@ -210,17 +219,11 @@ function _G._qftf(args)
     N = 'HINT',
   }
 
-  ---@param item table
-  ---@return string
   local function _type_trans(item)
-    -- Sometimes `item.type` will contain unprintable characters,
-    -- e.g. items in the qflist of `:helpg vim`
     local type = (type_sign_map[item.type] or item.type):gsub('[^%g]', '')
     return type == '' and '' or ' ' .. type
   end
 
-  ---@param item table
-  ---@return string
   local function _nr_trans(item)
     return item.nr <= 0 and '' or ' ' .. item.nr
   end
@@ -234,7 +237,7 @@ function _G._qftf(args)
   local nr_width = _traverse(_nr_trans, max_width, nr_str_cache, nr_width_cache)
   -- stylua: ignore end
 
-  local lines = {} ---@type string[]
+  local lines = {}
   local format_str = vim.go.termguicolors and '%s %s:%s%s%s %s'
     or '%s│%s:%s%s%s│ %s'
 
@@ -261,9 +264,6 @@ function _G._qftf(args)
       lines,
       string.format(
         format_str,
-        -- Do not use `string.format()` here because it only allows
-        -- at most 99 characters for alignment and alignment is
-        -- based on byte length instead of display length
         fname .. string.rep(' ', fname_width - fname_cur_width),
         string.rep(' ', lnum_width - lnum_cur_width) .. lnum,
         col .. string.rep(' ', col_width - col_cur_width),
@@ -286,8 +286,12 @@ vim.opt.backupdir:remove('.')
 
 vim.opt.list = true
 vim.opt.listchars = {
-  tab = '  ',
+  tab = '→ ',
   trail = '·',
+  precedes = '«',
+  extends = '»',
+  eol = '↲',
+  nbsp = '░',
 }
 vim.opt.fillchars = {
   fold = '·',
@@ -299,6 +303,10 @@ if vim.g.has_nf then
   vim.opt.fillchars:append({
     foldopen = '',
     foldclose = '',
+    fold = ' ',
+    foldsep = ' ',
+    diff = '╱',
+    eob = ' ',
   })
 else
   vim.opt.fillchars:append({
@@ -317,7 +325,11 @@ vim.api.nvim_create_autocmd('UIEnter', {
   end,
 })
 
--- Netrw settings
+vim.cmd [[
+  let &t_Cs = "\e[4:3m"
+  let &t_Ce = "\e[4:0m"
+]]
+
 vim.g.netrw_banner = 0
 vim.g.netrw_cursor = 5
 vim.g.netrw_keepdir = 0
@@ -326,7 +338,6 @@ vim.g.netrw_list_hide = [[\(^\|\s\s\)\zs\.\S\+]]
 vim.g.netrw_liststyle = 1
 vim.g.netrw_localcopydircmd = 'cp -r'
 
--- Fzf settings
 vim.g.fzf_layout = {
   window = {
     width = 0.8,
@@ -337,7 +348,6 @@ vim.g.fzf_layout = {
 vim.env.FZF_DEFAULT_OPTS = (vim.env.FZF_DEFAULT_OPTS or '')
   .. ' --border=sharp --margin=0 --padding=0'
 
--- Disable plugins shipped with nvim
 vim.g.loaded_2html_plugin = 0
 vim.g.loaded_gzip = 0
 vim.g.loaded_matchit = 0
@@ -348,7 +358,6 @@ vim.g.loaded_tutor_mode_plugin = 0
 vim.g.loaded_zip = 0
 vim.g.loaded_zipPlugin = 0
 
--- Lazy-load some runtime files
 vim.g.loaded_remote_plugins = 0
 vim.g.loaded_python3_provider = 0
 
@@ -373,3 +382,11 @@ require('utils.load').on_cmds(
     vim.cmd.runtime('plugin/rplugin.vim')
   end
 )
+
+vim.opt.gcr = {
+  'i-c-ci-ve:blinkoff500-blinkon500-block-TermCursor',
+  'i-ci:ver30-Cursor-blinkwait500-blinkon400-blinkoff300',
+  'n-v:block-Curosr/lCursor',
+  'o:hor50-Curosr/lCursor',
+  'r-cr:hor20-Curosr/lCursor',
+}
