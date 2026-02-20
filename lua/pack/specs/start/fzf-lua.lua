@@ -1297,6 +1297,12 @@ return {
               goto skip
             end
 
+            -- Convert absolute path to ~ if in home
+            local display_path = f
+            if vim.startswith(f, vim.env.HOME .. '/') then
+              display_path = '~' .. f:gsub('^' .. vim.env.HOME, '')
+            end
+
             -- Check if file is in cwd
             if vim.startswith(f, cwd .. '/') then
               local rel_path = f:gsub('^' .. vim.pesc(cwd) .. '/?', '')
@@ -1306,9 +1312,9 @@ return {
               end
             else
               -- Other directories (last 10)
-              if not other_seen[f] and #other_oldfiles < 10 then
-                other_seen[f] = true
-                table.insert(other_oldfiles, f)
+              if not other_seen[display_path] and #other_oldfiles < 10 then
+                other_seen[display_path] = true
+                table.insert(other_oldfiles, display_path)
               end
             end
             ::skip::
