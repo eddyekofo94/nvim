@@ -1346,13 +1346,16 @@ return {
         -- Add file search command
         table.insert(all_sources, table.concat(file_cmd, ' ') .. " | sed 's|^./||'")
 
-        cmd = table.concat(all_sources, ' && ') .. " | awk '!seen[$0]++'"
+        -- Use semicolon to combine sources, awk to dedupe
+        cmd = table.concat(all_sources, '; ') .. " | awk '!seen[$0]++'"
 
         -- Use fzf.fzf_exec to handle mixed paths (relative and absolute)
         return fzf.fzf_exec(cmd, vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
           file_icons = true,
+          git_icons = false,
+          previewer = 'builtin',
           fzf_opts = {
             ['--tiebreak'] = 'index',
           },
@@ -1360,8 +1363,8 @@ return {
             ['enter'] = function(selected)
               if selected[1] then
                 vim.cmd.edit(selected[1])
-              end
-            end,
+              end,
+            },
           },
         }, opts))
       end
