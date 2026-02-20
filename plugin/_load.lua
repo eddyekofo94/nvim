@@ -154,3 +154,5 @@ if vim.g.loaded_session == nil then
     'Mkssession',
   }, 'plugin.session', setup)
 end
+
+load.on_events('UIEnter', 'plugin.colorful-winsep')

@@ -1,4 +1,3 @@
-
 ---@type pack.spec
 return {
   src = 'https://github.com/ibhagwan/fzf-lua',
@@ -47,6 +46,7 @@ return {
       { lhs = "<Leader>f'", opts = { desc = 'Resume last picker' } },
       { lhs = '<Leader>fA', opts = { desc = 'Find autocmds' } },
       { lhs = '<Leader>fb', opts = { desc = 'Find buffers' } },
+      { lhs = '<Leader>bb', opts = { desc = 'Find buffers' } },
       { lhs = '<Leader>fp', opts = { desc = 'Find tabpages' } },
       { lhs = '<Leader>ft', opts = { desc = 'Find tags' } },
       { lhs = '<Leader>fc', opts = { desc = 'Find changes' } },
@@ -1152,6 +1152,10 @@ return {
         oldfiles = {
           prompt = 'Oldfiles> ',
         },
+        frecency = {
+          prompt = 'Frecency> ',
+          track_by_score = true,
+        },
         git = {
           commits = {
             prompt = 'GitLogs>',
@@ -1271,6 +1275,59 @@ return {
       vim.keymap.set('i', '<C-r><C-r>', fzf.complete_from_registers, { desc = 'Fuzzy complete from registers' })
       vim.keymap.set('i', '<C-x><C-f>', fzf.complete_path, { desc = 'Fuzzy complete path' })
       vim.keymap.set('n', '<Leader>.', fzf.files, { desc = 'Find files' })
+
+      ---Smart file search that prioritizes recent files in cwd
+      ---@param opts table?
+      function fzf.smart_files(opts)
+        opts = opts or {}
+        local cwd = opts.cwd or vim.fn.getcwd(0)
+        local oldfiles = vim.v.oldfiles or {}
+
+        -- Filter oldfiles to current cwd and normalize paths
+        local cwd_oldfiles = {}
+        local seen = {}
+        for _, f in ipairs(oldfiles) do
+          if type(f) == 'string' then
+            -- Check if file is in cwd
+            if vim.startswith(f, cwd .. '/') then
+              local rel_path = f:gsub('^' .. vim.pesc(cwd) .. '/?', '')
+              if not seen[rel_path] and rel_path ~= '' then
+                seen[rel_path] = true
+                table.insert(cwd_oldfiles, rel_path)
+              end
+            end
+          end
+        end
+
+        -- Get file command
+        local file_cmd
+        if vim.fn.executable('fd') == 1 then
+          file_cmd = { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
+        else
+          file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
+        end
+
+        -- Build fzf command with oldfiles first using weighted scoring
+        local oldfiles_list = table.concat(cwd_oldfiles, '\n')
+        local cmd = string.format(
+          [[(echo '%s' && %s | sed 's|^./||') | awk '!seen[$0]++']],
+          oldfiles_list:gsub("'", "'\\''"),
+          table.concat(file_cmd, ' ')
+        )
+
+        -- Use fzf.files but with prioritized oldfiles
+        return fzf.files(vim.tbl_deep_extend('force', {
+          prompt = 'Smart Files> ',
+          cwd = cwd,
+          cmd = cmd,
+          file_icons = true,
+          fzf_opts = {
+            ['--tiebreak'] = 'index',
+          },
+        }, opts))
+      end
+
+      vim.keymap.set('n', '<Leader>fP', function() fzf.smart_files() end, { desc = 'Smart files (prioritize recent)' })
       vim.keymap.set('n', "<Leader>'", fzf.resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', "<Leader>`", fzf.marks, { desc = 'Find marks' })
       vim.keymap.set('n', '<Leader>,', fzf.buffers, { desc = 'Find buffers' })
@@ -1302,6 +1359,7 @@ return {
       vim.keymap.set('n', "<Leader>f'", fzf.resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', '<Leader>fA', fzf.autocmds, { desc = 'Find autocommands' })
       vim.keymap.set('n', '<Leader>fb', fzf.buffers, { desc = 'Find buffers' })
+      vim.keymap.set('n', '<Leader>bb', fzf.buffers, { desc = 'Find buffers' })
       vim.keymap.set('n', '<Leader>fp', fzf.tabs, { desc = 'Find tabpages' })
       vim.keymap.set('n', '<Leader>ft', fzf.tags, { desc = 'Find tags' })
       vim.keymap.set('n', '<Leader>fc', fzf.changes, { desc = 'Find changes' })
@@ -1406,4 +1464,3 @@ return {
     end,
   },
 }
-
