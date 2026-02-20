@@ -1283,19 +1283,35 @@ return {
         local cwd = opts.cwd or vim.fn.getcwd(0)
         local oldfiles = vim.v.oldfiles or {}
 
-        -- Filter oldfiles to current cwd and normalize paths
+        -- Filter oldfiles to current cwd
         local cwd_oldfiles = {}
-        local seen = {}
+        local other_oldfiles = {}
+        local cwd_seen = {}
+        local other_seen = {}
+
         for _, f in ipairs(oldfiles) do
-          if type(f) == 'string' then
+          if type(f) == 'string' and f ~= '' then
+            -- Check if file exists
+            local exists = vim.uv.fs_stat(f) ~= nil
+            if not exists then
+              goto skip
+            end
+
             -- Check if file is in cwd
             if vim.startswith(f, cwd .. '/') then
               local rel_path = f:gsub('^' .. vim.pesc(cwd) .. '/?', '')
-              if not seen[rel_path] and rel_path ~= '' then
-                seen[rel_path] = true
+              if not cwd_seen[rel_path] and rel_path ~= '' then
+                cwd_seen[rel_path] = true
                 table.insert(cwd_oldfiles, rel_path)
               end
+            else
+              -- Other directories (last 10)
+              if not other_seen[f] and #other_oldfiles < 10 then
+                other_seen[f] = true
+                table.insert(other_oldfiles, f)
+              end
             end
+            ::skip::
           end
         end
 
@@ -1307,27 +1323,45 @@ return {
           file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
         end
 
-        -- Build fzf command with oldfiles first using weighted scoring
-        local oldfiles_list = table.concat(cwd_oldfiles, '\n')
-        local cmd = string.format(
-          [[(echo '%s' && %s | sed 's|^./||') | awk '!seen[$0]++']],
-          oldfiles_list:gsub("'", "'\\''"),
-          table.concat(file_cmd, ' ')
-        )
+        -- Build command with oldfiles prepended
+        local cmd
+        local all_sources = {}
 
-        -- Use fzf.files but with prioritized oldfiles
-        return fzf.files(vim.tbl_deep_extend('force', {
+        -- Add files from other directories first (last 10)
+        if #other_oldfiles > 0 then
+          table.insert(all_sources, "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+        end
+
+        -- Add cwd recent files
+        if #cwd_oldfiles > 0 then
+          table.insert(all_sources, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+        end
+
+        -- Add file search command
+        table.insert(all_sources, table.concat(file_cmd, ' ') .. " | sed 's|^./||'")
+
+        cmd = table.concat(all_sources, ' && ') .. " | awk '!seen[$0]++'"
+
+        -- Use fzf.fzf_exec to handle mixed paths (relative and absolute)
+        return fzf.fzf_exec(cmd, vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
-          cmd = cmd,
           file_icons = true,
           fzf_opts = {
             ['--tiebreak'] = 'index',
+          },
+          actions = {
+            ['enter'] = function(selected)
+              if selected[1] then
+                vim.cmd.edit(selected[1])
+              end
+            end,
           },
         }, opts))
       end
 
       vim.keymap.set('n', '<Leader>fP', function() fzf.smart_files() end, { desc = 'Smart files (prioritize recent)' })
+      vim.keymap.set('n', '<Leader>sp', function() vim.cmd.ProjectFzf() end, { desc = 'Find projects (fzf)' })
       vim.keymap.set('n', "<Leader>'", fzf.resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', "<Leader>`", fzf.marks, { desc = 'Find marks' })
       vim.keymap.set('n', '<Leader>,', fzf.buffers, { desc = 'Find buffers' })
