@@ -1329,43 +1329,37 @@ return {
           file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
         end
 
-        -- Build command with oldfiles prepended
-        local cmd
-        local all_sources = {}
+        -- Build sources for fzf-lua
+        local sources = {}
 
-        -- Add files from other directories first (last 10)
+        -- Add files from other directories (last 10)
         if #other_oldfiles > 0 then
-          table.insert(all_sources, "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+          table.insert(sources, {
+            source = "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'",
+            name = 'Recent (other)',
+          })
         end
 
         -- Add cwd recent files
         if #cwd_oldfiles > 0 then
-          table.insert(all_sources, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+          table.insert(sources, {
+            source = "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'",
+            name = 'Recent (cwd)',
+          })
         end
 
         -- Add file search command
-        table.insert(all_sources, table.concat(file_cmd, ' ') .. " | sed 's|^./||'")
+        table.insert(sources, {
+          source = table.concat(file_cmd, ' ') .. " | sed 's|^./||'",
+          name = 'Files',
+        })
 
-        -- Use semicolon to combine sources, awk to dedupe
-        cmd = table.concat(all_sources, '; ') .. " | awk '!seen[$0]++'"
-
-        -- Use fzf.fzf_exec to handle mixed paths (relative and absolute)
-        return fzf.fzf_exec(cmd, vim.tbl_deep_extend('force', {
+        -- Use fzf.files with multiple sources
+        return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
+          sources = sources,
           file_icons = true,
-          git_icons = false,
-          previewer = 'builtin',
-          fzf_opts = {
-            ['--tiebreak'] = 'index',
-          },
-          actions = {
-            ['enter'] = function(selected)
-              if selected[1] then
-                vim.cmd.edit(selected[1])
-              end
-            end
-          }
         }, opts))
       end
 
