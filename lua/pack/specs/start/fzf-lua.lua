@@ -1339,7 +1339,8 @@ return {
         end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^./||'")
 
-        local cmd = table.concat(parts, '; ')
+        -- Add awk to deduplicate
+        local cmd = table.concat(parts, '; ') .. " | awk '!seen[$0]++'"
 
         -- Use fzf.files with custom command and file icons
         return fzf.files(vim.tbl_deep_extend('force', {
