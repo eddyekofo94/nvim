@@ -1329,37 +1329,26 @@ return {
           file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
         end
 
-        -- Build sources for fzf-lua
-        local sources = {}
-
-        -- Add files from other directories (last 10)
+        -- Build combined command with oldfiles first
+        local parts = {}
         if #other_oldfiles > 0 then
-          table.insert(sources, {
-            source = "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'",
-            name = 'Recent (other)',
-          })
+          table.insert(parts, "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
         end
-
-        -- Add cwd recent files
         if #cwd_oldfiles > 0 then
-          table.insert(sources, {
-            source = "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'",
-            name = 'Recent (cwd)',
-          })
+          table.insert(parts, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
         end
+        table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^./||'")
 
-        -- Add file search command
-        table.insert(sources, {
-          source = table.concat(file_cmd, ' ') .. " | sed 's|^./||'",
-          name = 'Files',
-        })
+        local cmd = table.concat(parts, '; ')
 
-        -- Use fzf.files with multiple sources
-        return fzf.files(vim.tbl_deep_extend('force', {
+        -- Use fzf.fzf_exec with file icons
+        return fzf.fzf_exec(cmd, vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
-          sources = sources,
           file_icons = true,
+          fzf_opts = {
+            ['--tiebreak'] = 'index',
+          },
         }, opts))
       end
 
