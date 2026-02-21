@@ -1339,8 +1339,8 @@ return {
         end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
-        -- Deduplicate using awk with case-insensitive comparison
-        local cmd = table.concat(parts, '; ') .. " | awk 'seen[tolower($0)]++ == 0'"
+        -- Deduplicate using awk - keep first occurrence only
+        local cmd = table.concat(parts, '; ') .. " | awk '!a[$0]++'"
 
         -- Use fzf.files with custom command and file icons
         return fzf.files(vim.tbl_deep_extend('force', {
