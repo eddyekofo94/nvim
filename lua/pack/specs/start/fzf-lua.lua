@@ -1347,6 +1347,7 @@ return {
           prompt = 'Smart Files> ',
           cwd = cwd,
           cmd = cmd,
+          resume = false,
         }, opts))
       end
 
