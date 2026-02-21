@@ -1349,6 +1349,13 @@ return {
           fzf_opts = {
             ['--tiebreak'] = 'index',
           },
+          actions = {
+            ['enter'] = function(selected)
+              if selected[1] then
+                vim.cmd.edit(selected[1])
+              end
+            end
+          }
         }, opts))
       end
 
