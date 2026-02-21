@@ -1341,21 +1341,11 @@ return {
 
         local cmd = table.concat(parts, '; ')
 
-        -- Use fzf.fzf_exec with file icons
-        return fzf.fzf_exec(cmd, vim.tbl_deep_extend('force', {
+        -- Use fzf.files with custom command and file icons
+        return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
-          file_icons = true,
-          fzf_opts = {
-            ['--tiebreak'] = 'index',
-          },
-          actions = {
-            ['enter'] = function(selected)
-              if selected[1] then
-                vim.cmd.edit(selected[1])
-              end
-            end
-          }
+          cmd = cmd,
         }, opts))
       end
 
