@@ -1363,9 +1363,9 @@ return {
             ['enter'] = function(selected)
               if selected[1] then
                 vim.cmd.edit(selected[1])
-              end,
-            },
-          },
+              end
+            end
+          }
         }, opts))
       end
 
