@@ -1329,25 +1329,24 @@ return {
           file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
         end
 
-        -- Build combined command with oldfiles first
+        -- Build combined command - cwd recent files first, then others, then all files
         local parts = {}
-        if #other_oldfiles > 0 then
-          table.insert(parts, "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
-        end
         if #cwd_oldfiles > 0 then
           table.insert(parts, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
         end
+        if #other_oldfiles > 0 then
+          table.insert(parts, "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+        end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
-        -- Deduplicate using awk - keep first occurrence only
-        local cmd = table.concat(parts, '; ') .. " | awk '!a[$0]++'"
+        -- Combine and deduplicate using awk
+        local cmd = "{ " .. table.concat(parts, "; ") .. "; } | awk '!a[$0]++'"
 
         -- Use fzf.files with custom command and file icons
         return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
           cmd = cmd,
-          resume = false,
         }, opts))
       end
 
