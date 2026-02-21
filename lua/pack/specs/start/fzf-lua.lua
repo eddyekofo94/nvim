@@ -1337,10 +1337,10 @@ return {
         if #cwd_oldfiles > 0 then
           table.insert(parts, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
         end
-        table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^./||'")
+        table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
-        -- Add awk to deduplicate
-        local cmd = table.concat(parts, '; ') .. " | awk '!seen[$0]++'"
+        -- Deduplicate using awk with case-insensitive comparison
+        local cmd = table.concat(parts, '; ') .. " | awk 'seen[tolower($0)]++ == 0'"
 
         -- Use fzf.files with custom command and file icons
         return fzf.files(vim.tbl_deep_extend('force', {
