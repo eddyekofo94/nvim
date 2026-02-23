@@ -455,6 +455,14 @@ vim.api.nvim_create_autocmd('WinClosed', {
   end,
 })
 
+local function filepath()
+  local fpath = vim.fn.fnamemodify(vim.fn.expand('%'), ':~:.:h')
+  if fpath == '' or fpath == '.' then
+    return ''
+  end
+  return fpath .. '/'
+end
+
 ---@return string
 function _G._statusline.fname()
   local bufname = vim.api.nvim_buf_get_name(0)
@@ -467,24 +475,17 @@ function _G._statusline.fname()
     str_shorten(fname_ext, fname_ext_max_width)
   )
 
+  local fpath = filepath()
+
   -- Normal buffer
   if vim.bo.bt == '' then
     -- Unnamed normal buffer
     if bufname == '' then
       return '[Buffer %n]'
     end
-    -- Named normal buffer, show file name, if the file name is not unique,
-    -- show local cwd (often project root) after the file name
-    local pdiff_short = vim.b._stl_pdiff
-      and str_shorten(vim.b._stl_pdiff, fname_prefix_suffix_max_width)
-    if pdiff_short then
-      return string.format(
-        '%s [%s]',
-        utils.stl.escape(fname_short),
-        utils.stl.escape(pdiff_short)
-      )
-    end
-    return utils.stl.escape(fname_short)
+    -- Named normal buffer, show path + file name
+    local path_and_name = fpath .. fname_short
+    return utils.stl.escape(path_and_name)
   end
 
   if vim.bo.bt == 'quickfix' then
