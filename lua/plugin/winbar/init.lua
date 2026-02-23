@@ -69,6 +69,10 @@ local function setup(opts)
     vim.api.nvim_create_autocmd(configs.opts.bar.attach_events, {
       group = groupid,
       callback = function(args)
+        -- Skip winbar when fzf is loading to improve performance
+        if vim.g.loaded_fzf then
+          return
+        end
         -- Try attaching winbar to all windows containing the buffer
         -- Notice that we cannot simply let `win=0` here since the current
         -- buffer isn't necessarily the window containing the buffer
@@ -84,6 +88,10 @@ local function setup(opts)
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.win, {
       group = groupid,
       callback = function(args)
+        -- Skip winbar when fzf is loading to improve performance
+        if vim.g.loaded_fzf then
+          return
+        end
         if args.event == 'WinResized' then
           for _, win in ipairs(vim.v.event.windows or {}) do
             utils.bar.exec('update', { win = win })
@@ -103,6 +111,9 @@ local function setup(opts)
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.buf, {
       group = groupid,
       callback = function(args)
+        if vim.g.loaded_fzf then
+          return
+        end
         utils.bar.exec('update', { buf = args.buf })
       end,
       desc = 'Update all winbars associated with buf.',
@@ -113,6 +124,9 @@ local function setup(opts)
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.global, {
       group = groupid,
       callback = function()
+        if vim.g.loaded_fzf then
+          return
+        end
         utils.bar.exec('update')
       end,
       desc = 'Update all winbars.',
@@ -129,6 +143,9 @@ local function setup(opts)
     vim.api.nvim_create_autocmd('FocusLost', {
       group = groupid,
       callback = function()
+        if vim.g.loaded_fzf then
+          return
+        end
         utils.bar.update_hover_hl({})
       end,
       desc = 'Remove hover highlight on focus lost.',
@@ -137,6 +154,9 @@ local function setup(opts)
     vim.api.nvim_create_autocmd('FocusGained', {
       group = groupid,
       callback = function()
+        if vim.g.loaded_fzf then
+          return
+        end
         utils.bar.update_hover_hl(vim.fn.getmousepos())
       end,
       desc = 'Update hover highlight on focus gained.',

@@ -53,7 +53,7 @@ return {
       { lhs = '<Leader>fd', opts = { desc = 'Find document diagnostics' } },
       { lhs = '<Leader>fD', opts = { desc = 'Find workspace diagnostics' } },
       { lhs = '<Leader>ff', opts = { desc = 'Find files' } },
-      { lhs = '<Leader><space>', opts = { desc = 'Find files' } },
+      { lhs = '<Leader><space>', opts = { desc = 'Find smart' } },
       { lhs = '<Leader>fa', opts = { desc = 'Find args' } },
       { lhs = '<Leader>fl', opts = { desc = 'Find location list' } },
       { lhs = '<Leader>fq', opts = { desc = 'Find quickfix list' } },
@@ -1350,7 +1350,7 @@ return {
         }, opts))
       end
 
-      vim.keymap.set('n', '<Leader>fP', function() fzf.smart_files() end, { desc = 'Smart files (prioritize recent)' })
+      vim.keymap.set('n', '<Leader><space>', function() fzf.smart_files() end, { desc = 'Smart files (prioritize recent)' })
       vim.keymap.set('n', '<Leader>sp', function() vim.cmd.ProjectFzf() end, { desc = 'Find projects (fzf)' })
       vim.keymap.set('n', "<Leader>'", fzf.resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', "<Leader>`", fzf.marks, { desc = 'Find marks' })
@@ -1390,7 +1390,6 @@ return {
       vim.keymap.set('n', '<Leader>fd', fzf.diagnostics_document, { desc = 'Find document diagnostics' })
       vim.keymap.set('n', '<Leader>fD', fzf.diagnostics_workspace, { desc = 'Find workspace diagnostics' })
       vim.keymap.set('n', '<Leader>ff', fzf.files, { desc = 'Find files' })
-      vim.keymap.set('n', '<Leader><space>', fzf.files, { desc = 'Find files' })
       vim.keymap.set('n', '<Leader>fa', fzf.args, { desc = 'Find args' })
       vim.keymap.set('n', '<Leader>fl', fzf.loclist, { desc = 'Find location list' })
       vim.keymap.set('n', '<Leader>fq', fzf.quickfix, { desc = 'Find quickfix list' })
