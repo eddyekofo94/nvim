@@ -8,6 +8,10 @@
       "rev": "19a38aab94961016430905ebec30d272a01e9742",
       "src": "https://github.com/max397574/better-escape.nvim"
     },
+    "blink-cmp-rg.nvim": {
+      "rev": "722d8ab5d29369d604133064816657203cf24540",
+      "src": "https://github.com/niuiic/blink-cmp-rg.nvim"
+    },
     "blink.cmp": {
       "rev": "fab799d086fd63fa5b389007f63767b23885ebf8",
       "src": "https://github.com/saghen/blink.cmp"
@@ -44,6 +48,10 @@
       "rev": "abf82a6",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
+    "glance.nvim": {
+      "rev": "bf86d8b79dce808e65fdb6e9269d0b4ed6d2eefc",
+      "src": "https://github.com/dnlhc/glance.nvim"
+    },
     "gruvbox-material": {
       "rev": "790afe9",
       "src": "https://github.com/sainnhe/gruvbox-material"
@@ -52,6 +60,10 @@
       "rev": "b6ddfb97b5600d99afe3452d707444afda658aca",
       "src": "https://github.com/HakonHarnes/img-clip.nvim"
     },
+    "lazydev.nvim": {
+      "rev": "5231c62aa83c2f8dc8e7ba957aa77098cda1257d",
+      "src": "https://github.com/folke/lazydev.nvim"
+    },
     "log-highlight.nvim": {
       "rev": "ca88628f6dd3b9bb46f9a7401669e24cf7de47a4",
       "src": "https://github.com/fei6409/log-highlight.nvim"
@@ -59,6 +71,10 @@
     "markdown-preview.nvim": {
       "rev": "a923f5f",
       "src": "https://github.com/iamcco/markdown-preview.nvim"
+    },
+    "mini.icons": {
+      "rev": "68c178e0958d95b3977a771f3445429b1bded985",
+      "src": "https://github.com/echasnovski/mini.icons"
     },
     "molten-nvim": {
       "rev": "4fd7be6",
@@ -138,6 +154,10 @@
       "rev": "8033534",
       "src": "https://github.com/kyazdani42/nvim-web-devicons"
     },
+    "nvterm": {
+      "rev": "9d7ba3b6e368243175d38e1ec956e0476fd86ed9",
+      "src": "https://github.com/NvChad/nvterm"
+    },
     "oil.nvim": {
       "rev": "f55b25e",
       "src": "https://github.com/stevearc/oil.nvim"
@@ -162,9 +182,17 @@
       "rev": "b9fd522",
       "src": "https://github.com/nvim-lua/plenary.nvim"
     },
+    "project.nvim": {
+      "rev": "379f79a5405add7bd8390695f187fe07d5b46495",
+      "src": "https://github.com/DrKJeff16/project.nvim"
+    },
     "quicker.nvim": {
       "rev": "fc04183",
       "src": "https://github.com/stevearc/quicker.nvim"
+    },
+    "smart-motion.nvim": {
+      "rev": "81def742a9393f5639611d0cff6c2d7da1241915",
+      "src": "https://github.com/FluxxField/smart-motion.nvim"
     },
     "todo-comments.nvim": {
       "rev": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668",

@@ -158,7 +158,7 @@ return {
     DotLarge            = ' ',
     Ellipsis            = '… ',
     Eye                 = '󰈈 ',
-    GitBranch           = ' ',
+    GitBranch           = ' ',
     GitIconAdd          = '• ',
     GitIconChange       = '• ',
     GitIconDelete       = '• ',

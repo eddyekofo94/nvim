@@ -239,7 +239,13 @@ end
 ---Get current filetype
 ---@return string
 function _G._statusline.ft()
-  return vim.bo.ft == '' and '' or vim.bo.ft:gsub('^%l', string.upper)
+  local ft = string.format(
+    ' %s %s ',
+    utils.general.icon_provider(0),
+    vim.bo.ft:gsub('^%l', string.upper)
+  )
+  return vim.bo.ft == '' and '' or utils.stl.hl(ft, 'StatusLineDimmed')
+  -- return vim.bo.ft == '' and '' or vim.bo.ft:gsub('^%l', string.upper)
 end
 
 ---@return string
@@ -455,45 +461,6 @@ vim.api.nvim_create_autocmd('WinClosed', {
   end,
 })
 
--- _G._statusline.project_name = function()
---   local icon = '󰉋 '
---   local name = ''
---
---   -- 1. Get current buffer info
---   local buf = vim.api.nvim_get_current_buf()
---   local buf_name = vim.api.nvim_buf_get_name(buf)
---
---   -- 2. Logic to find the root
---   -- If we are in a 'real' file or Oil
---   if
---     buf_name ~= '' and vim.bo[buf].buftype == ''
---     or vim.bo[buf].filetype == 'oil'
---   then
---     local clean_path = buf_name:gsub('^oil://', '')
---     local root = require('utils').fs.cwd_dir(clean_path)
---     if root then
---       name = vim.fn.fnamemodify(root, ':t')
---     end
---   end
---
---   -- 3. FALLBACK: If we're in a float or no root was found above
---   if name == '' then
---     -- getcwd() is reliable here because your other autocmds
---     -- set the 'lcd' for the tab/window previously
---     name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
---   end
---
---   return utils.stl.hl(string.format('%s%s ', icon, name), 'StatusLineDimmed')
--- end
-
-local function filepath()
-  local fpath = vim.fn.fnamemodify(vim.fn.expand('%'), ':~:.:h')
-  if fpath == '' or fpath == '.' then
-    return ''
-  end
-  return fpath .. '/'
-end
-
 ---@return string
 function _G._statusline.fname()
   local bufname = vim.api.nvim_buf_get_name(0)
@@ -506,32 +473,24 @@ function _G._statusline.fname()
     str_shorten(fname_ext, fname_ext_max_width)
   )
 
-  local fpath = filepath()
-
-  -- Modified and readonly icons
-  local file_indicator = ''
-  if vim.bo.modified then
-    file_indicator = ' ● '
-  elseif vim.bo.readonly or not vim.bo.modifiable then
-    file_indicator = ' 🔒 '
-  end
-
   -- Normal buffer
   if vim.bo.bt == '' then
     -- Unnamed normal buffer
     if bufname == '' then
       return '[Buffer %n]'
     end
-    -- Named normal buffer, show path + file name with different highlights
-    if fpath ~= '' then
+    -- Named normal buffer, show file name, if the file name is not unique,
+    -- show local cwd (often project root) after the file name
+    local pdiff_short = vim.b._stl_pdiff
+      and str_shorten(vim.b._stl_pdiff, fname_prefix_suffix_max_width)
+    if pdiff_short then
       return string.format(
-        '%%#StatusLineDimmed#%s%%#StatusLine#%s%s',
-        fpath,
-        fname_short,
-        file_indicator
+        '%s [%s]',
+        utils.stl.escape(fname_short),
+        utils.stl.escape(pdiff_short)
       )
     end
-    return fname_short .. file_indicator
+    return utils.stl.escape(fname_short)
   end
 
   if vim.bo.bt == 'quickfix' then
@@ -769,7 +728,7 @@ function _G._statusline.spinner()
     return ''
   end
 
-  return utils.stl.hl(string.format('%s %s ', table.concat(progs, ', '), spinner.icon), 'StatusLineDimmed')
+  return string.format('%s %s ', table.concat(progs, ', '), spinner.icon)
 end
 
 -- stylua: ignore start
@@ -860,7 +819,7 @@ function _G._statusline.project_name()
     name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
   end
 
-  return utils.stl.hl(string.format('%s%s ', icon, name), 'StatusLineDimmed')
+  return icon .. name
 end
 
 -- Search count component
@@ -875,46 +834,6 @@ function _G._statusline.search_count()
   end
 
   return string.format('[%d/%d]', result.current, math.min(result.total, result.maxcount))
-end
-
-function _G._statusline.section_location()
-  return '%2l:%-2v'
-end
-
-function _G._statusline.cursor_pos()
-  local curr_line = vim.api.nvim_win_get_cursor(0)[1]
-  local total_lines = vim.api.nvim_buf_line_count(0)
-
-  if total_lines == 0 then
-    return ' 0%%%% '
-  end
-
-  if curr_line == 1 then
-    return 'Top '
-  elseif curr_line == total_lines then
-    return 'Bot '
-  end
-
-  local percentage = math.floor((curr_line / total_lines) * 100)
-  return utils.stl.hl(
-    string.format('%2d%%%% ', percentage),
-    'StatusLineHeader'
-  )
-end
-
-function _G._statusline.line_info()
-  if vim.bo.filetype == 'alpha' then
-    return ''
-  end
-
-  return utils.stl.hl(
-    string.format(
-      ' %s %s',
-      _G._statusline.section_location(),
-      _G._statusline.cursor_pos()
-    ),
-    'StatusLineHeader'
-  )
 end
 
 -- Macro recording component
@@ -939,7 +858,7 @@ function _G._statusline.treesitter_status()
   if lang then
     local success = pcall(vim.treesitter.get_parser, buf, lang)
     if success then
-      return utils.stl.hl(' TS', 'StatusLineDimmed')
+      return ' TS'
     end
   end
   return ''
@@ -966,51 +885,34 @@ end
 ---Statusline components
 ---@type table<string, string>
 local components = {
-  align     = [[%=]],
-  flag      = [[%{%&bt==#''?'':(&bt==#'help'?'%h ':(&pvw?'%w ':(&bt==#'quickfix'?'%q ':'')))%}]],
-  diag      = [[%{%v:lua._statusline.diag()%}]],
-  root      = [[%{%v:lua._statusline.project_name()%}]],
-  fname     = [[%{%v:lua._statusline.fname()%} ]],
-  args      = [[%{%v:lua._statusline.info()%}]],
-  spinner   = [[%{%v:lua._statusline.spinner()%}]],
-  mode      = [[%{%v:lua._statusline.mode()%}]],
-  padding   = [[ ]],
-  pos       = [[%{%&ru?(((!&nu&&!&rnu)?"%l:%c ":"")."%P "):""%}]],
-  truncate  = [[%<]],
-  gitbranch = [[%{%v:lua._statusline.gitbranch()%} ]],
-  gitdiff   = [[%{%v:lua._statusline.gitdiff()%}]],
-  search    = [[%{%v:lua._statusline.search_count()%} ]],
-  macro     = [[%{%v:lua._statusline.macro()%}]],
-  treesitter = [[%{%v:lua._statusline.treesitter_status()%} ]],
-  lsp       = [[%{%v:lua._statusline.lsp_names()%} ]],
-  ft        = [[%{%v:lua._statusline.ft()%} ]],
-  lineinfo  = [[%{%v:lua._statusline.line_info()%} ]],
+  align    = [[%=]],
+  flag     = [[%{%v:lua._statusline.flag()%}]],
+  diag     = [[%{%v:lua._statusline.diag()%}]],
+  fname    = [[%{%v:lua._statusline.fname()%} ]],
+  args     = [[%{%v:lua._statusline.info()%}]],
+  spinner  = [[%{%v:lua._statusline.spinner()%}]],
+  mode     = [[%{%v:lua._statusline.mode()%}]],
+  padding  = [[ ]],
+  pos      = [[%{%&ru?(((!&nu&&!&rnu)?"%l:%c ":"")."%P "):""%}]],
+  truncate = [[%<]],
 }
 -- stylua: ignore end
 
 local stl = table.concat({
   components.mode,
   components.flag,
-  components.root,
   components.fname,
-  components.diag,
-  components.search,
-  components.macro,
+  components.args,
   components.align,
-  components.spinner,
-  components.gitbranch,
-  components.gitdiff,
-  -- components.lsp,
-  components.treesitter,
-  -- components.ft,
   components.truncate,
-  components.lineinfo,
+  components.spinner,
+  components.diag,
+  components.pos,
 })
 
 local stl_nc = table.concat({
   components.padding,
   components.flag,
-  components.root,
   components.fname,
   components.align,
   components.truncate,
@@ -1021,13 +923,51 @@ setmetatable(_G._statusline, {
   ---Get statusline string
   ---@return string
   __call = function()
-    return vim.g.statusline_winid == vim.api.nvim_get_current_win() and stl
-      or stl_nc
+    -- Use pure Lua build functions
+    if vim.g.statusline_winid == vim.api.nvim_get_current_win() then
+      return _G._statusline.build()
+    else
+      return _G._statusline.build_nc()
+    end
   end,
 })
 
 -- Prevent statusline from being overridden by qf ftplugin in quickfix windows
 vim.g.qf_disable_statusline = true
+
+-- Auto-update statusline on relevant events (for pure Lua version)
+local statusline_augroup =
+  vim.api.nvim_create_augroup('statusline_update', { clear = true })
+
+vim.api.nvim_create_autocmd({
+  'ModeChanged',
+  'BufEnter',
+  'BufWritePost',
+  'FileType',
+  'LspProgress',
+  'DiagnosticChanged',
+  'CmdlineEnter',
+  'CmdlineLeave',
+}, {
+  group = statusline_augroup,
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
+
+vim.api.nvim_create_autocmd('WinEnter', {
+  group = statusline_augroup,
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
+
+vim.api.nvim_create_autocmd('WinLeave', {
+  group = statusline_augroup,
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
 
 utils.hl.persist(function()
   -- stylua: ignore start
