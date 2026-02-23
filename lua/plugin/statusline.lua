@@ -455,6 +455,37 @@ vim.api.nvim_create_autocmd('WinClosed', {
   end,
 })
 
+_G._statusline.project_name = function()
+  local icon = '󰉋 '
+  local name = ''
+
+  -- 1. Get current buffer info
+  local buf = vim.api.nvim_get_current_buf()
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+
+  -- 2. Logic to find the root
+  -- If we are in a 'real' file or Oil
+  if
+    buf_name ~= '' and vim.bo[buf].buftype == ''
+    or vim.bo[buf].filetype == 'oil'
+  then
+    local clean_path = buf_name:gsub('^oil://', '')
+    local root = require('utils').fs.cwd_dir(clean_path)
+    if root then
+      name = vim.fn.fnamemodify(root, ':t')
+    end
+  end
+
+  -- 3. FALLBACK: If we're in a float or no root was found above
+  if name == '' then
+    -- getcwd() is reliable here because your other autocmds
+    -- set the 'lcd' for the tab/window previously
+    name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
+  end
+
+  return utils.stl.hl(string.format('%s%s ', icon, name), 'StatusLineDimmed')
+end
+
 local function filepath()
   local fpath = vim.fn.fnamemodify(vim.fn.expand('%'), ':~:.:h')
   if fpath == '' or fpath == '.' then
@@ -739,6 +770,7 @@ local components = {
   align    = [[%=]],
   flag     = [[%{%&bt==#''?'':(&bt==#'help'?'%h ':(&pvw?'%w ':(&bt==#'quickfix'?'%q ':'')))%}]],
   diag     = [[%{%v:lua._statusline.diag()%}]],
+  root    = [[%{%v:lua._statusline.project_name()%}]],
   fname    = [[%{%v:lua._statusline.fname()%} ]],
   args     = [[%{%v:lua._statusline.info()%}]],
   spinner  = [[%{%v:lua._statusline.spinner()%}]],
@@ -752,6 +784,7 @@ local components = {
 local stl = table.concat({
   components.mode,
   components.flag,
+  components.root,
   components.fname,
   components.args,
   components.align,
@@ -764,6 +797,7 @@ local stl = table.concat({
 local stl_nc = table.concat({
   components.padding,
   components.flag,
+  components.root,
   components.fname,
   components.align,
   components.truncate,
