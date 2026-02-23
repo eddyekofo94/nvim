@@ -483,9 +483,15 @@ function _G._statusline.fname()
     if bufname == '' then
       return '[Buffer %n]'
     end
-    -- Named normal buffer, show path + file name
-    local path_and_name = fpath .. fname_short
-    return utils.stl.escape(path_and_name)
+    -- Named normal buffer, show path + file name with different highlights
+    if fpath ~= '' then
+      return string.format(
+        '%%#StatusLineDimmed#%s%%#StatusLine#%s',
+        fpath,
+        fname_short
+      )
+    end
+    return fname_short
   end
 
   if vim.bo.bt == 'quickfix' then
