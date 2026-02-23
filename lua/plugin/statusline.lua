@@ -508,6 +508,14 @@ function _G._statusline.fname()
 
   local fpath = filepath()
 
+  -- Modified and readonly icons
+  local file_indicator = ''
+  if vim.bo.modified then
+    file_indicator = '● '
+  elseif vim.bo.readonly or not vim.bo.modifiable then
+    file_indicator = '🔒 '
+  end
+
   -- Normal buffer
   if vim.bo.bt == '' then
     -- Unnamed normal buffer
@@ -517,12 +525,13 @@ function _G._statusline.fname()
     -- Named normal buffer, show path + file name with different highlights
     if fpath ~= '' then
       return string.format(
-        '%%#StatusLineDimmed#%s%%#StatusLine#%s',
+        '%%#StatusLineDimmed#%s%%#StatusLine#%s%s',
         fpath,
-        fname_short
+        fname_short,
+        file_indicator
       )
     end
-    return fname_short
+    return fname_short .. file_indicator
   end
 
   if vim.bo.bt == 'quickfix' then
