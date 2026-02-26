@@ -962,10 +962,16 @@ return {
           end,
           on_close = function()
             local fzf_win = vim.api.nvim_get_current_win()
+            local leave_win = vim.g._fzf_leave_win
+
             vim.schedule(function()
               vim.g._fzf_active = nil
               if vim.api.nvim_win_is_valid(fzf_win) then
                 vim.w.focus_disable = false
+              end
+              -- Restore window visit order
+              if leave_win and vim.api.nvim_win_is_valid(leave_win) then
+                vim.api.nvim_set_current_win(leave_win)
               end
             end)
           end,
