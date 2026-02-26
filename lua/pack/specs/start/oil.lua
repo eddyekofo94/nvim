@@ -228,12 +228,7 @@ return {
             vim.api.nvim_buf_call(buf, function()
               vim.treesitter.stop(buf)
               vim.bo.syntax = ''
-              vim.cmd.syntax(
-                string.format(
-                  'match NonText /\\V%s/',
-                  vim.fn.escape(preview_get_filler(), '/?')
-                )
-              )
+              vim.api.nvim_buf_clear_namespace(buf, -1, 0, -1)
             end)
           end
           return
