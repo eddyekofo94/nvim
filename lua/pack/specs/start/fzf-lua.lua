@@ -888,43 +888,59 @@ return {
         dir_icon = vim.trim(icons.Folder),
         winopts = {
           backdrop = 100,
-          -- Split at bottom, save information for restoration in
-          -- `winopts.on_close()` callback
-          split = [[
-            call v:lua.require'utils.win'.save_heights('_fzf_lua_win_heights') |
-              \ call v:lua.require'utils.win'.save_views('_fzf_lua_win_views') |
-              \ let g:_fzf_vim_lines = &lines |
-              \ let g:_fzf_leave_win = win_getid(winnr()) |
-              \ let g:_fzf_splitkeep = &splitkeep | let &splitkeep = "topline" |
-              \ let g:_fzf_cmdheight = &cmdheight | let &cmdheight = 0 |
-              \ let g:_fzf_laststatus = &laststatus | let &laststatus = 0 |
-              \ let g:_fzf_height = 10 |
-              \ for winnr in range(winnr('$'), 1, -1) |
-              \   if win_gettype(winnr) !=# 'autocmd' && win_gettype(winnr) !=# 'popup' |
-              \     let g:_fzf_lastwin = win_getid(winnr) |
-              \     let g:_fzf_lastwintype = win_gettype(winnr) |
-              \     break |
-              \   endif |
-              \ endfor |
-              \ if (g:_fzf_lastwintype ==# 'loclist' || g:_fzf_lastwintype ==# 'quickfix') &&
-              \     trim(win_execute(g:_fzf_lastwin, 'echo winnr("h")')) == g:_fzf_lastwin &&
-              \     trim(win_execute(g:_fzf_lastwin, 'echo winnr("l")')) == g:_fzf_lastwin |
-              \   let g:_fzf_qfclosed = g:_fzf_lastwintype |
-              \   let g:_fzf_qfwin = g:_fzf_lastwin |
-              \   let g:_fzf_qfheight = nvim_win_get_height(g:_fzf_qfwin) |
-              \   let g:_fzf_height = g:_fzf_qfheight - 1 |
-              \   cclose |
-              \   lclose |
-              \ endif |
-              \ let g:_fzf_height += g:_fzf_cmdheight + (g:_fzf_laststatus ? 1 : 0) |
-              \ if exists('g:_fzf_n_items') && !exists('g:_fzf_qfclosed') |
-              \   let g:_fzf_height = min([g:_fzf_height, g:_fzf_n_items + 1]) |
-              \ endif |
-              \ exe printf('botright %dnew', g:_fzf_height) |
-              \ let g:_fzf_win = nvim_get_current_win() |
-              \ let w:winbar_no_attach = v:true |
-              \ setlocal bt=nofile bh=wipe nobl noswf wfh
-          ]],
+          split = function()
+            local win = require('utils.win')
+            win.save_heights('_fzf_lua_win_heights')
+            win.save_views('_fzf_lua_win_views')
+
+            vim.g._fzf_vim_lines = vim.o.lines
+            vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
+            vim.g._fzf_splitkeep = vim.opt.splitkeep:get()
+            vim.opt.splitkeep = 'topline'
+            vim.g._fzf_cmdheight = vim.opt.cmdheight:get()
+            vim.opt.cmdheight = 0
+            vim.g._fzf_laststatus = vim.opt.laststatus:get()
+            vim.opt.laststatus = 0
+
+            local fzf_height = 10
+
+            local lastwin, lastwintype
+            for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+              local wintype = vim.fn.win_gettype(winid)
+              if wintype ~= 'autocmd' and wintype ~= 'popup' then
+                lastwin = winid
+                lastwintype = wintype
+                break
+              end
+            end
+
+            if (lastwintype == 'loclist' or lastwintype == 'quickfix') then
+              vim.g._fzf_qfclosed = lastwintype
+              vim.g._fzf_qfwin = lastwin
+              vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
+              fzf_height = vim.g._fzf_qfheight - 1
+              vim.cmd(lastwintype == 'loclist' and 'lclose' or 'cclose')
+            end
+
+            fzf_height = fzf_height + vim.g._fzf_cmdheight + (vim.g._fzf_laststatus > 0 and 1 or 0)
+
+            if vim.g._fzf_n_items and not vim.g._fzf_qfclosed then
+              fzf_height = math.min(fzf_height, vim.g._fzf_n_items + 1)
+            end
+
+            vim.cmd('botright ' .. fzf_height .. 'new')
+            vim.g._fzf_win = vim.api.nvim_get_current_win()
+            vim.w.winbar_no_attach = true
+            vim.w.focus_disable = true
+            vim.b.focus_disable = true
+            vim.opt_local.buftype = 'nofile'
+            vim.opt_local.bufhidden = 'wipe'
+            vim.opt_local.number = false
+            vim.opt_local.relativenumber = false
+            vim.opt_local.swapfile = false
+            vim.opt_local.winfixheight = true
+            vim.bo.filetype = 'fzf'
+          end,
           on_create = function()
             vim.keymap.set(
               't',
@@ -1397,7 +1413,7 @@ return {
       vim.keymap.set('n', '<Leader>fQ', fzf.quickfix_stack, { desc = 'Find quickfix stack' })
       vim.keymap.set('n', '<Leader>fgt', fzf.git_tags, { desc = 'Find git tags' })
       vim.keymap.set('n', '<Leader>fgs', fzf.git_stash, { desc = 'Find git stash' })
-      vim.keymap.set('n', '<Leader>fgg', fzf.git_status, { desc = 'Find git status' })
+      vim.keymap.set('n', '<Leader>sx', fzf.git_status, { desc = 'Find git status' })
       vim.keymap.set('n', '<Leader>fgL', fzf.git_commits, { desc = 'Find git logs' })
       vim.keymap.set('n', '<Leader>fgl', fzf.git_bcommits, { desc = 'Find git buffer logs' })
       vim.keymap.set('n', '<Leader>fgb', fzf.git_branches, { desc = 'Find git branches' })
