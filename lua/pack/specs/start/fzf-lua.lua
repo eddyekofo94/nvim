@@ -962,16 +962,55 @@ return {
           end,
           on_close = function()
             local fzf_win = vim.api.nvim_get_current_win()
-            local leave_win = vim.g._fzf_leave_win
-
-            vim.schedule(function()
+            vim.defer_fn(function()
               vim.g._fzf_active = nil
               if vim.api.nvim_win_is_valid(fzf_win) then
                 vim.w.focus_disable = false
+                vim.b.focus_disable = false
               end
-              -- Restore window visit order
-              if leave_win and vim.api.nvim_win_is_valid(leave_win) then
-                vim.api.nvim_set_current_win(leave_win)
+              pcall(require('focus').resize)
+            end, 50)
+            restore_global_opt('splitkeep')
+            restore_global_opt('cmdheight')
+            restore_global_opt('laststatus')
+
+            restore_win_heights_and_views()
+
+            -- Reopen quickfix/location list after closing fzf if we previous closed
+            -- it to make space for fzf
+            --
+            -- Schedule in case the fzf is making a new split
+            -- (e.g. `actions.file_split`) after opening quickfix window which
+            -- resizes the quickfix window unexpectedly due to an nvim bug, see
+            -- - `lua/core/autocmds.lua` augroup `fix_winfixheight_with_winbar`
+            -- -  https://github.com/neovim/neovim/issues/30955
+            vim.schedule(function()
+              local win = vim.api.nvim_get_current_win()
+
+              if vim.g._fzf_qfclosed then
+                vim.cmd[vim.g._fzf_qfclosed == 'loclist' and 'lopen' or 'copen']({
+                  count = vim.g._fzf_qfheight,
+                })
+                -- Restore window view & heights after re-opening quickfix windows
+                -- to avoid evidentially resizing windows with `winfixheight` set, e.g.
+                -- nvim-dap-ui windows
+                -- See https://github.com/neovim/neovim/issues/30955
+                restore_win_heights_and_views()
+              end
+              vim.g._fzf_qfclosed = nil
+              vim.g._fzf_qfheight = nil
+
+              -- Keep window visit order
+              if
+                vim.g._fzf_leave_win
+                and vim.api.nvim_win_is_valid(vim.g._fzf_leave_win)
+              then
+                vim.api.nvim_set_current_win(vim.g._fzf_leave_win)
+              end
+              vim.g._fzf_leave_win = nil
+
+              if vim.api.nvim_win_is_valid(win) then
+                vim.api.nvim_set_current_win(win)
               end
             end)
           end,
