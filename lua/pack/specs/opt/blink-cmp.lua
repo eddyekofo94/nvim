@@ -94,8 +94,6 @@ return {
             min_width = vim.go.pumwidth > 0 and vim.go.pumwidth or nil, ---@diagnostic disable-line: assign-type-mismatch
             max_height = vim.go.pumheight > 0 and vim.go.pumheight or nil, ---@diagnostic disable-line: assign-type-mismatch
             scrolloff = 2,
-            treesitter = { 'lsp' },
-            align_to = 'none',
             draw = {
               columns = {
                 { 'kind_icon' },

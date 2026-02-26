@@ -44,6 +44,11 @@ end
 _G.update_seps = function()
   clear_seps()
 
+  -- Skip if focus/ColorfulWinSep is disabled for this buffer
+  if vim.b.focus_disable or vim.b.ColorfulWinSep_disable then
+    return
+  end
+
   local ignore_fts = { "fzf", "fzf-lua", "picker", "qf", "notify" }
   if vim.tbl_contains(ignore_fts, vim.bo.filetype) then
     return

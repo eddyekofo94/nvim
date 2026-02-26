@@ -32,6 +32,14 @@
       "rev": "b03a031",
       "src": "https://github.com/sainnhe/everforest"
     },
+    "flash.nvim": {
+      "rev": "fcea7ff883235d9024dc41e638f164a450c14ca2",
+      "src": "https://github.com/folke/flash.nvim"
+    },
+    "flatten.nvim": {
+      "rev": "72527798e75b5e34757491947c2cb853ce21dc0e",
+      "src": "https://github.com/willothy/flatten.nvim"
+    },
     "focus.nvim": {
       "rev": "36ebedeebe82ebea250c9d671769194caa033902",
       "src": "https://github.com/beauwilliams/focus.nvim"
@@ -72,9 +80,29 @@
       "rev": "a923f5f",
       "src": "https://github.com/iamcco/markdown-preview.nvim"
     },
+    "markview.nvim": {
+      "rev": "633e627f82011dc888ea4444a98c98bd783951b0",
+      "src": "https://github.com/OXY2DEV/markview.nvim"
+    },
+    "mason-tool-installer.nvim": {
+      "rev": "443f1ef8b5e6bf47045cb2217b6f748a223cf7dc",
+      "src": "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim"
+    },
+    "mason.nvim": {
+      "rev": "44d1e90e1f66e077268191e3ee9d2ac97cc18e65",
+      "src": "https://github.com/williamboman/mason.nvim"
+    },
+    "mini.ai": {
+      "rev": "4b0a6207341d895b6cfe9bcb1e4d3e8607bfe4f4",
+      "src": "https://github.com/echasnovski/mini.ai"
+    },
     "mini.icons": {
       "rev": "68c178e0958d95b3977a771f3445429b1bded985",
       "src": "https://github.com/echasnovski/mini.icons"
+    },
+    "mini.nvim": {
+      "rev": "577d2dcb558efce1518c45a76345e01bf346c8e8",
+      "src": "https://github.com/echasnovski/mini.nvim"
     },
     "molten-nvim": {
       "rev": "4fd7be6",
@@ -83,6 +111,10 @@
     "namu.nvim": {
       "rev": "e7afbdf63a75ace6ccc6202d58a4f6f9ac09db92",
       "src": "https://github.com/bassamsdata/namu.nvim"
+    },
+    "neogit": {
+      "rev": "0ea6b87ae19e8e5a235c682f8db1305774824f9b",
+      "src": "https://github.com/NeogitOrg/neogit"
     },
     "noice.nvim": {
       "rev": "7bfd942445fb63089b59f97ca487d605e715f155",

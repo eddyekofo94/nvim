@@ -97,48 +97,18 @@ return {
         lsp = {
           documentation = {
             enabled = false,
-            opts = {
-              border = { style = 'rounded' },
-              relative = 'cursor',
-              position = { row = 2 },
-              winhighlight = {
-                Normal = 'LspFloat',
-                FloatBorder = 'LspFloatBorder',
-              },
-            },
           },
           progress = {
             enabled = false,
-            format = 'lsp_progress',
-            format_done = 'lsp_progress_done',
-            throttle = 1000 / 30,
-            view = 'mini',
-          },
-          override = {
-            ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
-            ['vim.lsp.util.stylize_markdown'] = true,
-            ['cmp.entry.get_documentation'] = true,
           },
           hover = {
-            enabled = true,
-            view = nil,
-            opts = {},
+            enabled = false,
           },
           signature = {
             enabled = false,
-            auto_open = {
-              enabled = true,
-              trigger = true,
-              luasnip = true,
-              throttle = 50,
-            },
-            view = nil,
-            opts = {},
           },
           message = {
-            enabled = true,
-            view = 'notify',
-            opts = {},
+            enabled = false,
           },
         },
         markdown = {
@@ -166,8 +136,8 @@ return {
           bottom_search = true,
           command_palette = true,
           long_message_to_split = true,
-          inc_rename = true,
-          lsp_doc_border = true,
+          inc_rename = false,
+          lsp_doc_border = false,
         },
         throttle = 1000 / 30,
         views = {
