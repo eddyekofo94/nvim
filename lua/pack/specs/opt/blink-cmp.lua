@@ -86,6 +86,7 @@ return {
           documentation = {
             auto_show = true,
             auto_show_delay_ms = 0,
+            treesitter_highlighting = true,
             window = {
               border = 'solid',
               highlight = 'BlinkCmpDoc',
@@ -385,9 +386,10 @@ return {
         vim.api.nvim_set_hl(0, 'BlinkCmpDoc',               { link = 'Normal',           default = true })
         vim.api.nvim_set_hl(0, 'BlinkCmpDocBorder',         { link = 'FloatBorder',      default = true })
         vim.api.nvim_set_hl(0, 'BlinkCmpDocTitle',          { link = 'Title',            default = true })
-        vim.api.nvim_set_hl(0, 'BlinkCmpMarkdownCode',     { link = '@text.code',       default = true })
-        vim.api.nvim_set_hl(0, 'BlinkCmpMarkdownCodeBlock',{ link = '@text.code.block', default = true })
-        vim.api.nvim_set_hl(0, 'BlinkCmpMarkdownLink',     { link = '@text.uri',        default = true })
+        vim.api.nvim_set_hl(0, 'BlinkCmpMarkdownCode',       { link = '@text.code',       default = true })
+        vim.api.nvim_set_hl(0, 'BlinkCmpMarkdownCodeBlock', { link = '@text.code.block',  default = true })
+        vim.api.nvim_set_hl(0, 'BlinkCmpMarkdownLink',      { link = '@text.uri',        default = true })
+        vim.api.nvim_set_hl(0, 'BlinkCmpLabel',             { link = '@label',           default = true })
         -- stylua: ignore end
       end)
     end,
