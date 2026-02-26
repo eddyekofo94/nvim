@@ -889,6 +889,7 @@ return {
         winopts = {
           backdrop = 100,
           split = function()
+            vim.g._fzf_active = true
             local win = require('utils.win')
             win.save_heights('_fzf_lua_win_heights')
             win.save_views('_fzf_lua_win_views')
@@ -938,10 +939,31 @@ return {
             vim.opt_local.number = false
             vim.opt_local.relativenumber = false
             vim.opt_local.swapfile = false
+            vim.opt_local.winfixwidth = true
             vim.opt_local.winfixheight = true
             vim.bo.filetype = 'fzf'
           end,
-          on_create = function()
+          on_create = function(args)
+            local fzf_win = vim.api.nvim_get_current_win()
+            local fzf_height = vim.api.nvim_win_get_height(fzf_win)
+            local fzf_width = vim.api.nvim_win_get_width(fzf_win)
+
+            -- Protect fzf window from focus.nvim resizing
+            local group = vim.api.nvim_create_augroup('FzfFocusProtect', { clear = true })
+            vim.api.nvim_create_autocmd({ 'VimResized', 'WinEnter' }, {
+              group = group,
+              callback = function()
+                if vim.api.nvim_win_is_valid(fzf_win) then
+                  local current_height = vim.api.nvim_win_get_height(fzf_win)
+                  local current_width = vim.api.nvim_win_get_width(fzf_win)
+                  if current_height ~= fzf_height or current_width ~= fzf_width then
+                    vim.api.nvim_win_set_height(fzf_win, fzf_height)
+                    vim.api.nvim_win_set_width(fzf_win, fzf_width)
+                  end
+                end
+              end,
+            })
+
             vim.keymap.set(
               't',
               '<C-r>',
@@ -959,6 +981,7 @@ return {
             end
           end,
           on_close = function()
+            vim.g._fzf_active = nil
             restore_global_opt('splitkeep')
             restore_global_opt('cmdheight')
             restore_global_opt('laststatus')
