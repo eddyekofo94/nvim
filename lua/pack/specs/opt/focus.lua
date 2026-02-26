@@ -146,7 +146,11 @@ return {
         if ok then
           local original_split_resizer = resizer.split_resizer
           resizer.split_resizer = function(config, goal)
-            if vim.g._fzf_active or vim.bo.filetype == 'fzf' or vim.bo.filetype == 'FzfLua' then
+            if
+              vim.g._fzf_active
+              or vim.bo.filetype == 'fzf'
+              or vim.bo.filetype == 'FzfLua'
+            then
               vim.o.winminwidth = 1
               vim.o.winminheight = 1
               vim.o.winwidth = 1
@@ -161,7 +165,11 @@ return {
         if ok2 then
           local original_is_disabled = utils.is_disabled
           utils.is_disabled = function()
-            if vim.g._fzf_active or vim.bo.filetype == 'fzf' or vim.bo.filetype == 'FzfLua' then
+            if
+              vim.g._fzf_active
+              or vim.bo.filetype == 'fzf'
+              or vim.bo.filetype == 'FzfLua'
+            then
               return true
             end
             return original_is_disabled()

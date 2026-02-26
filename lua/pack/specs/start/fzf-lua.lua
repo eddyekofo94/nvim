@@ -915,7 +915,7 @@ return {
               end
             end
 
-            if (lastwintype == 'loclist' or lastwintype == 'quickfix') then
+            if lastwintype == 'loclist' or lastwintype == 'quickfix' then
               vim.g._fzf_qfclosed = lastwintype
               vim.g._fzf_qfwin = lastwin
               vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
@@ -923,7 +923,9 @@ return {
               vim.cmd(lastwintype == 'loclist' and 'lclose' or 'cclose')
             end
 
-            fzf_height = fzf_height + vim.g._fzf_cmdheight + (vim.g._fzf_laststatus > 0 and 1 or 0)
+            fzf_height = fzf_height
+              + vim.g._fzf_cmdheight
+              + (vim.g._fzf_laststatus > 0 and 1 or 0)
 
             if vim.g._fzf_n_items and not vim.g._fzf_qfclosed then
               fzf_height = math.min(fzf_height, vim.g._fzf_n_items + 1)
