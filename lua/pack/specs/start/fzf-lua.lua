@@ -944,26 +944,6 @@ return {
             vim.bo.filetype = 'fzf'
           end,
           on_create = function(args)
-            local fzf_win = vim.api.nvim_get_current_win()
-            local fzf_height = vim.api.nvim_win_get_height(fzf_win)
-            local fzf_width = vim.api.nvim_win_get_width(fzf_win)
-
-            -- Protect fzf window from focus.nvim resizing
-            local group = vim.api.nvim_create_augroup('FzfFocusProtect', { clear = true })
-            vim.api.nvim_create_autocmd({ 'VimResized', 'WinEnter' }, {
-              group = group,
-              callback = function()
-                if vim.api.nvim_win_is_valid(fzf_win) then
-                  local current_height = vim.api.nvim_win_get_height(fzf_win)
-                  local current_width = vim.api.nvim_win_get_width(fzf_win)
-                  if current_height ~= fzf_height or current_width ~= fzf_width then
-                    vim.api.nvim_win_set_height(fzf_win, fzf_height)
-                    vim.api.nvim_win_set_width(fzf_win, fzf_width)
-                  end
-                end
-              end,
-            })
-
             vim.keymap.set(
               't',
               '<C-r>',
