@@ -981,7 +981,14 @@ return {
             end
           end,
           on_close = function()
-            vim.g._fzf_active = nil
+            local fzf_win = vim.api.nvim_get_current_win()
+            vim.schedule(function()
+              vim.g._fzf_active = nil
+              -- Reset focus_disable on the window we left
+              if vim.api.nvim_win_is_valid(fzf_win) then
+                vim.w.focus_disable = false
+              end
+            end)
             restore_global_opt('splitkeep')
             restore_global_opt('cmdheight')
             restore_global_opt('laststatus')
