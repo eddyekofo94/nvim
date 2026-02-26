@@ -16,30 +16,26 @@ vim.lsp.config(
 -- Override to perform additional checks on starting language servers
 vim.lsp.start = lsp.start
 
--- Lazy-load LSP servers only when their filetypes are first used
-local enabled_lsps = {}
+-- Enable LSP servers lazily on first filetype use
+-- This avoids loading all LSP configs at startup
+local enabled = false
 vim.api.nvim_create_autocmd('FileType', {
   group = vim.api.nvim_create_augroup('lsp_lazy_enable', { clear = true }),
-  callback = function(args)
-    local ft = args.match
-    if enabled_lsps[ft] then
+  once = true,
+  callback = function()
+    if enabled then
       return
     end
-    enabled_lsps[ft] = true
+    enabled = true
 
     for _, dir in ipairs(vim.api.nvim__get_runtime({ 'lsp' }, true, {})) do
       for config_file in vim.fs.dir(dir) do
         local name = vim.fn.fnamemodify(config_file, ':r')
-        local ok, config = pcall(require, 'lsp.' .. name)
-        if ok and config and config.filetypes then
-          if vim.tbl_contains(config.filetypes, ft) then
-            vim.lsp.enable(name)
-          end
-        end
+        vim.lsp.enable(name)
       end
     end
   end,
-  desc = 'Lazy-load LSP servers on first filetype use',
+  desc = 'Enable LSP servers on first file open',
 })
 
 -- Show notification if no references, definition, declaration,
