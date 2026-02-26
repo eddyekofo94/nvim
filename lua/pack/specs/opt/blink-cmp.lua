@@ -89,8 +89,6 @@ return {
             treesitter_highlighting = true,
             window = {
               border = 'solid',
-              highlight = 'BlinkCmpDoc',
-              border_highlight = 'BlinkCmpDocBorder',
             },
           },
           menu = {
