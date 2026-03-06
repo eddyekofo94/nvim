@@ -888,12 +888,27 @@ return {
         dir_icon = vim.trim(icons.Folder),
         winopts = {
           backdrop = 100,
-          height = 0.4,
-          width = 0.6,
-          border = 'none',
-          split = 'float',
+          split = 'botright new',
           on_create = function(args)
+            vim.g._fzf_active = true
+            local win = require('utils.win')
+            win.save_heights('_fzf_lua_win_heights')
+            win.save_views('_fzf_lua_win_views')
+            vim.g._fzf_vim_lines = vim.o.lines
+            vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
+            vim.g._fzf_splitkeep = vim.opt.splitkeep:get()
+            vim.opt.splitkeep = 'topline'
+            vim.g._fzf_cmdheight = vim.opt.cmdheight:get()
+            vim.opt.cmdheight = 0
+            vim.g._fzf_laststatus = vim.opt.laststatus:get()
+            vim.opt.laststatus = 0
+            vim.g._fzf_win = vim.api.nvim_get_current_win()
+            vim.w.winbar_no_attach = true
+            vim.w.focus_disable = true
+            vim.b.focus_disable = true
+            vim.bo.filetype = 'fzf'
             vim.cmd('silent! 0delete _')
+            vim.g._fzf_qfclosed = nil
             vim.keymap.set(
               't',
               '<C-r>',
