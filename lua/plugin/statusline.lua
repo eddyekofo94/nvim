@@ -147,11 +147,11 @@ end
 ---Get diff stats for current buffer
 ---@return string
 function _G._statusline.gitdiff()
-  local work_tree, git_dir = utils.git.resolve_context(
+  local ok, work_tree, git_dir = pcall(utils.git.resolve_context,
     0,
     { { '--git-dir', vim.env.DOT_DIR, '--work-tree', vim.env.HOME } }
   )
-  if not work_tree or not git_dir then
+  if not ok or not work_tree or not git_dir then
     return ''
   end
 
@@ -192,11 +192,11 @@ end
 ---Get string representation of current git branch
 ---@return string
 function _G._statusline.gitbranch()
-  local work_tree, git_dir = utils.git.resolve_context(
+  local ok, work_tree, git_dir = pcall(utils.git.resolve_context,
     0,
     { { '--git-dir', vim.env.DOT_DIR, '--work-tree', vim.env.HOME } }
   )
-  if not work_tree or not git_dir then
+  if not ok or not work_tree or not git_dir then
     return ''
   end
 
