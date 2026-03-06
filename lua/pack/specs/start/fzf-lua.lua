@@ -888,56 +888,12 @@ return {
         dir_icon = vim.trim(icons.Folder),
         winopts = {
           backdrop = 100,
-          split = function()
-            vim.g._fzf_active = true
-            local win = require('utils.win')
-            win.save_heights('_fzf_lua_win_heights')
-            win.save_views('_fzf_lua_win_views')
-
-            vim.g._fzf_vim_lines = vim.o.lines
-            vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
-            vim.g._fzf_splitkeep = vim.opt.splitkeep:get()
-            vim.opt.splitkeep = 'topline'
-            vim.g._fzf_cmdheight = vim.opt.cmdheight:get()
-            vim.opt.cmdheight = 0
-            vim.g._fzf_laststatus = vim.opt.laststatus:get()
-            vim.opt.laststatus = 0
-
-            local fzf_height = 10
-
-            local lastwintype = vim.fn.win_gettype(0)
-            if lastwintype == 'loclist' or lastwintype == 'quickfix' then
-              local lastwin = vim.api.nvim_get_current_win()
-              vim.g._fzf_qfclosed = lastwintype
-              vim.g._fzf_qfwin = lastwin
-              vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
-              fzf_height = vim.g._fzf_qfheight - 1
-              vim.cmd(lastwintype == 'loclist' and 'lclose' or 'cclose')
-            end
-
-            fzf_height = fzf_height
-              + vim.g._fzf_cmdheight
-              + (vim.g._fzf_laststatus > 0 and 1 or 0)
-
-            if vim.g._fzf_n_items and not vim.g._fzf_qfclosed then
-              fzf_height = math.min(fzf_height, vim.g._fzf_n_items + 1)
-            end
-
-            vim.cmd('botright ' .. fzf_height .. 'new')
-            vim.g._fzf_win = vim.api.nvim_get_current_win()
-            vim.w.winbar_no_attach = true
-            vim.w.focus_disable = true
-            vim.b.focus_disable = true
-            vim.opt_local.buftype = 'nofile'
-            vim.opt_local.bufhidden = 'wipe'
-            vim.opt_local.number = false
-            vim.opt_local.relativenumber = false
-            vim.opt_local.swapfile = false
-            vim.opt_local.winfixwidth = true
-            vim.opt_local.winfixheight = true
-            vim.bo.filetype = 'fzf'
-          end,
+          height = 0.4,
+          width = 0.6,
+          border = 'none',
+          split = 'float',
           on_create = function(args)
+            vim.cmd('silent! 0delete _')
             vim.keymap.set(
               't',
               '<C-r>',
