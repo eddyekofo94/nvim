@@ -82,7 +82,7 @@ load_ui('tabline')
 load_ui('statusline')
 load_ui('statuscolumn')
 
--- term
+-- Load plugin.term on TermOpen
 load.on_events({ 'TermOpen', 'TermEnter' }, 'plugin.term', function(args)
   local term = require('plugin.term')
   term.setup()
@@ -91,43 +91,6 @@ load.on_events({ 'TermOpen', 'TermEnter' }, 'plugin.term', function(args)
     desc = 'Re-run terminal job',
   })
 end)
-
--- Create VTerm and HTerm commands immediately
-vim.api.nvim_create_user_command('VSTerm', function()
-  vim.cmd.vsplit()
-  vim.cmd.terminal()
-end, { desc = 'Open terminal in vertical split' })
-
-vim.api.nvim_create_user_command('STerm', function()
-  vim.cmd.split()
-  vim.cmd.terminal()
-end, { desc = 'Open terminal in horizontal split' })
-
-vim.api.nvim_create_user_command('FTerm', function()
-  vim.cmd.vnew()
-  vim.cmd.terminal()
-  vim.cmd.wincmd('J')
-  vim.api.nvim_win_set_height(0, math.floor(vim.o.lines * 0.4))
-end, { desc = 'Open terminal in floating window' })
-
-local function toggle_terminal()
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.bo[buf].bt == 'terminal' and vim.api.nvim_buf_is_valid(buf) then
-      vim.cmd('bd! ' .. buf)
-      return
-    end
-  end
-  vim.cmd.terminal()
-end
-vim.api.nvim_create_user_command('TTerm', toggle_terminal, { desc = 'Toggle terminal' })
-
--- Terminal keymaps
-vim.api.nvim_create_autocmd('TermOpen', {
-  group = vim.api.nvim_create_augroup('term_keymaps', { clear = true }),
-  callback = function(args)
-    vim.keymap.set('t', '<A-.>', '<C-.>', { buffer = args.buf })
-  end,
-})
 
 -- tmux
 if vim.g.has_ui then

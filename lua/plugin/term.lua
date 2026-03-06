@@ -1,8 +1,66 @@
 local M = {}
 local term_utils = require('utils.term')
 
+-- Terminal state
+local _last_term_buf = nil
+
 -- Create TermOpen autocmd at module load time (not lazily)
 local groupid = vim.api.nvim_create_augroup('term', {})
+
+-- Create floating terminal
+function M.float_term()
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(buf, 'buftype', 'terminal')
+  vim.api.nvim_buf_set_option(buf, 'filetype', 'terminal')
+
+  local width = math.floor(vim.o.columns * 0.6)
+  local height = math.floor(vim.o.lines * 0.4)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = 'editor',
+    row = row,
+    col = col,
+    width = width,
+    height = height,
+    style = 'minimal',
+    border = 'single',
+  })
+
+  vim.api.nvim_win_set_option(win, 'number', false)
+  vim.api.nvim_win_set_option(win, 'relativenumber', false)
+  vim.api.nvim_win_set_option(win, 'signcolumn', 'no')
+  vim.api.nvim_win_set_option(win, 'statuscolumn', '')
+
+  vim.cmd.terminal()
+  vim.cmd.startinsert()
+end
+
+-- Toggle terminal
+function M.toggle_term()
+  -- First check if there's a visible terminal
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].bt == 'terminal' then
+      -- Hide it (close the window but keep buffer)
+      _last_term_buf = buf
+      vim.api.nvim_win_close(win, false)
+      return
+    end
+  end
+
+  -- If no visible terminal, check for hidden terminal buffer
+  if _last_term_buf and vim.api.nvim_buf_is_valid(_last_term_buf) then
+    -- Show the last terminal in a split
+    vim.cmd.split()
+    vim.api.nvim_win_set_buf(0, _last_term_buf)
+    vim.cmd.startinsert()
+  else
+    -- Create new terminal
+    vim.cmd.terminal()
+  end
+end
 
 local function term_init(buf)
   buf = vim._resolve_bufnr(buf)
@@ -105,6 +163,8 @@ vim.api.nvim_create_autocmd('TermOpen', {
   desc = 'Set terminal keymaps and options, open term in split.',
   callback = function(args)
     term_init(args.buf)
+    -- Send Alt+. to terminal as normal .
+    vim.keymap.set('t', '<A-.>', '.', { buffer = args.buf })
   end,
 })
 
@@ -261,5 +321,24 @@ function M.setup()
     end,
   })
 end
+
+-- Create user commands
+vim.api.nvim_create_user_command('VSTerm', function()
+  vim.cmd.vsplit()
+  vim.cmd.terminal()
+end, { desc = 'Open terminal in vertical split' })
+
+vim.api.nvim_create_user_command('STerm', function()
+  vim.cmd.split()
+  vim.cmd.terminal()
+end, { desc = 'Open terminal in horizontal split' })
+
+vim.api.nvim_create_user_command('FTerm', function()
+  M.float_term()
+end, { desc = 'Open terminal in floating window' })
+
+vim.api.nvim_create_user_command('TTerm', function()
+  M.toggle_term()
+end, { desc = 'Toggle terminal' })
 
 return M
