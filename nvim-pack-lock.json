@@ -76,6 +76,10 @@
       "rev": "ca88628f6dd3b9bb46f9a7401669e24cf7de47a4",
       "src": "https://github.com/fei6409/log-highlight.nvim"
     },
+    "lsp-timeout.nvim": {
+      "rev": "6325906730330105a9adc41d0ceb8499b3072e2b",
+      "src": "https://github.com/hinell/lsp-timeout.nvim"
+    },
     "markdown-preview.nvim": {
       "rev": "a923f5f",
       "src": "https://github.com/iamcco/markdown-preview.nvim"
