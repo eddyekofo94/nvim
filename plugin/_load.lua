@@ -82,7 +82,10 @@ load_ui('tabline')
 load_ui('statusline')
 load_ui('statuscolumn')
 
--- Load plugin.term on TermOpen
+-- Load plugin.term immediately for commands
+require('plugin.term')
+
+-- Load plugin.term setup on TermOpen
 load.on_events({ 'TermOpen', 'TermEnter' }, 'plugin.term', function(args)
   local term = require('plugin.term')
   term.setup()
