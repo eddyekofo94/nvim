@@ -1312,53 +1312,38 @@ return {
         local cwd = opts.cwd or vim.fn.getcwd(0)
         local oldfiles = vim.v.oldfiles or {}
 
-        -- Filter oldfiles to current cwd
-        local cwd_oldfiles = {}
-        local other_oldfiles = {}
+        local cwd_prefix = cwd .. '/'
+        local cwd_prefix_len = #cwd_prefix + 1
+        local home = vim.env.HOME
+        local home_prefix = home .. '/'
+        local home_prefix_len = #home_prefix + 1
+
         local cwd_seen = {}
         local other_seen = {}
+        local cwd_oldfiles = {}
+        local other_oldfiles = {}
 
-        for _, f in ipairs(oldfiles) do
-          if type(f) == 'string' and f ~= '' then
-            -- Check if file exists
-            local exists = vim.uv.fs_stat(f) ~= nil
-            if not exists then
-              goto skip
+        for i = 1, #oldfiles do
+          local f = oldfiles[i]
+          if type(f) == 'string' and #f >= cwd_prefix_len and f:sub(1, #cwd_prefix) == cwd_prefix then
+            local rel_path = f:sub(cwd_prefix_len)
+            if rel_path ~= '' and not cwd_seen[rel_path] then
+              cwd_seen[rel_path] = true
+              cwd_oldfiles[#cwd_oldfiles + 1] = rel_path
             end
-
-            -- Convert absolute path to ~ if in home
-            local display_path = f
-            if vim.startswith(f, vim.env.HOME .. '/') then
-              display_path = '~' .. f:gsub('^' .. vim.env.HOME, '')
+          elseif type(f) == 'string' and #f >= home_prefix_len and f:sub(1, #home_prefix) == home_prefix then
+            local display_path = '~' .. f:sub(home_prefix_len)
+            if not other_seen[display_path] and #other_oldfiles < 10 then
+              other_seen[display_path] = true
+              other_oldfiles[#other_oldfiles + 1] = display_path
             end
-
-            -- Check if file is in cwd
-            if vim.startswith(f, cwd .. '/') then
-              local rel_path = f:gsub('^' .. vim.pesc(cwd) .. '/?', '')
-              if not cwd_seen[rel_path] and rel_path ~= '' then
-                cwd_seen[rel_path] = true
-                table.insert(cwd_oldfiles, rel_path)
-              end
-            else
-              -- Other directories (last 10)
-              if not other_seen[display_path] and #other_oldfiles < 10 then
-                other_seen[display_path] = true
-                table.insert(other_oldfiles, display_path)
-              end
-            end
-            ::skip::
           end
         end
 
-        -- Get file command
-        local file_cmd
-        if vim.fn.executable('fd') == 1 then
-          file_cmd = { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
-        else
-          file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
-        end
+        local file_cmd = vim.fn.executable('fd') == 1
+          and { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
+          or { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
 
-        -- Build combined command - cwd recent files first, then others, then all files
         local parts = {}
         if #cwd_oldfiles > 0 then
           table.insert(parts, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
@@ -1368,10 +1353,8 @@ return {
         end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
-        -- Combine and deduplicate using awk
         local cmd = "{ " .. table.concat(parts, "; ") .. "; } | awk '!a[$0]++'"
 
-        -- Use fzf.files with custom command and file icons
         return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
