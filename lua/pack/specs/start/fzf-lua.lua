@@ -1309,7 +1309,10 @@ return {
       ---@param opts table?
       function fzf.smart_files(opts)
         opts = opts or {}
-        local cwd = opts.cwd or vim.g._smart_files_last_cwd or vim.fn.getcwd(0)
+        local last_cwd = vim.g._smart_files_last_cwd
+        local cwd = opts.cwd
+          or (last_cwd and vim.fn.isdirectory(last_cwd) == 1 and last_cwd)
+          or vim.fn.getcwd(0)
         local oldfiles = vim.v.oldfiles or {}
 
         -- Filter oldfiles to current cwd
@@ -1375,39 +1378,15 @@ return {
         local smart_actions = {
           ['enter'] = function(selected, o)
             if selected[1] then
-              local dir = vim.fs.dirname(selected[1])
-              if dir and dir ~= '' then
-                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
+              local dir = selected[1]:match('^([^/]+)/')
+              if dir then
+                local new_cwd = vim.fs.normalize(o.cwd .. '/' .. dir)
+                if vim.fn.isdirectory(new_cwd) == 1 then
+                  vim.g._smart_files_last_cwd = new_cwd
+                end
               end
             end
             actions.file_edit(selected, o)
-          end,
-          ['alt-s'] = function(selected, o)
-            if selected[1] then
-              local dir = vim.fs.dirname(selected[1])
-              if dir and dir ~= '' then
-                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
-              end
-            end
-            actions.file_split(selected, o)
-          end,
-          ['alt-v'] = function(selected, o)
-            if selected[1] then
-              local dir = vim.fs.dirname(selected[1])
-              if dir and dir ~= '' then
-                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
-              end
-            end
-            actions.file_vsplit(selected, o)
-          end,
-          ['alt-t'] = function(selected, o)
-            if selected[1] then
-              local dir = vim.fs.dirname(selected[1])
-              if dir and dir ~= '' then
-                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
-              end
-            end
-            actions.file_tabedit(selected, o)
           end,
         }
 
