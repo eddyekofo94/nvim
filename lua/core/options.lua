@@ -63,6 +63,7 @@ vim.o.grepprg = 'rg --vimgrep --no-heading --smart-case'
 vim.o.grepformat = '%f:%l:%c:%m,%f:%l:%m'
 
 vim.opt.timeoutlen = 500
+vim.opt.updatetime = 300
 
 vim.opt.sessionoptions = {
   'resize',
@@ -330,6 +331,9 @@ vim.cmd [[
   let &t_Ce = "\e[4:0m"
 ]]
 
+vim.api.nvim_set_var('t_Cs', vim.api.nvim_replace_termcodes('<Esc>[4::3m', true, true, true))
+vim.api.nvim_set_var('t_Ce', vim.api.nvim_replace_termcodes('<Esc>[4::0m', true, true, true))
+
 vim.g.netrw_banner = 0
 vim.g.netrw_cursor = 5
 vim.g.netrw_keepdir = 0
@@ -384,9 +388,14 @@ require('utils.load').on_cmds(
 )
 
 vim.opt.gcr = {
-  'i-c-ci-ve:blinkoff500-blinkon500-block-TermCursor',
+  'c-ci-ve:blinkoff500-blinkon500-block',
   'i-ci:ver30-Cursor-blinkwait500-blinkon400-blinkoff300',
-  'n-v:block-Curosr/lCursor',
-  'o:hor50-Curosr/lCursor',
-  'r-cr:hor20-Curosr/lCursor',
+  'n-v:block-Cursor/lCursor',
+  'o:hor50-Cursor/lCursor',
+  'r-cr:hor20-Cursor/lCursor',
 }
+
+vim.cmd [[
+  let &t_Cs = "\e[4:3m"
+  let &t_Ce = "\e[4:0m"
+]]

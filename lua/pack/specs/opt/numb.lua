@@ -2,7 +2,6 @@
 return {
   src = 'https://github.com/nacro90/numb.nvim',
   data = {
-    event = 'VeryLazy',
     postload = function()
       require('numb').setup({
         show_numbers = true,

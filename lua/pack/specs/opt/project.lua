@@ -2,7 +2,6 @@
 return {
   src = 'https://github.com/DrKJeff16/project.nvim',
   data = {
-    event = 'VeryLazy',
     deps = {
       'https://github.com/ibhagwan/fzf-lua',
     },

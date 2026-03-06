@@ -2,7 +2,6 @@
 return {
   src = 'https://github.com/chrisgrieser/nvim-spider',
   data = {
-    event = 'VeryLazy',
     postload = function()
       require('spider').setup({
         skipInsignificantPunctuation = true,

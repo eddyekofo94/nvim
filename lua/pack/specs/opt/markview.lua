@@ -3,7 +3,6 @@ return {
   src = 'https://github.com/OXY2DEV/markview.nvim',
   data = {
     ft = { 'markdown', 'norg', 'rmd', 'org' },
-    event = 'VeryLazy',
     postload = function()
       require('markview').setup {
         checkboxes = { enable = false },

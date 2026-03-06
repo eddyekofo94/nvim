@@ -2,7 +2,6 @@
 return {
   src = 'https://github.com/echasnovski/mini.ai',
   data = {
-    event = 'VeryLazy',
     postload = function()
       local ai = require('mini.ai')
       local gen_spec = ai.gen_spec

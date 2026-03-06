@@ -16,27 +16,14 @@ vim.lsp.config(
 -- Override to perform additional checks on starting language servers
 vim.lsp.start = lsp.start
 
--- Enable LSP servers lazily on first filetype use
--- This avoids loading all LSP configs at startup
-local enabled = false
-vim.api.nvim_create_autocmd('FileType', {
-  group = vim.api.nvim_create_augroup('lsp_lazy_enable', { clear = true }),
-  once = true,
-  callback = function()
-    if enabled then
-      return
-    end
-    enabled = true
-
-    for _, dir in ipairs(vim.api.nvim__get_runtime({ 'lsp' }, true, {})) do
-      for config_file in vim.fs.dir(dir) do
-        local name = vim.fn.fnamemodify(config_file, ':r')
-        vim.lsp.enable(name)
-      end
-    end
-  end,
-  desc = 'Enable LSP servers on first file open',
-})
+-- Enable all LSP servers immediately
+-- This module is already lazy-loaded on first FileType event (see init.lua),
+-- so we can enable servers directly without another deferred autocmd
+for _, dir in ipairs(vim.api.nvim__get_runtime({ 'lsp' }, true, {})) do
+  for config_file in vim.fs.dir(dir) do
+    vim.lsp.enable(vim.fn.fnamemodify(config_file, ':r'))
+  end
+end
 
 -- Show notification if no references, definition, declaration,
 -- implementation or type definition is found
@@ -150,6 +137,44 @@ do
     end,
   })
 end
+
+-- Highlight references of the symbol under the cursor
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('lsp.document_highlight', {}),
+  desc = 'Setup document highlight on CursorHold.',
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if
+      not client
+      or not client:supports_method('textDocument/documentHighlight')
+    then
+      return
+    end
+
+    local augroup =
+      vim.api.nvim_create_augroup('lsp.document_highlight.' .. args.buf, {})
+    vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+      group = augroup,
+      buffer = args.buf,
+      callback = vim.lsp.buf.document_highlight,
+    })
+    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+      group = augroup,
+      buffer = args.buf,
+      callback = vim.lsp.buf.clear_references,
+    })
+    vim.api.nvim_create_autocmd('LspDetach', {
+      group = augroup,
+      buffer = args.buf,
+      callback = function(detach_args)
+        if detach_args.data.client_id == args.data.client_id then
+          vim.api.nvim_del_augroup_by_id(augroup)
+          vim.lsp.buf.clear_references()
+        end
+      end,
+    })
+  end,
+})
 
 -- Keymaps
 do

@@ -2,7 +2,6 @@
 return {
   src = 'https://github.com/chrisgrieser/nvim-early-retirement',
   data = {
-    event = 'VeryLazy',
     postload = function()
       require('early-retirement').setup({
         retirementAgeMins = 15,

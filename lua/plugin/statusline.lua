@@ -16,6 +16,23 @@ local diag_severity_map = {
   HINT = 4,
 }
 
+---@return string
+local function get_diagnostic_hl()
+  local has_errors = #vim.diagnostic.get(
+    0,
+    { severity = vim.diagnostic.severity.ERROR }
+  ) > 0
+  local is_modified = vim.bo.modified
+
+  if has_errors then
+    return 'StatusLineFileError'
+  elseif is_modified then
+    return 'StatusLineFileModified'
+  else
+    return 'StatusLine'
+  end
+end
+
 -- Maximum widths
 local gitbranch_max_width = 0.3 -- maximum width of git branch name
 local wordcount_max_width = 0.2 -- maximum width of word count info
@@ -236,11 +253,63 @@ function _G._statusline.gitbranch()
     .. utils.stl.escape(str_shorten(branch, gitbranch_max_width))
 end
 
+-- LSP spinner: shows server names with a spinning indicator while busy,
+-- green tick when idle
+local spinner_frames =
+  { '⣷', '⣯', '⣟', '⡿', '⢿', '⣻', '⣽', '⣾' }
+local spinner_idx = 1
+local active_progress_count = 0
+
+vim.api.nvim_create_autocmd('LspProgress', {
+  group = groupid,
+  desc = 'Track LSP progress for statusline spinner.',
+  callback = function(args)
+    local kind = args.data
+      and args.data.params
+      and args.data.params.value
+      and args.data.params.value.kind
+    if kind == 'begin' then
+      active_progress_count = active_progress_count + 1
+    elseif kind == 'end' then
+      active_progress_count = math.max(0, active_progress_count - 1)
+    end
+    vim.cmd('redrawstatus')
+  end,
+})
+
+-- Animate spinner while LSP is busy
+if _G.LspSpinnerTimer then
+  _G.LspSpinnerTimer:stop()
+end
+_G.LspSpinnerTimer = vim.uv.new_timer()
+_G.LspSpinnerTimer:start(
+  0,
+  100,
+  vim.schedule_wrap(function()
+    if active_progress_count > 0 then
+      spinner_idx = (spinner_idx % #spinner_frames) + 1
+      vim.cmd('redrawstatus')
+    end
+  end)
+)
+
+---Get LSP status indicator: spinner when busy, tick when idle
+---@return string
+local function get_lsp_indicator()
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  if #clients == 0 then
+    return ''
+  end
+  if active_progress_count > 0 then
+    return string.format('%%#LspSpinner#%s %%*', spinner_frames[spinner_idx])
+  end
+  return '%#LspReady#󰄬 %*'
+end
 ---Get current filetype
 ---@return string
-function _G._statusline.ft()
-  return vim.bo.ft == '' and '' or vim.bo.ft:gsub('^%l', string.upper)
-end
+-- function _G._statusline.ft()
+--   return vim.bo.ft == '' and '' or vim.bo.ft:gsub('^%l', string.upper)
+-- end
 
 ---@return string
 function _G._statusline.wordcount()
@@ -524,14 +593,20 @@ function _G._statusline.fname()
     end
     -- Named normal buffer, show path + file name with different highlights
     if fpath ~= '' then
+      local diag_hl = get_diagnostic_hl()
       return string.format(
-        '%%#StatusLineDimmed#%s%%#StatusLine#%s%s',
+        '%%#StatusLineDimmed#%s%%#' .. diag_hl .. '#%s%s',
         fpath,
         fname_short,
         file_indicator
       )
     end
-    return fname_short .. file_indicator
+    return string.format(
+      '%%#%s#%s%s',
+      get_diagnostic_hl(),
+      fname_short,
+      file_indicator
+    )
   end
 
   if vim.bo.bt == 'quickfix' then
@@ -684,92 +759,36 @@ function _G._statusline.diag()
   return str
 end
 
----Id and additional info about LSP clients
----@type table<integer, { name: string, bufs: table<integer, true> }>
-local client_info = {}
-
-vim.api.nvim_create_autocmd('LspDetach', {
-  desc = 'Clean up server info when client detaches.',
-  group = groupid,
-  callback = function(args)
-    if args.data.client_id then
-      client_info[args.data.client_id] = nil
-    end
-  end,
-})
-
-vim.api.nvim_create_autocmd('LspProgress', {
-  desc = 'Update LSP progress args for the status line.',
-  group = groupid,
-  callback = function(args)
-    -- Update LSP progress data
-    local id = args.data.client_id
-    local bufs = vim.lsp.get_client_by_id(id).attached_buffers
-    client_info[id] = {
-      name = vim.lsp.get_client_by_id(id).name,
-      bufs = bufs,
-    }
-
-    vim
-      .iter(vim.tbl_keys(bufs))
-      :filter(function(buf)
-        -- No need to create and attach spinners to invisible bufs
-        return vim.fn.bufwinid(buf) ~= -1
-      end)
-      :each(function(buf)
-        local b = vim.b[buf]
-        if not utils.stl.spinner.id_is_valid(b.spinner_id) then
-          utils.stl.spinner:new():attach(buf)
-        end
-
-        local spinner = utils.stl.spinner.get_by_id(b.spinner_id)
-        if not spinner then
-          return
-        end
-
-        if spinner.status == 'idle' then
-          spinner:spin()
-        end
-
-        local type = args.data
-          and args.data.params
-          and args.data.params.value
-          and args.data.params.value.kind
-        if type == 'end' then
-          spinner:finish()
-        end
-      end)
-  end,
-})
-
+---Get current filetype
 ---@return string
-function _G._statusline.spinner()
-  local spinner = utils.stl.spinner.get_by_id(vim.b.spinner_id)
-  if not spinner or spinner.icon == '' then
-    return ''
+function _G._statusline.ft()
+  local ft = string.format(
+    ' %s %s ',
+    utils.general.icon_provider(0),
+    vim.bo.ft:gsub('^%l', string.upper)
+  )
+  return vim.bo.ft == '' and '' or utils.stl.hl(ft, 'StatusLineDimmed')
+end
+
+---LSP server names with spinner/tick indicator
+---Shows: "server1, server2 ⣷" (busy) or "server1, server2 󰄬" (idle)
+---@return string
+function _G._statusline.lsp_status()
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  if #clients == 0 then
+    return utils.stl.hl('No LSP ', 'StatusLineDimmed')
   end
 
-  local buf = vim.api.nvim_get_current_buf()
-  local progs = vim
-    .iter(vim.tbl_keys(client_info))
-    :filter(function(id)
-      return client_info[id].bufs[buf]
-    end)
-    :map(function(id)
-      return client_info[id].name
-    end)
-    :totable()
-
-  -- Extra progresses requiring spinner animation
-  if vim.b.spinner_progs then
-    vim.list_extend(progs, vim.b.spinner_progs)
+  local names = {}
+  for _, client in ipairs(clients) do
+    table.insert(names, client.name)
   end
 
-  if vim.tbl_isempty(progs) then
-    return ''
-  end
-
-  return utils.stl.hl(string.format('%s %s ', table.concat(progs, ', '), spinner.icon), 'StatusLineDimmed')
+  return string.format(
+    '%s %s',
+    utils.stl.hl(table.concat(names, ', '), 'StatusLineDimmed'),
+    get_lsp_indicator()
+  )
 end
 
 -- stylua: ignore start
@@ -789,8 +808,7 @@ function _G._statusline.build()
     _G._statusline.gitbranch(),
     _G._statusline.gitdiff(),
     ' ',
-    _G._statusline.spinner(),
-    _G._statusline.lsp_names(),
+    _G._statusline.lsp_status(),
     _G._statusline.treesitter_status(),
     _G._statusline.ft(),
     ' ',
@@ -945,22 +963,7 @@ function _G._statusline.treesitter_status()
   return ''
 end
 
--- LSP client names component
-function _G._statusline.lsp_names()
-  local buf_ft = vim.api.nvim_get_current_buf()
-  local clients = vim.lsp.get_clients({ bufnr = buf_ft })
 
-  if next(clients) == nil then
-    return ''
-  end
-
-  local client_names = {}
-  for _, client in ipairs(clients) do
-    table.insert(client_names, client.name)
-  end
-
-  return table.concat(client_names, ', ')
-end
 
 -- stylua: ignore start
 ---Statusline components
@@ -972,7 +975,7 @@ local components = {
   root      = [[%{%v:lua._statusline.project_name()%}]],
   fname     = [[%{%v:lua._statusline.fname()%} ]],
   args      = [[%{%v:lua._statusline.info()%}]],
-  spinner   = [[%{%v:lua._statusline.spinner()%}]],
+  lsp_status = [[%{%v:lua._statusline.lsp_status()%}]],
   mode      = [[%{%v:lua._statusline.mode()%}]],
   padding   = [[ ]],
   pos       = [[%{%&ru?(((!&nu&&!&rnu)?"%l:%c ":"")."%P "):""%}]],
@@ -982,7 +985,7 @@ local components = {
   search    = [[%{%v:lua._statusline.search_count()%} ]],
   macro     = [[%{%v:lua._statusline.macro()%}]],
   treesitter = [[%{%v:lua._statusline.treesitter_status()%} ]],
-  lsp       = [[%{%v:lua._statusline.lsp_names()%} ]],
+
   ft        = [[%{%v:lua._statusline.ft()%} ]],
   lineinfo  = [[%{%v:lua._statusline.line_info()%} ]],
 }
@@ -997,12 +1000,11 @@ local stl = table.concat({
   components.search,
   components.macro,
   components.align,
-  components.spinner,
+  components.lsp_status,
   components.gitbranch,
   components.gitdiff,
-  -- components.lsp,
   components.treesitter,
-  -- components.ft,
+  components.ft,
   components.truncate,
   components.lineinfo,
 })

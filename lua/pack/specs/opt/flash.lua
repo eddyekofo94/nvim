@@ -2,7 +2,7 @@
 return {
   src = 'https://github.com/folke/flash.nvim',
   data = {
-    events = 'VeryLazy',
+
     enabled = true,
     keys = {
       { lhs = 'ss', mode = { 'n', 'x', 'o' }, opts = { desc = 'Flash' } },

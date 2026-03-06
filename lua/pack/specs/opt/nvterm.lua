@@ -3,7 +3,6 @@ return {
   src = 'https://github.com/NvChad/nvterm',
   data = {
     enabled = true,
-    event = 'VeryLazy',
     dependencies = { 'MunifTanjim/nui.nvim' },
     postload = function()
       require('nvterm').setup({
