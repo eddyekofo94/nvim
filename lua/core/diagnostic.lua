@@ -9,6 +9,9 @@ vim.diagnostic.config({
   float = {
     source = true,
   },
+  underline = {
+    undercurl = true,
+  },
   virtual_text = false, -- Disabled: diagflow handles inline diagnostics
   signs = {
     text = {

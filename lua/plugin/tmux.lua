@@ -241,10 +241,39 @@ local function setup()
   vim.g.loaded_tmux = true
 
   -- stylua: ignore start
-  tmux_mapkey_fallback('<M-h>', navigate_wrap('h'), tmux_mapkey_navigate_condition('h'), { desc = 'Go to the left window or tmux pane' })
-  tmux_mapkey_fallback('<M-j>', navigate_wrap('j'), tmux_mapkey_navigate_condition('j'), { desc = 'Go to the window below or tmux pane' })
-  tmux_mapkey_fallback('<M-k>', navigate_wrap('k'), tmux_mapkey_navigate_condition('k'), { desc = 'Go to the window above or tmux pane' })
-  tmux_mapkey_fallback('<M-l>', navigate_wrap('l'), tmux_mapkey_navigate_condition('l'), { desc = 'Go to the right window or tmux pane' })
+  -- Smart navigation: nvim windows first, then tmux
+  -- Check if nvim window exists, if so use wincmd, else tmux
+  vim.keymap.set('n', '<M-h>', function()
+    local current = vim.fn.winnr()
+    vim.cmd('wincmd h')
+    if vim.fn.winnr() == current then
+      vim.fn.system('tmux select-pane -L')
+    end
+  end, { desc = 'Go to left window or tmux pane' })
+
+  vim.keymap.set('n', '<M-j>', function()
+    local current = vim.fn.winnr()
+    vim.cmd('wincmd j')
+    if vim.fn.winnr() == current then
+      vim.fn.system('tmux select-pane -D')
+    end
+  end, { desc = 'Go to window below or tmux pane' })
+
+  vim.keymap.set('n', '<M-k>', function()
+    local current = vim.fn.winnr()
+    vim.cmd('wincmd k')
+    if vim.fn.winnr() == current then
+      vim.fn.system('tmux select-pane -U')
+    end
+  end, { desc = 'Go to window above or tmux pane' })
+
+  vim.keymap.set('n', '<M-l>', function()
+    local current = vim.fn.winnr()
+    vim.cmd('wincmd l')
+    if vim.fn.winnr() == current then
+      vim.fn.system('tmux select-pane -R')
+    end
+  end, { desc = 'Go to right window or tmux pane' })
 
   tmux_mapkey_fallback('<M-Left>',  navigate_wrap('h'), tmux_mapkey_navigate_condition('h'), { desc = 'Go to the left window or tmux pane' })
   tmux_mapkey_fallback('<M-Down>',  navigate_wrap('j'), tmux_mapkey_navigate_condition('j'), { desc = 'Go to the window below or tmux pane' })

@@ -2,7 +2,6 @@
 return {
   src = 'https://github.com/folke/noice.nvim',
   data = {
-    event = 'VeryLazy',
     dependencies = { 'MunifTanjim/nui.nvim' },
     postload = function()
       require('noice').setup({

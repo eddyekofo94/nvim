@@ -334,51 +334,9 @@ end
     map({ 'o', 'x' }, 'a`', '2i`', { noremap = false, desc = 'Selet around backticks' })
     -- stylua: ignore end
 
-    ---Close floating windows with a given key, supposed to be used in a keymap
-    --- 1. If current window is a floating window, close it and return
-    --- 2. Else, close all floating windows that can be focused
-    --- 3. Fallback to `key` if no floating window can be focused
-    ---@param k string key (lhs) of the mapping
-    local function close_floats(k)
-      local current_win = vim.api.nvim_get_current_win()
-
-      -- Only close current win if it's a floating window
-      if vim.fn.win_gettype(current_win) == 'popup' then
-        vim.api.nvim_win_close(current_win, true)
-        return
-      end
-
-      -- Else close all focusable floating windows in current tab page
-      local floats = vim
-        .iter(vim.api.nvim_tabpage_list_wins(0))
-        :filter(function(win)
-          return vim.fn.win_gettype(win) == 'popup'
-            and vim.api.nvim_win_get_config(win).focusable
-            -- Ignore extui cmdline/message floating window, see `:h vim._extui`
-            and not vim.tbl_contains(
-              { 'cmd', 'dialog', 'msg', 'pager' },
-              vim.bo[vim.fn.winbufnr(win)].ft
-            )
-        end)
-
-      -- If no floating window will be closed, fallback
-      if not floats:peek() then
-        vim.api.nvim_feedkeys(
-          vim.api.nvim_replace_termcodes(k, true, true, true),
-          'n',
-          false
-        )
-        return
-      end
-
-      floats:each(function(win)
-        vim.api.nvim_win_close(win, false)
-      end)
-    end
-
     -- Close all floating windows
     -- stylua: ignore start
-    map({ 'n', 'x' }, 'q', function() close_floats('q') end, { desc = 'Close all floating windows or start recording macro' })
+    map({ 'n', 'x' }, 'q', function() win.close_special('q') end, { desc = 'Close floating windows, help, or start recording' })
     -- map({ 'n' }, '<Esc>', function() close_floats('<Esc>') end, { desc = 'Close all floating windows' })
     map({ "i", "n" }, "<esc>", "<cmd>noh<bar>redraws<cr><esc>", "Escape and clear hlsearch")
     -- stylua: ignore end
@@ -520,11 +478,10 @@ end
     map('n', '<Leader>ff', '<Cmd>FZF<CR>', { desc = 'Find files' })
     map(
       'n',
-      '<Leader><space>',
-      '<Cmd>FzfLua files<CR>',
-      { desc = 'Find files' }
+      '<leader>mm',
+      '<cmd>messages<cr>',
+      { desc = 'Show Neovim messages' }
     )
-    map('n', '<leader>mm', '<cmd>messages<cr>', 'Show Neovim messages')
 
     map(
       'i',

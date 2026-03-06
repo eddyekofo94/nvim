@@ -591,7 +591,7 @@ return {
         end
 
         -- Set keymap for opening the file from preview buffer
-        vim.keymap.set('n', '<CR>', preview_edit, { buffer = preview_buf })
+        vim.keymap.set('n', '<CR>', preview_edit, { buffer = preview_buf, desc = 'Open file from preview' })
         vim.api.nvim_create_autocmd('BufReadCmd', {
           desc = 'Edit corresponding file in oil preview buffers.',
           group = vim.api.nvim_create_augroup('oil.preview_edit', {}),
@@ -821,7 +821,7 @@ return {
           ['<C-P>'] = preview_mapping,
           ['<LocalLeader>0'] = {
             function()
-              local utils = require 'utils'
+              local utils = require('utils')
               local current_dir = require('oil').get_current_dir()
               local root = utils.fs.cwd_dir(current_dir) or vim.fn.getcwd()
               require('oil').open(root)
@@ -838,7 +838,7 @@ return {
           ['='] = 'actions.select',
           ['+'] = 'actions.select',
           ['<CR>'] = 'actions.select',
-          ['<C-h>'] = 'actions.toggle_hidden',
+          ['<C-.>'] = 'actions.toggle_hidden',
           ['gh'] = 'actions.toggle_hidden',
           -- Conflict with `gs...` keymaps defined in
           -- `lua/pack/specs/opt/nvim-treesitter-textobjects.lua`

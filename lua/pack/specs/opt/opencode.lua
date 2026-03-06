@@ -53,6 +53,21 @@ return {
       opts = { desc = 'Toggle opencode' },
     },
     postload = function()
+      -- Check for baseline bun first (needed for CPUs without AVX support)
+      local baseline_paths = {
+        'bun-baseline',
+        '~/.bun/bin/bun-baseline',
+        '/usr/local/bin/bun-baseline',
+        '/opt/homebrew/bin/bun-baseline',
+      }
+      for _, path in ipairs(baseline_paths) do
+        local expanded = vim.fn.expand(path)
+        if vim.fn.executable(expanded) == 1 then
+          vim.env.BUN_EXE = expanded
+          break
+        end
+      end
+
       if vim.fn.executable('opencode') == 0 then
         vim.notify(
           '[Opencode.nvim] command `opencode` not found',
@@ -101,9 +116,9 @@ return {
       local opencode_api = require('opencode.api')
 
       -- stylua: ignore start
-      vim.keymap.set('n', '<Leader>@', opencode_api.toggle_focus, { desc = 'Toggle opencode' })
-      vim.keymap.set('n', '[@', opencode_api.diff_prev, { desc = 'Navigate to opencode previous file diff' })
-      vim.keymap.set('n', ']@', opencode_api.diff_next, { desc = 'Navigate to opencode next file diff' })
+      vim.keymap.set('n', '<Leader>@', opencode_api.toggle_focus, { desc = 'Toggle opencode panel' })
+      vim.keymap.set('n', '[@', opencode_api.diff_prev, { desc = 'Navigate to previous file diff' })
+      vim.keymap.set('n', ']@', opencode_api.diff_next, { desc = 'Navigate to next file diff' })
       -- stylua: ignore end
 
       local group = vim.api.nvim_create_augroup('opencode.settings', {})

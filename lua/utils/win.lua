@@ -208,4 +208,47 @@ M.close_others = function()
   end
 end
 
+---Close floating windows or special windows (help, etc)
+---@param k string key to fallback to if no special windows are closed
+M.close_special = function(k)
+  local current_win = vim.api.nvim_get_current_win()
+
+  -- Only close current win if it's a floating window
+  if vim.fn.win_gettype(current_win) == 'popup' then
+    vim.api.nvim_win_close(current_win, true)
+    return
+  end
+
+  -- Close help window if in help
+  if vim.bo.filetype == 'help' then
+    vim.cmd('close')
+    return
+  end
+
+  -- Else close all focusable floating windows in current tab page
+  local floats = vim
+    .iter(vim.api.nvim_tabpage_list_wins(0))
+    :filter(function(win)
+      return vim.fn.win_gettype(win) == 'popup'
+        and vim.api.nvim_win_get_config(win).focusable
+        and not vim.tbl_contains(
+          { 'cmd', 'dialog', 'msg', 'pager' },
+          vim.bo[vim.fn.winbufnr(win)].ft
+        )
+    end)
+
+  if not floats:peek() then
+    vim.api.nvim_feedkeys(
+      vim.api.nvim_replace_termcodes(k, true, true, true),
+      'n',
+      false
+    )
+    return
+  end
+
+  floats:each(function(win)
+    vim.api.nvim_win_close(win, false)
+  end)
+end
+
 return M

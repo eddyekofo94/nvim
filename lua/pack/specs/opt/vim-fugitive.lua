@@ -73,7 +73,7 @@ return {
       ]])
 
       -- stylua: ignore start
-      vim.keymap.set('n', '<Leader>gG',       '<Cmd>Git<CR>',                                  { desc = 'Git summary' })
+      -- vim.keymap.set('n', '<Leader>gG',       '<Cmd>Git<CR>',                                  { desc = 'Git summary' })
       vim.keymap.set('n', '<Leader>gd',       '<Cmd>Gdiff<CR>',                                { desc = 'Git diff current file' })
       vim.keymap.set('n', '<Leader>gw',       '<Cmd>Git show<CR>',                             { desc = 'Git show latest commit' })
       vim.keymap.set('n', '<Leader>gP',       '<Cmd>Git push<CR>',                             { desc = 'Git push' })

@@ -148,6 +148,10 @@
       "rev": "05f50eb61d3303678981c7510c126204ac5af4f0",
       "src": "https://github.com/chrisgrieser/nvim-early-retirement"
     },
+    "nvim-lspconfig": {
+      "rev": "2b87d107942b9eebef768512f5849330335a9493",
+      "src": "https://github.com/neovim/nvim-lspconfig"
+    },
     "nvim-metals": {
       "rev": "7ed47cd",
       "src": "https://github.com/scalameta/nvim-metals"
@@ -168,6 +172,10 @@
       "rev": "4967fa48b0fe7a7f92cee546c76bb4bb61bb14d5",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
+    },
+    "nvim-treesitter-context": {
+      "rev": "64dd4cf3f6fd0ab17622c5ce15c91fc539c3f24a",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter-context"
     },
     "nvim-treesitter-endwise": {
       "rev": "8fe8a95",

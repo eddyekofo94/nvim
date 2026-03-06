@@ -36,7 +36,7 @@ return {
         callback = require('neogit').close,
       })
 
-      lmap('gss', function()
+      lmap('gS', function()
         return neogit.open({
           cwd = vim.fn.expand('%:p:h'),
           kind = 'auto',

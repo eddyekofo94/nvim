@@ -52,7 +52,7 @@ M.opts = {
   end,
   autoload = {
     enabled = true,
-    events = { 'UIEnter' },
+    events = { 'VimEnter' },
   },
   autosave = {
     enabled = true,
@@ -188,23 +188,10 @@ function M.load(session, notify)
     return
   end
 
-  if has_valid_buf() then
-    local response = vim.fn.confirm(
-      string.format(
-        "[plugin.session] non-empty buffers exist, confirm loading new session from '%s'?",
-        vim.fn.fnamemodify(session, ':~:.')
-      ),
-      '&Yes\n&No',
-      2
-    )
-    if response == 0 or response == 2 then
-      return
-    end
-  end
-
   -- Avoid intro message flickering before loading session,
   -- see `plugin/intro.lua` and `:h :intro`
   vim.opt.shortmess:append('I')
+  vim.opt.more = false
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.fn.win_id2win(win) ~= 1 then
       vim.api.nvim_win_close(win, true)
@@ -221,6 +208,10 @@ function M.load(session, notify)
     })
     vim.g._session_loaded = session
     vim.api.nvim_exec_autocmds('SessionLoadPost', {})
+
+    vim.schedule(function()
+      require('utils.key').check_conflicts()
+    end)
   end)
 end
 
@@ -369,7 +360,6 @@ function M.setup(opts)
         if
           not vim.g._session_loaded
           and not vim.g._session_disabled
-          and vim.deep_equal(vim.v.argv, { 'nvim', '--embed' })
         then
           M.load()
         end

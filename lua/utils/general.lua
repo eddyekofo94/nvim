@@ -7,51 +7,16 @@ local cached_icon_provider
 ---@return string? icon the icon string
 ---@return string? color the hex color of the icon
 function M.icon_provider(bufnr)
-  if not bufnr then
-    bufnr = 0
-  end
-  local bufname = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":t")
+  bufnr = bufnr or 0
   local filetype = vim.bo[bufnr].filetype
-  local buftype = vim.bo[bufnr].buftype
-  if cached_icon_provider then
-    return cached_icon_provider(bufname, filetype, buftype)
-  end
-  if cached_icon_provider == false then
-    return
+
+  local devicons_ok, devicons = pcall(require, "nvim-web-devicons")
+  if devicons_ok and devicons then
+    local icon, color = devicons.get_icon_color_by_filetype(filetype, { default = true })
+    return icon, color
   end
 
-  local _, mini_icons = pcall(require, "mini.icons")
-  -- mini.icons
-  if _G.MiniIcons then
-    cached_icon_provider = function(_bufname, _filetype)
-      local icon, hl, is_default = mini_icons.get("file", _bufname)
-      if is_default then
-        icon, hl, is_default = mini_icons.get("filetype", _filetype)
-      end
-      local color = require("utils.hl").get_hlgroup(hl).fg
-      if type(color) == "number" then
-        color = string.format("#%06x", color)
-      end
-      return icon, color
-    end
-    return cached_icon_provider(bufname, filetype, bufname)
-  end
-
-  -- nvim-web-devicons
-  local devicons_avail, devicons = pcall(require, "nvim-web-devicons")
-  if devicons_avail then
-    cached_icon_provider = function(_bufname, _filetype, _buftype)
-      local icon, color = devicons.get_icon_color(_bufname)
-      if not color then
-        icon, color = devicons.get_icon_color_by_filetype(_filetype, { default = _buftype == "" })
-      end
-      return icon, color
-    end
-    return cached_icon_provider(bufname, filetype, buftype)
-  end
-
-  -- fallback to no icon provider
-  cached_icon_provider = false
+  return ''
 end
 
 --- Merge extended options with a default table of options

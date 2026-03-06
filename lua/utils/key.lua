@@ -152,6 +152,84 @@ function M.get_conflicts()
   vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
 end
 
+function M.check_conflicts()
+  local modes = { "n", "i", "c", "v", "x", "o", "s", "t" }
+  local all_keymaps = {}
+
+  for _, mode in ipairs(modes) do
+    local global_maps = vim.api.nvim_get_keymap(mode)
+    local buf_maps = vim.api.nvim_buf_get_keymap(0, mode)
+
+    for _, map in ipairs(global_maps) do
+      local key = vim.keycode(map.lhs)
+      if key ~= "" and map.rhs ~= "" and map.rhs ~= map.lhs then
+        all_keymaps[key] = all_keymaps[key] or {}
+        table.insert(all_keymaps[key], {
+          mode = mode,
+          rhs = map.rhs,
+          desc = map.desc,
+          source = "global",
+        })
+      end
+    end
+
+    for _, map in ipairs(buf_maps) do
+      local key = vim.keycode(map.lhs)
+      if key ~= "" and map.rhs ~= "" and map.rhs ~= map.lhs then
+        all_keymaps[key] = all_keymaps[key] or {}
+        table.insert(all_keymaps[key], {
+          mode = mode,
+          rhs = map.rhs,
+          desc = map.desc,
+          source = "buffer",
+        })
+      end
+    end
+  end
+
+  warned_keys = {}
+  conflict_count = 0
+
+  for key, mappings in pairs(all_keymaps) do
+    if #mappings > 1 then
+      for i = 1, #mappings do
+        for j = i + 1, #mappings do
+          local m1, m2 = mappings[i], mappings[j]
+          if m1.rhs ~= m2.rhs or m1.desc ~= m2.desc then
+            local conflict_id = key .. "_" .. m1.mode .. "_" .. m2.mode
+            if not warned_keys[conflict_id] then
+              conflict_count = conflict_count + 1
+              warned_keys[conflict_id] = {
+                lhs = key,
+                mode = m1.mode .. "/" .. m2.mode,
+                plugin = "Multiple sources",
+                path = m1.source .. " & " .. m2.source,
+                line = "?",
+                action = m1.rhs,
+                desc = m1.desc or "No description",
+              }
+              vim.notify(string.format("Conflict #%d: [%s]", conflict_count, key), vim.log.levels.WARN)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  if conflict_count > 0 then
+    vim.notify(
+      string.format("⚠️  %d keymap conflict(s) detected. Run :check_conflicts to view details.", conflict_count),
+      vim.log.levels.WARN
+    )
+  else
+    vim.notify("✨ No keymap conflicts detected!", vim.log.levels.INFO)
+  end
+end
+
+vim.api.nvim_create_user_command('CheckConflicts', function()
+  M.get_conflicts()
+end, { desc = 'Show keymap conflicts report' })
+
 -- set normal map
 function M.nmap(key, rhs, opts)
   M.map("n", key, rhs, opts)

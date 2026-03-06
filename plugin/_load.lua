@@ -140,12 +140,39 @@ if vim.g.loaded_session == nil then
 
   local function setup()
     require('plugin.session').setup({
-      autoload = { enabled =  true},
+      autoload = { enabled = true, events = { 'UIEnter' } },
+      autosave = {
+        enabled = true,
+        events = {
+          'BufNew',
+          'BufNewFile',
+          'BufDelete',
+          'TermOpen',
+          'TermClose',
+          'WinNew',
+          'WinClosed',
+          'DirChanged',
+          'FileChangedShellPost',
+          'VimLeave',
+        },
+      },
       autoremove = { enabled = false },
     })
   end
 
-  load.on_events('VimEnter', 'plugin.session', setup)
+  -- Load on VimEnter (autoload)
+  vim.api.nvim_create_autocmd('VimEnter', {
+    once = true,
+    callback = function()
+      if vim.g.loaded_session == nil then
+        setup()
+      end
+      if not vim.g._session_loaded and not vim.g._session_disabled then
+        require('plugin.session').load()
+      end
+    end,
+  })
+
   load.on_cmds({
     'SessionLoad',
     'SessionSave',

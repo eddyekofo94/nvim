@@ -77,35 +77,19 @@ return {
         compatible_filetrees = { 'git-conflict', 'oil', 'diffview' },
         ui = {
           absolutenumber_unfocussed = true,
-          number = false, -- Display line numbers in the focussed window only
-          relativenumber = false, -- Display relative line numbers in the focussed window only
-          hybridnumber = false, -- Display hybrid line numbers in the focussed window only
-          signcolumn = false, -- Display signcolumn in the focussed window only
-          cursorline = true, -- Display a cursorline in the focussed window only
-          winhighlight = false, -- Enable auto highlighting for focussed/unfocussed windows
-          -- colorcolumn = {
-          --   enable = true,
-          --   list = "+1,+2",
-          -- },
+          number = false,
+          relativenumber = false,
+          hybridnumber = false,
+          signcolumn = false,
+          cursorline = true,
+          winhighlight = false,
         },
       }
 
       map('<C-\\>', '<cmd>FocusAutoresize<cr>', 'Activate focus')
 
-      -- map("<leader>ww", "<cmd>FocusMaxOrEqual<cr>", "Maximise window")
+      map('<leader>vd', '<cmd>FocusSplitDown<CR>', '[Focus] Split horizontally')
 
-      -- map("<leader>tn", "<cmd>FocusSplitNicely cmd term<cr>", "Create Term Nicely")
-
-      --  TODO: 2024-07-25 - THis
-      map(
-        '<leader>vd',
-        '<cmd>FocusSplitDown<CR>',
-        '[Focus] Split horizontally'
-      )
-
-      -- local ignore_filetypes = { "telescope", "harpoon" }
-
-      -- map("<leader>=", "<cmd>FocusEqualise<CR>", "balance windows")
       map('<leader>=', function()
         focus.focus_equalise()
       end, 'balance windows')
@@ -130,6 +114,9 @@ return {
           elseif vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
             vim.b.focus_disable = true
             vim.w.focus_disable = true
+          elseif vim.w.focus_disable == true or vim.w.winbar_no_attach == true then
+            vim.b.focus_disable = true
+            vim.w.focus_disable = true
           else
             vim.b.focus_disable = false
             vim.w.focus_disable = false
@@ -150,6 +137,8 @@ return {
               vim.g._fzf_active
               or vim.bo.filetype == 'fzf'
               or vim.bo.filetype == 'FzfLua'
+              or vim.w.focus_disable == true
+              or vim.w.winbar_no_attach == true
             then
               vim.o.winminwidth = 1
               vim.o.winminheight = 1
@@ -169,6 +158,8 @@ return {
               vim.g._fzf_active
               or vim.bo.filetype == 'fzf'
               or vim.bo.filetype == 'FzfLua'
+              or vim.w.focus_disable == true
+              or vim.w.winbar_no_attach == true
             then
               return true
             end
