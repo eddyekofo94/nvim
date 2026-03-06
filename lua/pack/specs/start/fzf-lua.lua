@@ -888,12 +888,12 @@ return {
         dir_icon = vim.trim(icons.Folder),
         winopts = {
           backdrop = 100,
-          split = 'botright new',
-          on_create = function(args)
+          split = function()
             vim.g._fzf_active = true
             local win = require('utils.win')
             win.save_heights('_fzf_lua_win_heights')
             win.save_views('_fzf_lua_win_views')
+
             vim.g._fzf_vim_lines = vim.o.lines
             vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
             vim.g._fzf_splitkeep = vim.opt.splitkeep:get()
@@ -902,13 +902,50 @@ return {
             vim.opt.cmdheight = 0
             vim.g._fzf_laststatus = vim.opt.laststatus:get()
             vim.opt.laststatus = 0
+
+            local fzf_height = 10
+
+            local lastwin, lastwintype
+            for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+              local wintype = vim.fn.win_gettype(winid)
+              if wintype ~= 'autocmd' and wintype ~= 'popup' then
+                lastwin = winid
+                lastwintype = wintype
+                break
+              end
+            end
+
+            if lastwintype == 'loclist' or lastwintype == 'quickfix' then
+              vim.g._fzf_qfclosed = lastwintype
+              vim.g._fzf_qfwin = lastwin
+              vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
+              fzf_height = vim.g._fzf_qfheight - 1
+              vim.cmd(lastwintype == 'loclist' and 'lclose' or 'cclose')
+            end
+
+            fzf_height = fzf_height
+              + vim.g._fzf_cmdheight
+              + (vim.g._fzf_laststatus > 0 and 1 or 0)
+
+            if vim.g._fzf_n_items and not vim.g._fzf_qfclosed then
+              fzf_height = math.min(fzf_height, vim.g._fzf_n_items + 1)
+            end
+
+            vim.cmd('botright ' .. fzf_height .. 'new')
             vim.g._fzf_win = vim.api.nvim_get_current_win()
             vim.w.winbar_no_attach = true
             vim.w.focus_disable = true
             vim.b.focus_disable = true
+            vim.opt_local.buftype = 'nofile'
+            vim.opt_local.bufhidden = 'wipe'
+            vim.opt_local.number = false
+            vim.opt_local.relativenumber = false
+            vim.opt_local.swapfile = false
+            vim.opt_local.winfixwidth = true
+            vim.opt_local.winfixheight = true
             vim.bo.filetype = 'fzf'
-            vim.cmd('silent! 0delete _')
-            vim.g._fzf_qfclosed = nil
+          end,
+          on_create = function(args)
             vim.keymap.set(
               't',
               '<C-r>',
@@ -1272,41 +1309,56 @@ return {
       ---@param opts table?
       function fzf.smart_files(opts)
         opts = opts or {}
-        local cwd = opts.cwd or vim.fn.getcwd(0)
+        local cwd = opts.cwd or vim.g._smart_files_last_cwd or vim.fn.getcwd(0)
         local oldfiles = vim.v.oldfiles or {}
 
-        local cwd_prefix = cwd .. '/'
-        local cwd_prefix_len = #cwd_prefix + 1
-        local home = vim.env.HOME
-        local home_prefix = home .. '/'
-        local home_prefix_len = #home_prefix + 1
-
-        local cwd_seen = {}
-        local other_seen = {}
+        -- Filter oldfiles to current cwd
         local cwd_oldfiles = {}
         local other_oldfiles = {}
+        local cwd_seen = {}
+        local other_seen = {}
 
-        for i = 1, #oldfiles do
-          local f = oldfiles[i]
-          if type(f) == 'string' and #f >= cwd_prefix_len and f:sub(1, #cwd_prefix) == cwd_prefix then
-            local rel_path = f:sub(cwd_prefix_len)
-            if rel_path ~= '' and not cwd_seen[rel_path] then
-              cwd_seen[rel_path] = true
-              cwd_oldfiles[#cwd_oldfiles + 1] = rel_path
+        for _, f in ipairs(oldfiles) do
+          if type(f) == 'string' and f ~= '' then
+            -- Check if file exists
+            local exists = vim.uv.fs_stat(f) ~= nil
+            if not exists then
+              goto skip
             end
-          elseif type(f) == 'string' and #f >= home_prefix_len and f:sub(1, #home_prefix) == home_prefix then
-            local display_path = '~' .. f:sub(home_prefix_len)
-            if not other_seen[display_path] and #other_oldfiles < 10 then
-              other_seen[display_path] = true
-              other_oldfiles[#other_oldfiles + 1] = display_path
+
+            -- Convert absolute path to ~ if in home
+            local display_path = f
+            if vim.startswith(f, vim.env.HOME .. '/') then
+              display_path = '~' .. f:gsub('^' .. vim.env.HOME, '')
             end
+
+            -- Check if file is in cwd
+            if vim.startswith(f, cwd .. '/') then
+              local rel_path = f:gsub('^' .. vim.pesc(cwd) .. '/?', '')
+              if not cwd_seen[rel_path] and rel_path ~= '' then
+                cwd_seen[rel_path] = true
+                table.insert(cwd_oldfiles, rel_path)
+              end
+            else
+              -- Other directories (last 10)
+              if not other_seen[display_path] and #other_oldfiles < 10 then
+                other_seen[display_path] = true
+                table.insert(other_oldfiles, display_path)
+              end
+            end
+            ::skip::
           end
         end
 
-        local file_cmd = vim.fn.executable('fd') == 1
-          and { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
-          or { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
+        -- Get file command
+        local file_cmd
+        if vim.fn.executable('fd') == 1 then
+          file_cmd = { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
+        else
+          file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
+        end
 
+        -- Build combined command - cwd recent files first, then others, then all files
         local parts = {}
         if #cwd_oldfiles > 0 then
           table.insert(parts, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
@@ -1316,12 +1368,54 @@ return {
         end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
+        -- Combine and deduplicate using awk
         local cmd = "{ " .. table.concat(parts, "; ") .. "; } | awk '!a[$0]++'"
+
+        -- Use fzf.files with custom command and file icons
+        local smart_actions = {
+          ['enter'] = function(selected, o)
+            if selected[1] then
+              local dir = vim.fs.dirname(selected[1])
+              if dir and dir ~= '' then
+                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
+              end
+            end
+            actions.file_edit(selected, o)
+          end,
+          ['alt-s'] = function(selected, o)
+            if selected[1] then
+              local dir = vim.fs.dirname(selected[1])
+              if dir and dir ~= '' then
+                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
+              end
+            end
+            actions.file_split(selected, o)
+          end,
+          ['alt-v'] = function(selected, o)
+            if selected[1] then
+              local dir = vim.fs.dirname(selected[1])
+              if dir and dir ~= '' then
+                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
+              end
+            end
+            actions.file_vsplit(selected, o)
+          end,
+          ['alt-t'] = function(selected, o)
+            if selected[1] then
+              local dir = vim.fs.dirname(selected[1])
+              if dir and dir ~= '' then
+                vim.g._smart_files_last_cwd = vim.fs.normalize(vim.fs.joinpath(o.cwd or '', dir))
+              end
+            end
+            actions.file_tabedit(selected, o)
+          end,
+        }
 
         return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Smart Files> ',
           cwd = cwd,
           cmd = cmd,
+          actions = smart_actions,
         }, opts))
       end
 
