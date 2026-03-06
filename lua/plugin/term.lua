@@ -262,15 +262,4 @@ function M.setup()
   })
 end
 
--- Create VTerm and HTerm commands
-vim.api.nvim_create_user_command('VTerm', function()
-  vim.cmd.vsplit()
-  vim.cmd.terminal()
-end, { desc = 'Open terminal in vertical split' })
-
-vim.api.nvim_create_user_command('HTerm', function()
-  vim.cmd.split()
-  vim.cmd.terminal()
-end, { desc = 'Open terminal in horizontal split' })
-
 return M

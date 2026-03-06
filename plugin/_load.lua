@@ -92,6 +92,17 @@ load.on_events({ 'TermOpen', 'TermEnter' }, 'plugin.term', function(args)
   })
 end)
 
+-- Create VTerm and HTerm commands immediately
+vim.api.nvim_create_user_command('VTerm', function()
+  vim.cmd.vsplit()
+  vim.cmd.terminal()
+end, { desc = 'Open terminal in vertical split' })
+
+vim.api.nvim_create_user_command('HTerm', function()
+  vim.cmd.split()
+  vim.cmd.terminal()
+end, { desc = 'Open terminal in horizontal split' })
+
 -- tmux
 if vim.g.has_ui then
   load.on_events(
