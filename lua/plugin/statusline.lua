@@ -556,6 +556,20 @@ vim.api.nvim_create_autocmd('WinClosed', {
 -- end
 
 local function filepath()
+  local bufname = vim.api.nvim_buf_get_name(0)
+  local absolute_path = bufname:gsub("^oil://", "")
+
+  -- Oil buffer: show path relative to project root
+  if vim.bo.filetype == "oil" and absolute_path ~= "" then
+    local project_root = utils.fs.cwd_dir(absolute_path)
+    if project_root then
+      local project_parent = vim.fs.dirname(project_root)
+      return absolute_path:gsub("^" .. vim.pesc(project_parent) .. "/", "")
+    else
+      return vim.fn.fnamemodify(absolute_path, ":~")
+    end
+  end
+
   local fpath = vim.fn.fnamemodify(vim.fn.expand('%'), ':~:.:h')
   if fpath == '' or fpath == '.' then
     return ''
@@ -576,6 +590,11 @@ function _G._statusline.fname()
   )
 
   local fpath = filepath()
+
+  -- Oil buffer: only show path, no filename
+  if vim.bo.filetype == "oil" then
+    return fpath
+  end
 
   -- Modified and readonly icons
   local file_indicator = ''
