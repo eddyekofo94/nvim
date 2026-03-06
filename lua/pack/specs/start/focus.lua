@@ -125,6 +125,15 @@ return {
         desc = 'Disable focus autoresize for BufType/FileType',
       })
 
+      vim.api.nvim_create_autocmd('BufEnter', {
+        group = augroup,
+        callback = function(args)
+          if not vim.g._fzf_active then
+            vim.b[args.buf].focus_disable = false
+          end
+        end,
+      })
+
       hl.link('FocusedWindow', 'FocusedWindowBg')
       hl.link('UnfocusedWindow', 'VisualNOS')
 

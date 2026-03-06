@@ -966,9 +966,11 @@ return {
             local fzf_win = vim.api.nvim_get_current_win()
             vim.defer_fn(function()
               vim.g._fzf_active = nil
-              if vim.api.nvim_win_is_valid(fzf_win) then
-                vim.w.focus_disable = false
-                vim.b.focus_disable = false
+              for _, win in ipairs(vim.api.nvim_list_wins()) do
+                if vim.api.nvim_win_is_valid(win) then
+                  vim.w[win].focus_disable = false
+                  vim.b[vim.api.nvim_win_get_buf(win)].focus_disable = false
+                end
               end
               pcall(require('focus').resize)
             end, 50)
