@@ -905,17 +905,9 @@ return {
 
             local fzf_height = 10
 
-            local lastwin, lastwintype
-            for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-              local wintype = vim.fn.win_gettype(winid)
-              if wintype ~= 'autocmd' and wintype ~= 'popup' then
-                lastwin = winid
-                lastwintype = wintype
-                break
-              end
-            end
-
+            local lastwintype = vim.fn.win_gettype(0)
             if lastwintype == 'loclist' or lastwintype == 'quickfix' then
+              local lastwin = vim.api.nvim_get_current_win()
               vim.g._fzf_qfclosed = lastwintype
               vim.g._fzf_qfwin = lastwin
               vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
