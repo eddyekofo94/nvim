@@ -1,6 +1,122 @@
 local M = {}
 local term_utils = require('utils.term')
 
+-- Create TermOpen autocmd at module load time (not lazily)
+local groupid = vim.api.nvim_create_augroup('term', {})
+
+local function term_init(buf)
+  buf = vim._resolve_bufnr(buf)
+  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= 'terminal' then
+    return
+  end
+
+  for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+    vim.wo[win][0].nu = false
+    vim.wo[win][0].rnu = false
+    vim.wo[win][0].spell = false
+    vim.wo[win][0].statuscolumn = ''
+    vim.wo[win][0].signcolumn = 'no'
+  end
+
+  -- Start with insert mode in new terminals
+  vim.schedule(function()
+    if vim.api.nvim_get_current_buf() == buf then
+      vim.cmd.startinsert()
+    end
+  end)
+
+  -- Create commands to rename terminals
+  vim.api.nvim_buf_create_user_command(buf, 'TermRename', function(args)
+    M.rename(args.args)
+  end, {
+    nargs = '?',
+    desc = 'Rename current terminal',
+    complete = function()
+      local term_names = {}
+
+      for _, b in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.bo[b].bt ~= 'terminal' then
+          goto continue
+        end
+        local _, _, _, name =
+          term_utils.parse_name(vim.api.nvim_buf_get_name(b))
+        if name == '' then
+          goto continue
+        end
+        term_names[name] = true
+        ::continue::
+      end
+
+      local compl = {}
+      local _, _, _, curr_name =
+        term_utils.parse_name(vim.api.nvim_buf_get_name(0))
+      for name, _ in pairs(term_names) do
+        if name == curr_name then
+          table.insert(compl, 1, name)
+        else
+          table.insert(compl, name)
+        end
+      end
+
+      return compl
+    end,
+  })
+
+  vim.api.nvim_buf_create_user_command(buf, 'TermSetCmd', function(args)
+    M.set_cmd(args.args)
+  end, {
+    nargs = '?',
+    desc = 'Set cmd for current terminal',
+    complete = 'shellcmdline',
+  })
+
+  vim.api.nvim_buf_create_user_command(buf, 'TermSetPath', function(args)
+    M.set_path(args.args)
+  end, {
+    nargs = '?',
+    desc = 'Set path for current terminal',
+    complete = 'dir',
+  })
+
+  vim.api.nvim_buf_create_user_command(buf, 'TermRerun', function(args)
+    M.rerun(tonumber(args.args))
+  end, {
+    nargs = '?',
+    desc = 'Re-run terminal command',
+    complete = function()
+      local terms = {}
+
+      for _, b in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.bo[b].bt == 'terminal' then
+          table.insert(
+            terms,
+            string.format('%d (%s)', b, vim.api.nvim_buf_get_name(b))
+          )
+        end
+      end
+
+      return terms
+    end,
+  })
+end
+
+vim.api.nvim_create_autocmd('TermOpen', {
+  group = groupid,
+  desc = 'Set terminal keymaps and options, open term in split.',
+  callback = function(args)
+    term_init(args.buf)
+  end,
+})
+
+-- Initialize existing terminal buffers
+vim.iter(vim.api.nvim_list_bufs())
+  :filter(function(buf)
+    return vim.bo[buf].bt == 'terminal'
+  end)
+  :each(function(buf)
+    term_init(buf)
+  end)
+
 ---@param buf? integer terminal buffer id
 ---@return boolean
 local function validate_term_buf(buf)
@@ -94,106 +210,11 @@ function M.rename(name, buf)
   )
 end
 
----Initial setup for a terminal buffer
----@param buf integer? terminal buffer handler
----@return nil
-function M.term_init(buf)
-  buf = vim._resolve_bufnr(buf)
-  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= 'terminal' then
-    return
-  end
+-- Make term_init available as M.term_init for backwards compatibility
+M.term_init = term_init
 
-  for _, win in ipairs(vim.fn.win_findbuf(buf)) do
-    vim.wo[win][0].nu = false
-    vim.wo[win][0].rnu = false
-    vim.wo[win][0].spell = false
-    vim.wo[win][0].statuscolumn = ''
-    vim.wo[win][0].signcolumn = 'no'
-  end
-
-  -- Start with insert mode in new terminals
-  -- Use `vim.schedule()` to avoid ending with insert mode in a normal buffer
-  -- after loading a session with terminal buffers
-  vim.schedule(function()
-    if vim.api.nvim_get_current_buf() == buf then
-      vim.cmd.startinsert()
-    end
-  end)
-
-  -- Create commands to rename terminals
-  vim.api.nvim_buf_create_user_command(buf, 'TermRename', function(args)
-    M.rename(args.args)
-  end, {
-    nargs = '?',
-    desc = 'Rename current terminal',
-    complete = function()
-      local term_names = {}
-
-      for _, b in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[b].bt ~= 'terminal' then
-          goto continue
-        end
-        local _, _, _, name =
-          term_utils.parse_name(vim.api.nvim_buf_get_name(b))
-        if name == '' then
-          goto continue
-        end
-        term_names[name] = true
-        ::continue::
-      end
-
-      local compl = {}
-      local _, _, _, curr_name =
-        term_utils.parse_name(vim.api.nvim_buf_get_name(0))
-      for name, _ in pairs(term_names) do
-        if name == curr_name then
-          table.insert(compl, 1, name)
-        else
-          table.insert(compl, name)
-        end
-      end
-
-      return compl
-    end,
-  })
-
-  vim.api.nvim_buf_create_user_command(buf, 'TermSetCmd', function(args)
-    M.set_cmd(args.args)
-  end, {
-    nargs = '?',
-    desc = 'Set cmd for current terminal',
-    complete = 'shellcmdline',
-  })
-
-  vim.api.nvim_buf_create_user_command(buf, 'TermSetPath', function(args)
-    M.set_path(args.args)
-  end, {
-    nargs = '?',
-    desc = 'Set path for current terminal',
-    complete = 'dir',
-  })
-
-  vim.api.nvim_buf_create_user_command(buf, 'TermRerun', function(args)
-    M.rerun(tonumber(args.args))
-  end, {
-    nargs = '?',
-    desc = 'Re-run terminal command',
-    complete = function()
-      local terms = {}
-
-      for _, b in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[b].bt == 'terminal' then
-          table.insert(
-            terms,
-            string.format('%d (%s)', b, vim.api.nvim_buf_get_name(b))
-          )
-        end
-      end
-
-      return terms
-    end,
-  })
-end
+---@param buf? integer terminal buffer id
+---@return boolean
 
 ---Plugin initialize function
 ---@return nil
