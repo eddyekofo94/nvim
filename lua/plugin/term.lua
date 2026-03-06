@@ -257,9 +257,20 @@ function M.setup()
     group = groupid,
     desc = 'Set terminal keymaps and options, open term in split.',
     callback = function(args)
-      M.term_init(args.buf)
+      term_init(args.buf)
     end,
   })
 end
+
+-- Create VTerm and HTerm commands
+vim.api.nvim_create_user_command('VTerm', function()
+  vim.cmd.vsplit()
+  vim.cmd.terminal()
+end, { desc = 'Open terminal in vertical split' })
+
+vim.api.nvim_create_user_command('HTerm', function()
+  vim.cmd.split()
+  vim.cmd.terminal()
+end, { desc = 'Open terminal in horizontal split' })
 
 return M

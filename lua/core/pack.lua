@@ -34,17 +34,19 @@ end
 -- Defer loading plugin specs in `opt` if no files are given
 -- Specs under `start` are always loaded on startup
 utils.pack.add(collect_specs(specs_start_path))
+
+local function load_opt()
+  utils.pack.add(collect_specs(specs_opt_path))
+end
+
 utils.load.on_events(
   'UIEnter',
   'pack.load_opt',
-  vim.schedule_wrap(function()
-    utils.pack.add(collect_specs(specs_opt_path))
-  end)
+  vim.schedule_wrap(load_opt)
 )
+
 utils.load.on_events(
   { 'CmdUndefined', 'SessionLoadPost', 'FileType', 'TermOpen' },
   'pack.load_opt',
-  function()
-    utils.pack.add(collect_specs(specs_opt_path))
-  end
+  load_opt
 )
