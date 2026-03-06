@@ -46,6 +46,12 @@ return {
       nmap('<leader>tv', function()
         return require('nvterm.terminal').new('vertical')
       end, { desc = 'Terminal new ver term' })
+
+      map('t', '<M-h>', '<C-\\><C-n><C-w>h', { desc = 'Terminal: Focus left' })
+      map('t', '<M-j>', '<C-\\><C-n><C-w>j', { desc = 'Terminal: Focus down' })
+      map('t', '<M-k>', '<C-\\><C-n><C-w>k', { desc = 'Terminal: Focus up' })
+      map('t', '<M-l>', '<C-\\><C-n><C-w>l', { desc = 'Terminal: Focus right' })
+      map('t', '<C-x>', vim.api.nvim_replace_termcodes('<C-\\><C-N>', true, true, true), { desc = 'Escape terminal mode' })
     end,
   },
 }
