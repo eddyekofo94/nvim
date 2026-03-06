@@ -83,7 +83,7 @@ load_ui('statusline')
 load_ui('statuscolumn')
 
 -- term
-load.on_events('TermOpen', 'plugin.term', function(args)
+load.on_events({ 'TermOpen', 'TermEnter' }, 'plugin.term', function(args)
   local term = require('plugin.term')
   term.setup()
   vim.keymap.set('n', '.', term.rerun, {
