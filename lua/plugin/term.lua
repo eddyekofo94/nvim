@@ -336,12 +336,18 @@ vim.keymap.set('t', '<A-i>', function()
 end, { desc = 'Toggle bottom terminal' })
 
 vim.keymap.set({ 'n', 't' }, '<A-o>', function()
-  if _term_fullscreen then
+  local win = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_win_get_buf(win)
+  if vim.bo[buf].bt ~= 'terminal' then
+    return
+  end
+  local is_fullscreen = vim.w[win].term_fullscreen
+  if is_fullscreen then
     vim.cmd('resize ' .. _term_normal_height)
-    _term_fullscreen = false
+    vim.w[win].term_fullscreen = false
   else
     vim.cmd('resize 100%')
-    _term_fullscreen = true
+    vim.w[win].term_fullscreen = true
   end
 end, { desc = 'Toggle terminal fullscreen' })
 
