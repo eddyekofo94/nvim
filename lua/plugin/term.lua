@@ -333,6 +333,12 @@ vim.api.nvim_create_user_command('STerm', function()
   vim.cmd.terminal()
 end, { desc = 'Open terminal in horizontal split' })
 
+vim.api.nvim_create_user_command('BTerm', function()
+  vim.cmd.aboveleft 'split'
+  vim.cmd.terminal()
+  vim.cmd.wincmd('J')
+end, { desc = 'Open terminal at bottom' })
+
 vim.api.nvim_create_user_command('FTerm', function()
   M.float_term()
 end, { desc = 'Open terminal in floating window' })
