@@ -10,8 +10,8 @@ local groupid = vim.api.nvim_create_augroup('term', {})
 -- Create floating terminal
 function M.float_term()
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.bo[buf].buftype = 'terminal'
-  vim.bo[buf].filetype = 'terminal'
+  vim.api.nvim_buf_set_option(buf, 'buftype', 'terminal')
+  vim.api.nvim_buf_set_option(buf, 'filetype', 'terminal')
 
   local width = math.floor(vim.o.columns * 0.6)
   local height = math.floor(vim.o.lines * 0.4)
@@ -337,6 +337,7 @@ vim.api.nvim_create_user_command('BTerm', function()
   vim.cmd('split')
   vim.cmd.terminal()
   vim.cmd.wincmd('J')
+  vim.cmd('resize 10')
 end, { desc = 'Open terminal at bottom' })
 
 vim.api.nvim_create_user_command('FTerm', function()
