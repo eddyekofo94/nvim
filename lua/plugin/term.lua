@@ -141,8 +141,15 @@ vim.api.nvim_create_autocmd('TermOpen', {
   desc = 'Set terminal keymaps and options, open term in split.',
   callback = function(args)
     term_init(args.buf)
-    -- For tmux compatibility, use Esc followed by . which sends last arg
-    vim.keymap.set('t', '<M-.>', '<Esc>.', { buffer = args.buf, silent = true })
+  end,
+})
+
+vim.api.nvim_create_autocmd('BufEnter', {
+  group = groupid,
+  pattern = 'term://*',
+  callback = function(args)
+    -- Set Alt+. to send last command argument in terminal
+    vim.keymap.set('t', '<M-.>', '<C-v><M-.>', { buffer = args.buf, silent = true })
   end,
 })
 
@@ -319,10 +326,18 @@ vim.api.nvim_create_user_command('BTerm', function()
 end, { desc = 'Open terminal at bottom' })
 
 vim.api.nvim_create_user_command('FTerm', function()
-  M.float_term()
-end, { desc = 'Open terminal in floating window' })
+  vim.cmd('split')
+  vim.cmd.terminal()
+  vim.cmd.wincmd('J')
+  vim.cmd('resize 8')
+end, { desc = 'Open floating terminal (small)' })
 
 vim.api.nvim_create_user_command('TTerm', function()
+  M.toggle_term()
+end, { desc = 'Toggle terminal' })
+
+-- Create global keymap for Alt+i to toggle terminal
+vim.keymap.set('n', '<A-i>', function()
   M.toggle_term()
 end, { desc = 'Toggle terminal' })
 

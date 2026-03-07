@@ -27,13 +27,13 @@ return {
       local nmap = require('utils.key').nmap
       local map = require('utils.key').map
 
-      map({ 't', 'n' }, '<A-i>', function()
-        return require('nvterm.terminal').toggle('float')
-      end, { desc = 'Toggle floating term' })
-
-      map({ 't', 'n' }, '<A-o>', function()
-        return require('nvterm.terminal').toggle('horizontal')
-      end, { desc = 'Toggle horizontal term' })
+      -- map({ 't', 'n' }, '<A-i>', function()
+      --   return require('nvterm.terminal').toggle('float')
+      -- end, { desc = 'Toggle floating term' })
+      --
+      -- map({ 't', 'n' }, '<A-o>', function()
+      --   return require('nvterm.terminal').toggle('horizontal')
+      -- end, { desc = 'Toggle horizontal term' })
 
       -- map({ 't', 'n' }, '<A-v>', function()
       --   return require('nvterm.terminal').toggle('vertical')
