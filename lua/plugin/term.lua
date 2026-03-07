@@ -26,9 +26,9 @@ function M.toggle_term()
         _last_term_buf = buf
         vim.api.nvim_win_close(win, false)
       else
-        -- If only one window, just hide the buffer
+        -- If only one window, hide by switching to previous buffer
         _last_term_buf = buf
-        vim.bo[buf].hidden = true
+        vim.cmd('bprevious')
       end
       return
     end
@@ -46,35 +46,21 @@ function M.toggle_term()
   end
 end
 
--- Create floating terminal
+-- Create floating terminal using nui.nvim
 function M.float_term()
-  -- Check if float already exists
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local config = vim.api.nvim_win_get_config(win)
-    if config.relative > '' then
-      vim.api.nvim_set_current_win(win)
-      return
-    end
-  end
-
-  -- Create new float
-  local buf = vim.api.nvim_create_buf(false, true)
-  local width = math.floor(vim.o.columns * 0.5)
-  local height = math.floor(vim.o.lines * 0.4)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
-
-  vim.api.nvim_open_win(buf, true, {
-    relative = 'editor',
-    row = row,
-    col = col,
-    width = width,
-    height = height,
-    style = 'minimal',
+  local Terminal = require('nui.Terminal')
+  local float = Terminal:new({
+    direction = 'float',
     border = 'single',
+    size = {
+      width = math.floor(vim.o.columns * 0.5),
+      height = math.floor(vim.o.lines * 0.4),
+    },
+    on_exit = function()
+      -- Terminal closed
+    end,
   })
-
-  vim.cmd.terminal()
+  float:mount()
 end
 
 local function term_init(buf)
