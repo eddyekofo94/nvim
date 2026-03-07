@@ -3,6 +3,8 @@ local term_utils = require('utils.term')
 
 -- Terminal state
 local _last_term_buf = nil
+local _term_fullscreen = false
+local _term_normal_height = 16
 
 -- Create TermOpen autocmd at module load time (not lazily)
 local groupid = vim.api.nvim_create_augroup('term', {})
@@ -287,14 +289,15 @@ end, { desc = 'Open terminal in horizontal split' })
 
 vim.api.nvim_create_user_command('BTerm', function()
   vim.cmd('split')
+  vim.cmd('wincmd J')
+  vim.cmd('resize 16')
   vim.cmd.terminal()
-  vim.cmd.wincmd('J')
-  vim.cmd('resize 12')
+  vim.b.focus_disable = true
+  vim.w.focus_disable = true
 end, { desc = 'Open terminal at bottom' })
 
 -- Create global keymap for Alt+i to toggle bottom terminal
 vim.keymap.set('n', '<A-i>', function()
-  -- Hide/show bottom terminal
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     if vim.bo[buf].bt == 'terminal' then
@@ -303,17 +306,20 @@ vim.keymap.set('n', '<A-i>', function()
       return
     end
   end
-  -- If no visible terminal, show last or create new
   if _last_term_buf and vim.api.nvim_buf_is_valid(_last_term_buf) then
-    vim.cmd.split()
+    vim.cmd('split')
+    vim.cmd('wincmd J')
+    vim.cmd('resize 16')
     vim.api.nvim_win_set_buf(0, _last_term_buf)
-    vim.cmd.wincmd('J')
-    vim.cmd('resize 12')
+    vim.b.focus_disable = true
+    vim.w.focus_disable = true
   else
     vim.cmd('split')
+    vim.cmd('wincmd J')
+    vim.cmd('resize 16')
     vim.cmd.terminal()
-    vim.cmd.wincmd('J')
-    vim.cmd('resize 12')
+    vim.b.focus_disable = true
+    vim.w.focus_disable = true
   end
 end, { desc = 'Toggle bottom terminal' })
 
@@ -328,5 +334,15 @@ vim.keymap.set('t', '<A-i>', function()
     end
   end
 end, { desc = 'Toggle bottom terminal' })
+
+vim.keymap.set({ 'n', 't' }, '<A-o>', function()
+  if _term_fullscreen then
+    vim.cmd('resize ' .. _term_normal_height)
+    _term_fullscreen = false
+  else
+    vim.cmd('resize 100%')
+    _term_fullscreen = true
+  end
+end, { desc = 'Toggle terminal fullscreen' })
 
 return M
