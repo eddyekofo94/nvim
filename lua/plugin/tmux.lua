@@ -122,8 +122,8 @@ local function nvim_at_border(direction)
 end
 
 ---@return boolean
-local function nvim_in_floating_win()
-  return vim.fn.win_gettype() == 'popup'
+local function nvim_in_term()
+  return vim.bo.buftype == 'terminal'
 end
 
 ---Check if nvim has only one window in current session
@@ -183,7 +183,7 @@ end
 
 ---@return boolean
 local function tmux_mapkey_default_condition()
-  return not tmux_is_zoomed() and nvim_tabpage_has_only_win()
+  return not tmux_is_zoomed() and nvim_tabpage_has_only_win() and not nvim_in_term()
 end
 
 ---@return boolean
