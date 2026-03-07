@@ -9,32 +9,11 @@ local groupid = vim.api.nvim_create_augroup('term', {})
 
 -- Create floating terminal
 function M.float_term()
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(buf, 'buftype', 'terminal')
-  vim.api.nvim_buf_set_option(buf, 'filetype', 'terminal')
-
-  local width = math.floor(vim.o.columns * 0.6)
-  local height = math.floor(vim.o.lines * 0.4)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
-
-  local win = vim.api.nvim_open_win(buf, true, {
-    relative = 'editor',
-    row = row,
-    col = col,
-    width = width,
-    height = height,
-    style = 'minimal',
-    border = 'single',
-  })
-
-  vim.api.nvim_win_set_option(win, 'number', false)
-  vim.api.nvim_win_set_option(win, 'relativenumber', false)
-  vim.api.nvim_win_set_option(win, 'signcolumn', 'no')
-  vim.api.nvim_win_set_option(win, 'statuscolumn', '')
-
+  vim.cmd.vnew({ mods = { vertical = true } })
   vim.cmd.terminal()
-  vim.cmd.startinsert()
+  local win = vim.api.nvim_get_current_win()
+  vim.cmd.wincmd('J')
+  vim.api.nvim_win_set_height(win, math.floor(vim.o.lines * 0.3))
 end
 
 -- Toggle terminal
@@ -164,7 +143,9 @@ vim.api.nvim_create_autocmd('TermOpen', {
   callback = function(args)
     term_init(args.buf)
     -- Send Alt+. to terminal as normal .
-    vim.keymap.set('t', '<A-.>', '.', { buffer = args.buf })
+    vim.keymap.set('t', '<M-.>', function()
+      vim.api.nvim_feedkeys('.', 't', false)
+    end, { buffer = args.buf })
   end,
 })
 
@@ -337,7 +318,7 @@ vim.api.nvim_create_user_command('BTerm', function()
   vim.cmd('split')
   vim.cmd.terminal()
   vim.cmd.wincmd('J')
-  vim.cmd('resize 10')
+  vim.cmd('resize 12')
 end, { desc = 'Open terminal at bottom' })
 
 vim.api.nvim_create_user_command('FTerm', function()
