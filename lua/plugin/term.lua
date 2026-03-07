@@ -7,53 +7,6 @@ local _last_term_buf = nil
 -- Create TermOpen autocmd at module load time (not lazily)
 local groupid = vim.api.nvim_create_augroup('term', {})
 
--- Create floating terminal
-function M.float_term()
-  vim.cmd('split')
-  vim.cmd.terminal()
-  vim.cmd.wincmd('J')
-  vim.cmd('resize 12')
-end
-
--- Toggle terminal
-function M.toggle_term()
-  -- First check if there's a visible terminal
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.bo[buf].bt == 'terminal' then
-      -- Only close if there's more than one window
-      if #vim.api.nvim_list_wins() > 1 then
-        _last_term_buf = buf
-        vim.api.nvim_win_close(win, false)
-      else
-        -- If only one window, hide by switching to previous buffer
-        _last_term_buf = buf
-        vim.cmd('bprevious')
-      end
-      return
-    end
-  end
-
-  -- If no visible terminal, check for hidden terminal buffer
-  if _last_term_buf and vim.api.nvim_buf_is_valid(_last_term_buf) then
-    -- Show the last terminal in a split
-    vim.cmd.split()
-    vim.api.nvim_win_set_buf(0, _last_term_buf)
-    vim.cmd.startinsert()
-  else
-    -- Create new terminal
-    vim.cmd.terminal()
-  end
-end
-
--- Create floating terminal (using split at bottom)
-function M.float_term()
-  vim.cmd('split')
-  vim.cmd.terminal()
-  vim.cmd.wincmd('J')
-  vim.cmd('resize 10')
-end
-
 local function term_init(buf)
   buf = vim._resolve_bufnr(buf)
   if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= 'terminal' then
@@ -339,21 +292,41 @@ vim.api.nvim_create_user_command('BTerm', function()
   vim.cmd('resize 12')
 end, { desc = 'Open terminal at bottom' })
 
-vim.api.nvim_create_user_command('FTerm', function()
-  M.float_term()
-end, { desc = 'Open floating terminal' })
-
-vim.api.nvim_create_user_command('TTerm', function()
-  M.toggle_term()
-end, { desc = 'Toggle terminal' })
-
--- Create global keymap for Alt+i to toggle terminal
+-- Create global keymap for Alt+i to toggle bottom terminal
 vim.keymap.set('n', '<A-i>', function()
-  M.toggle_term()
-end, { desc = 'Toggle terminal' })
+  -- Hide/show bottom terminal
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].bt == 'terminal' then
+      _last_term_buf = buf
+      vim.api.nvim_win_close(win, false)
+      return
+    end
+  end
+  -- If no visible terminal, show last or create new
+  if _last_term_buf and vim.api.nvim_buf_is_valid(_last_term_buf) then
+    vim.cmd.split()
+    vim.api.nvim_win_set_buf(0, _last_term_buf)
+    vim.cmd.wincmd('J')
+    vim.cmd('resize 12')
+  else
+    vim.cmd('split')
+    vim.cmd.terminal()
+    vim.cmd.wincmd('J')
+    vim.cmd('resize 12')
+  end
+end, { desc = 'Toggle bottom terminal' })
 
 vim.keymap.set('t', '<A-i>', function()
-  M.toggle_term()
-end, { desc = 'Toggle terminal' })
+  -- Hide terminal in terminal mode
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].bt == 'terminal' then
+      _last_term_buf = buf
+      vim.api.nvim_win_close(win, false)
+      return
+    end
+  end
+end, { desc = 'Toggle bottom terminal' })
 
 return M
