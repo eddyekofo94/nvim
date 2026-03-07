@@ -11,7 +11,7 @@ return {
       end
       require('lsp-timeout').setup({
         timeout = 3000,
-        notify = false,
+        notify = true,
       })
     end,
   },
