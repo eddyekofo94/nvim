@@ -290,6 +290,8 @@ vim.api.nvim_create_user_command('BTerm', function()
   vim.cmd.terminal()
   vim.cmd.wincmd('J')
   vim.cmd('resize 12')
+  vim.w.focus_disable = true
+  vim.b.focus_disable = true
 end, { desc = 'Open terminal at bottom' })
 
 -- Create global keymap for Alt+i to toggle bottom terminal
@@ -309,11 +311,15 @@ vim.keymap.set('n', '<A-i>', function()
     vim.api.nvim_win_set_buf(0, _last_term_buf)
     vim.cmd.wincmd('J')
     vim.cmd('resize 12')
+    vim.w.focus_disable = true
+    vim.b.focus_disable = true
   else
     vim.cmd('split')
     vim.cmd.terminal()
     vim.cmd.wincmd('J')
     vim.cmd('resize 12')
+    vim.w.focus_disable = true
+    vim.b.focus_disable = true
   end
 end, { desc = 'Toggle bottom terminal' })
 
