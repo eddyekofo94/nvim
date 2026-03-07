@@ -60,6 +60,7 @@ return {
       local ignore_buftypes = {
         'nofile',
         'nofile,fzf',
+        'terminal',
         'prompt',
         'fzf',
       }
