@@ -1,8 +1,9 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/echasnovski/neo-scroll.nvim',
+  src = 'https://github.com/karb94/neoscroll.nvim',
   data = {
-    event = 'VimEnter',
+    events = { event = 'BufReadPre' },
+    enabled = true,
     postload = function()
       require('neo-scroll').setup()
     end,

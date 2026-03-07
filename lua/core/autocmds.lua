@@ -438,7 +438,7 @@ do
       'NormalSpecial',
       vim.tbl_deep_extend(
         'force',
-        hl.blend('Normal', 'CursorLine'),
+        hl.blend('Normal', 'FloatBorder'),
         { default = true }
       )
     )
@@ -466,14 +466,14 @@ do
             return
           end
           vim.opt_local.winhighlight:append({
-            Normal = 'NormalSpecial',
+            Normal = 'Normal',
             EndOfBuffer = 'NormalSpecial',
           })
 
           vim.opt_local.number = false
           vim.opt_local.relativenumber = false
-          vim.opt_local.signcolumn = "no" -- Removes the gutter on the left
-          vim.opt_local.fillchars:append({ eob = " " })
+          vim.opt_local.signcolumn = 'no' -- Removes the gutter on the left
+          vim.opt_local.fillchars:append({ eob = ' ' })
         end)
       end),
     },
@@ -619,7 +619,7 @@ augroup('auto_formatoptions', {
   {
     desc = 'Disable New Line Comment',
     callback = function()
-      vim.opt.formatoptions:remove { 'c', 'r', 'o' }
+      vim.opt.formatoptions:remove({ 'c', 'r', 'o' })
     end,
   },
 })
@@ -636,14 +636,20 @@ augroup('highlight_url', {
   },
 })
 
-local q_close_group = vim.api.nvim_create_augroup("QCloseSpecial", { clear = true })
-vim.api.nvim_create_autocmd("BufWinEnter", {
+local q_close_group =
+  vim.api.nvim_create_augroup('QCloseSpecial', { clear = true })
+vim.api.nvim_create_autocmd('BufWinEnter', {
   group = q_close_group,
   callback = function(event)
     -- If the window is floating (relative is not empty), map 'q'
     local win_config = vim.api.nvim_win_get_config(0)
-    if win_config.relative ~= "" then
-      vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+    if win_config.relative ~= '' then
+      vim.keymap.set(
+        'n',
+        'q',
+        '<cmd>close<cr>',
+        { buffer = event.buf, silent = true }
+      )
     end
   end,
 })
@@ -700,7 +706,7 @@ augroup('substitute_notify', {
         return
       end
       local cmdline = vim.fn.getcmdline()
-      local isSubstitution = cmdline:find 's ?/.+/.-/%a*$'
+      local isSubstitution = cmdline:find('s ?/.+/.-/%a*$')
       if isSubstitution then
         vim.cmd(cmdline .. 'ne')
       end
@@ -714,7 +720,7 @@ augroup('quickfix_auto_open', {
     desc = 'Open quickfix window if there are results.',
     callback = function(info)
       if #vim.fn.getqflist() > 1 then
-        vim.schedule(vim.cmd[info.match:find '^l' and 'lwindow' or 'cwindow'])
+        vim.schedule(vim.cmd[info.match:find('^l') and 'lwindow' or 'cwindow'])
       end
     end,
   },
@@ -725,9 +731,16 @@ augroup('cleanup_no_name', {
   {
     desc = 'Delete [No Name] buffers when they are no longer displayed',
     callback = function(data)
-      if data.file == '' and vim.bo[data.buf].buftype == '' and not vim.bo[data.buf].modified then
+      if
+        data.file == ''
+        and vim.bo[data.buf].buftype == ''
+        and not vim.bo[data.buf].modified
+      then
         vim.schedule(function()
-          if vim.api.nvim_buf_is_valid(data.buf) and vim.fn.bufwinid(data.buf) == -1 then
+          if
+            vim.api.nvim_buf_is_valid(data.buf)
+            and vim.fn.bufwinid(data.buf) == -1
+          then
             pcall(vim.api.nvim_buf_delete, data.buf, { force = false })
           end
         end)
@@ -773,7 +786,7 @@ augroup('fix_virtual_edit_cursor', {
   {
     desc = 'Record cursor position in visual mode if virtualedit is set.',
     callback = function()
-      if vim.wo.ve:find 'all' then
+      if vim.wo.ve:find('all') then
         vim.w.ve_cursor = vim.fn.getcurpos()
       end
     end,
@@ -789,7 +802,7 @@ augroup('cleanup_history', {
         return
       end
       vim.defer_fn(function()
-        local lineJump = vim.fn.histget(':', -1):match '^%d+$'
+        local lineJump = vim.fn.histget(':', -1):match('^%d+$')
         if lineJump then
           vim.fn.histdel(':', -1)
         end
@@ -804,24 +817,36 @@ augroup('auto_delete_dirs', {
     once = true,
     desc = 'Clean up old view and undo directories',
     callback = function()
-      if os.date '%a' == 'Mon' then
-        vim.fn.system { 'find', vim.opt.viewdir:get(), '-mtime', '+60d', '-delete' }
-        vim.fn.system { 'find', vim.opt.undodir:get()[1], '-mtime', '+30d', '-delete' }
+      if os.date('%a') == 'Mon' then
+        vim.fn.system({
+          'find',
+          vim.opt.viewdir:get(),
+          '-mtime',
+          '+60d',
+          '-delete',
+        })
+        vim.fn.system({
+          'find',
+          vim.opt.undodir:get()[1],
+          '-mtime',
+          '+30d',
+          '-delete',
+        })
       end
     end,
   },
 })
 
-local group = vim.api.nvim_create_augroup("WinCloseJmp", { clear = true })
-vim.api.nvim_create_autocmd("WinClosed", {
+local group = vim.api.nvim_create_augroup('WinCloseJmp', { clear = true })
+vim.api.nvim_create_autocmd('WinClosed', {
   group = group,
   nested = true,
-  desc = "Jump to last accessed window on closing the current one.",
+  desc = 'Jump to last accessed window on closing the current one.',
   callback = function(args)
     -- args.match contains the window ID being closed
     local closed_win = tonumber(args.match)
     if closed_win == vim.api.nvim_get_current_win() then
-      vim.cmd("wincmd p")
+      vim.cmd('wincmd p')
     end
   end,
 })
@@ -831,7 +856,11 @@ augroup('change_to_cur_dir', {
   {
     desc = 'Automatically change local current directory.',
     callback = function(info)
-      if info.file == '' or info.file:match('://') or vim.bo[info.buf].bt ~= '' then
+      if
+        info.file == ''
+        or info.file:match('://')
+        or vim.bo[info.buf].bt ~= ''
+      then
         return
       end
 
@@ -854,7 +883,11 @@ augroup('change_to_cur_dir', {
 
           if target_dir then
             local stat = vim.uv.fs_stat(target_dir)
-            if stat and stat.type == 'directory' and current_dir ~= target_dir then
+            if
+              stat
+              and stat.type == 'directory'
+              and current_dir ~= target_dir
+            then
               vim.notify_once('cd to ' .. target_dir)
               pcall(vim.cmd.lcd, target_dir)
             end
