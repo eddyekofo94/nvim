@@ -46,21 +46,12 @@ function M.toggle_term()
   end
 end
 
--- Create floating terminal using nui.nvim
+-- Create floating terminal (using split at bottom)
 function M.float_term()
-  local Terminal = require('nui.Terminal')
-  local float = Terminal:new({
-    direction = 'float',
-    border = 'single',
-    size = {
-      width = math.floor(vim.o.columns * 0.5),
-      height = math.floor(vim.o.lines * 0.4),
-    },
-    on_exit = function()
-      -- Terminal closed
-    end,
-  })
-  float:mount()
+  vim.cmd('split')
+  vim.cmd.terminal()
+  vim.cmd.wincmd('J')
+  vim.cmd('resize 10')
 end
 
 local function term_init(buf)
