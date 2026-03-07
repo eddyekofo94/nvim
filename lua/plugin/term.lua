@@ -21,9 +21,15 @@ function M.toggle_term()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     if vim.bo[buf].bt == 'terminal' then
-      -- Hide it (close the window but keep buffer)
-      _last_term_buf = buf
-      vim.api.nvim_win_close(win, false)
+      -- Only close if there's more than one window
+      if #vim.api.nvim_list_wins() > 1 then
+        _last_term_buf = buf
+        vim.api.nvim_win_close(win, false)
+      else
+        -- If only one window, just hide the buffer
+        _last_term_buf = buf
+        vim.bo[buf].hidden = true
+      end
       return
     end
   end
@@ -38,6 +44,37 @@ function M.toggle_term()
     -- Create new terminal
     vim.cmd.terminal()
   end
+end
+
+-- Create floating terminal
+function M.float_term()
+  -- Check if float already exists
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local config = vim.api.nvim_win_get_config(win)
+    if config.relative > '' then
+      vim.api.nvim_set_current_win(win)
+      return
+    end
+  end
+
+  -- Create new float
+  local buf = vim.api.nvim_create_buf(false, true)
+  local width = math.floor(vim.o.columns * 0.5)
+  local height = math.floor(vim.o.lines * 0.4)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  vim.api.nvim_open_win(buf, true, {
+    relative = 'editor',
+    row = row,
+    col = col,
+    width = width,
+    height = height,
+    style = 'minimal',
+    border = 'single',
+  })
+
+  vim.cmd.terminal()
 end
 
 local function term_init(buf)
@@ -326,11 +363,8 @@ vim.api.nvim_create_user_command('BTerm', function()
 end, { desc = 'Open terminal at bottom' })
 
 vim.api.nvim_create_user_command('FTerm', function()
-  vim.cmd('split')
-  vim.cmd.terminal()
-  vim.cmd.wincmd('J')
-  vim.cmd('resize 8')
-end, { desc = 'Open floating terminal (small)' })
+  M.float_term()
+end, { desc = 'Open floating terminal' })
 
 vim.api.nvim_create_user_command('TTerm', function()
   M.toggle_term()
