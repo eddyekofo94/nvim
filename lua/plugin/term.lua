@@ -341,4 +341,8 @@ vim.keymap.set('n', '<A-i>', function()
   M.toggle_term()
 end, { desc = 'Toggle terminal' })
 
+vim.keymap.set('t', '<A-i>', function()
+  M.toggle_term()
+end, { desc = 'Toggle terminal' })
+
 return M
