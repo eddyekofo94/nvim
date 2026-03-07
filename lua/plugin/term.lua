@@ -9,11 +9,10 @@ local groupid = vim.api.nvim_create_augroup('term', {})
 
 -- Create floating terminal
 function M.float_term()
-  vim.cmd.vnew({ mods = { vertical = true } })
+  vim.cmd('split')
   vim.cmd.terminal()
-  local win = vim.api.nvim_get_current_win()
   vim.cmd.wincmd('J')
-  vim.api.nvim_win_set_height(win, math.floor(vim.o.lines * 0.3))
+  vim.cmd('resize 12')
 end
 
 -- Toggle terminal
@@ -142,10 +141,8 @@ vim.api.nvim_create_autocmd('TermOpen', {
   desc = 'Set terminal keymaps and options, open term in split.',
   callback = function(args)
     term_init(args.buf)
-    -- Send Alt+. to terminal as normal .
-    vim.keymap.set('t', '<M-.>', function()
-      vim.api.nvim_feedkeys('.', 't', false)
-    end, { buffer = args.buf })
+    -- For tmux compatibility, use Esc followed by . which sends last arg
+    vim.keymap.set('t', '<M-.>', '<Esc>.', { buffer = args.buf, silent = true })
   end,
 })
 
