@@ -2,7 +2,7 @@
 return {
   src = 'https://github.com/NvChad/nvterm',
   data = {
-    enabled = true,
+    enabled = false,
     dependencies = { 'MunifTanjim/nui.nvim' },
     postload = function()
       require('nvterm').setup({
