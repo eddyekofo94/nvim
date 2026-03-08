@@ -75,6 +75,7 @@ require('utils.load').on_events(
     map('t', '<M-j>', '<C-\\><C-n><C-w>j', { desc = 'Terminal: Focus down' })
     map('t', '<M-k>', '<C-\\><C-n><C-w>k', { desc = 'Terminal: Focus up' })
     map('t', '<M-l>', '<C-\\><C-n><C-w>l', { desc = 'Terminal: Focus right' })
+    map('t', '<M-q>', '<C-\\><C-n><Cmd>close<CR>', { desc = 'Terminal: Close terminal' })
     map('t', '<C-x>', vim.api.nvim_replace_termcodes('<C-\\><C-N>', true, true, true), { desc = 'Escape terminal mode' })
     -- stylua: ignore end
 

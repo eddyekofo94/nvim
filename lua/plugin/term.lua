@@ -351,4 +351,9 @@ vim.keymap.set({ 'n', 't' }, '<A-o>', function()
   end
 end, { desc = 'Toggle terminal fullscreen' })
 
+vim.keymap.set('t', '<A-v>', function()
+  vim.cmd.vsplit()
+  vim.cmd.terminal()
+end, { desc = 'Open new terminal vertically' })
+
 return M

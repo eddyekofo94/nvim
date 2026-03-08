@@ -121,7 +121,12 @@ do
   vim.api.nvim_create_autocmd('LspDetach', {
     group = vim.api.nvim_create_augroup('lsp.auto_stop', {}),
     desc = 'Automatically stop detached language servers.',
-    callback = function()
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client then
+        vim.notify('[LSP] ' .. client.name .. ' detached', vim.log.levels.DEBUG)
+      end
+
       if lsp_autostop_pending then
         return
       end
@@ -134,6 +139,67 @@ do
           end
         end
       end, lsp_autostop_timeout_ms)
+    end,
+  })
+end
+
+-- Stop LSP servers after inactivity to save RAM
+do
+  local inactivity_timeout_ms = 120000
+  local timers = {}
+
+  local activity_events = {
+    'LspAttach',
+    'LspStart',
+    'BufReadPost',
+    'BufWritePost',
+    'InsertEnter',
+    'TextChangedI',
+    'TextChangedP',
+  }
+
+  local group = vim.api.nvim_create_augroup('lsp.inactivity_timeout', { clear = true })
+
+  vim.api.nvim_create_autocmd('LspStart', {
+    group = group,
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client then
+        vim.notify('[LSP] ' .. client.name .. ' started', vim.log.levels.INFO)
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd(activity_events, {
+    group = group,
+    callback = function(args)
+      local buf = args.buf
+      for _, client in ipairs(vim.lsp.get_active_clients({ buffer = buf })) do
+        if timers[client.id] then
+          timers[client.id]:close()
+        end
+        timers[client.id] = vim.defer_fn(function()
+          if vim.api.nvim_buf_is_valid(buf) then
+            local client = vim.lsp.get_client_by_id(client.id)
+            if client and not vim.tbl_isempty(client.attached_buffers) then
+              vim.notify('[LSP] stopping ' .. client.name .. ' due to inactivity', vim.log.levels.DEBUG)
+              lsp.soft_stop(client)
+            end
+          end
+          timers[client.id] = nil
+        end, inactivity_timeout_ms)
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('LspDetach', {
+    group = group,
+    callback = function(args)
+      local client_id = args.data.client_id
+      if timers[client_id] then
+        timers[client_id]:close()
+        timers[client_id] = nil
+      end
     end,
   })
 end

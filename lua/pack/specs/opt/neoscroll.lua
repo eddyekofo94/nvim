@@ -2,10 +2,10 @@
 return {
   src = 'https://github.com/karb94/neoscroll.nvim',
   data = {
-    events = { event = 'BufReadPre' },
+    events = { event = 'FileType' },
     enabled = true,
     postload = function()
-      require('neo-scroll').setup()
+      require('neoscroll').setup()
     end,
   },
 }
