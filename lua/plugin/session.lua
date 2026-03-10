@@ -178,10 +178,7 @@ function M.load(session, notify)
   if not vim.uv.fs_stat(session) then
     if notify then
       vim.notify(
-        string.format(
-          "[plugin.session] session '%s' does not exist",
-          session
-        ),
+        string.format("[plugin.session] session '%s' does not exist", session),
         vim.log.levels.WARN
       )
     end
@@ -357,10 +354,7 @@ function M.setup(opts)
       group = groupid,
       once = true,
       callback = function()
-        if
-          not vim.g._session_loaded
-          and not vim.g._session_disabled
-        then
+        if not vim.g._session_loaded and not vim.g._session_disabled then
           M.load()
         end
       end,

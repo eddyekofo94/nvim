@@ -124,7 +124,10 @@ do
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client then
-        vim.notify('[LSP] ' .. client.name .. ' detached', vim.log.levels.DEBUG)
+        vim.notify(
+          '[LSP] ' .. client.name .. ' detached',
+          vim.log.levels.DEBUG
+        )
       end
 
       if lsp_autostop_pending then
@@ -158,7 +161,8 @@ do
     'TextChangedP',
   }
 
-  local group = vim.api.nvim_create_augroup('lsp.inactivity_timeout', { clear = true })
+  local group =
+    vim.api.nvim_create_augroup('lsp.inactivity_timeout', { clear = true })
 
   vim.api.nvim_create_autocmd('LspStart', {
     group = group,
@@ -182,7 +186,10 @@ do
           if vim.api.nvim_buf_is_valid(buf) then
             local client = vim.lsp.get_client_by_id(client.id)
             if client and not vim.tbl_isempty(client.attached_buffers) then
-              vim.notify('[LSP] stopping ' .. client.name .. ' due to inactivity', vim.log.levels.DEBUG)
+              vim.notify(
+                '[LSP] stopping ' .. client.name .. ' due to inactivity',
+                vim.log.levels.DEBUG
+              )
               lsp.soft_stop(client)
             end
           end

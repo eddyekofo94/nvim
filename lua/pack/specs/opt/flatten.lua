@@ -4,7 +4,7 @@ return {
   data = {
     event = 'BufReadPre',
     postload = function()
-      require('flatten').setup {
+      require('flatten').setup({
         window = {
           open = 'current',
         },
@@ -18,11 +18,11 @@ return {
           end,
           block_end = function()
             vim.schedule(function()
-              vim.cmd 'unhide'
+              vim.cmd('unhide')
             end)
           end,
         },
-      }
+      })
     end,
   },
 }

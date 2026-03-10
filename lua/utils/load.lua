@@ -169,11 +169,7 @@ function M.on_events(event_specs, name, load)
             once = true,
             pattern = pat,
             group = vim.api.nvim_create_augroup(
-              string.format(
-                'load.on_events.event.%s.pat.%s',
-                spec.event,
-                pat
-              ),
+              string.format('load.on_events.event.%s.pat.%s', spec.event, pat),
               {}
             ),
             callback = trig_loaders_fn(loaders),

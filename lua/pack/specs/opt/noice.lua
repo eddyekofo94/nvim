@@ -31,7 +31,10 @@ return {
           { filter = { find = 'changes;' }, opts = { skip = true } },
           { filter = { find = 'indent' }, opts = { skip = true } },
           { filter = { find = 'move' }, opts = { skip = true } },
-          { filter = { find = 'No information available' }, opts = { skip = true } },
+          {
+            filter = { find = 'No information available' },
+            opts = { skip = true },
+          },
         },
         messages = {
           enabled = true,
@@ -168,14 +171,17 @@ return {
       vim.keymap.set('n', '<leader>nh', '<cmd>NoiceAll<cr>', { silent = true })
 
       vim.api.nvim_create_user_command('NoiceLatest', function()
-        vim.cmd 'Noice history'
+        vim.cmd('Noice history')
         vim.defer_fn(function()
           local win = vim.api.nvim_get_current_win()
           local buf = vim.api.nvim_win_get_buf(win)
           local line_count = vim.api.nvim_buf_line_count(buf)
-          if vim.bo[buf].filetype == 'noice' or vim.bo[buf].buftype == 'nofile' then
+          if
+            vim.bo[buf].filetype == 'noice'
+            or vim.bo[buf].buftype == 'nofile'
+          then
             vim.api.nvim_win_set_cursor(win, { line_count, 0 })
-            vim.cmd 'normal! zz'
+            vim.cmd('normal! zz')
           end
         end, 50)
       end, {})

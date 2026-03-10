@@ -4,7 +4,7 @@ return {
   data = {
     ft = { 'markdown', 'norg', 'rmd', 'org' },
     postload = function()
-      require('markview').setup {
+      require('markview').setup({
         checkboxes = { enable = false },
         links = {
           inline_links = {
@@ -39,7 +39,7 @@ return {
           heading_5 = { style = 'simple', hl = 'Headline5' },
           heading_6 = { style = 'simple', hl = 'Headline6' },
         },
-      }
+      })
     end,
   },
 }

@@ -55,6 +55,9 @@ return {
         'Diffview*',
         'fzf',
         'FzfLua',
+        'opencode',
+        'opencode_input',
+        'opencode_output',
       }
 
       local ignore_buftypes = {
@@ -88,7 +91,11 @@ return {
 
       map('<C-\\>', '<cmd>FocusAutoresize<cr>', 'Activate focus')
 
-      map('<leader>vd', '<cmd>FocusSplitDown<CR>', '[Focus] Split horizontally')
+      map(
+        '<leader>vd',
+        '<cmd>FocusSplitDown<CR>',
+        '[Focus] Split horizontally'
+      )
 
       map('<leader>=', function()
         focus.focus_equalise()
@@ -114,7 +121,9 @@ return {
           elseif vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
             vim.b.focus_disable = true
             vim.w.focus_disable = true
-          elseif vim.w.focus_disable == true or vim.w.winbar_no_attach == true then
+          elseif
+            vim.w.focus_disable == true or vim.w.winbar_no_attach == true
+          then
             vim.b.focus_disable = true
             vim.w.focus_disable = true
           else

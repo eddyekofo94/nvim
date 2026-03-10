@@ -656,6 +656,12 @@ end
       Key.universal_smart_toggle,
       { desc = 'Universal Smart Toggle' }
     )
+    map(
+      'n',
+      '<leader>ui',
+      '<Cmd>Inspect<CR>',
+      { desc = 'Inspect element under cursor' }
+    )
   end)
 )
 

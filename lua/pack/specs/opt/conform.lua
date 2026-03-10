@@ -2,7 +2,17 @@
 return {
   src = 'https://github.com/stevearc/conform.nvim',
   data = {
-    ft = { 'lua', 'go', 'json', 'yaml', 'javascript', 'python', 'sh', 'zsh', 'fish' },
+    ft = {
+      'lua',
+      'go',
+      'json',
+      'yaml',
+      'javascript',
+      'python',
+      'sh',
+      'zsh',
+      'fish',
+    },
     postload = function()
       vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
 
@@ -14,7 +24,9 @@ return {
           yaml = { 'prettier' },
           javascript = { 'prettierd', 'prettier' },
           python = function(bufnr)
-            if require('conform').get_formatter_info('ruff_format', bufnr).available then
+            if
+              require('conform').get_formatter_info('ruff_format', bufnr).available
+            then
               return { 'ruff_format' }
             else
               return { 'autopep8', 'isort', 'black' }
@@ -41,19 +53,21 @@ return {
             return { timeout_ms = 500, lsp_fallback = true }
           end
 
-          local lines = vim.fn.system('git diff --unified=0 ' .. vim.fn.bufname(bufnr)):gmatch '[^\n\r]+'
+          local lines = vim.fn
+            .system('git diff --unified=0 ' .. vim.fn.bufname(bufnr))
+            :gmatch('[^\n\r]+')
           local ranges = {}
           for line in lines do
-            if line:find '^@@' then
-              local line_nums = line:match '%+.- '
-              if line_nums:find ',' then
-                local _, _, first, second = line_nums:find '(%d+),(%d+)'
+            if line:find('^@@') then
+              local line_nums = line:match('%+.- ')
+              if line_nums:find(',') then
+                local _, _, first, second = line_nums:find('(%d+),(%d+)')
                 table.insert(ranges, {
                   start = { tonumber(first), 0 },
                   ['end'] = { tonumber(first) + tonumber(second), 0 },
                 })
               else
-                local first = tonumber(line_nums:match '%d+')
+                local first = tonumber(line_nums:match('%d+'))
                 table.insert(ranges, {
                   start = { first, 0 },
                   ['end'] = { first + 1, 0 },
@@ -63,7 +77,7 @@ return {
           end
           local format = require('conform').format
           for _, range in pairs(ranges) do
-            format { range = range }
+            format({ range = range })
           end
         end,
         log_level = vim.log.levels.ERROR,

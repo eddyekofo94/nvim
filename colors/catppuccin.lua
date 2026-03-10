@@ -474,7 +474,7 @@ local hlgroups = {
   -- }}}
 
   ['@markup.heading'] = { fg = blue, bold = true },
-  ['@markup.list'] = { fg = sun }, -- Your custom #ffe9b6
+  ['@markup.list'] = { fg = sun },
   ['@markup.quote'] = { bg = black2 },
   -- }}}
 
@@ -568,7 +568,7 @@ local hlgroups = {
 
   -- Specialized Modifiers
   ['@lsp.mod.readonly.go'] = { fg = orange, bold = true },
-  ['@lsp.mod.format.go'] = { fg = rosewater }, -- Using your #f5e0dc
+  ['@lsp.mod.format.go'] = { fg = rosewater },
 
   -- Built-ins (make, append, panic, etc.)
   ['@function.builtin.go'] = { fg = orange, bold = true },

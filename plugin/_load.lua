@@ -186,3 +186,8 @@ if vim.g.loaded_session == nil then
 end
 
 load.on_events('UIEnter', 'plugin.colorful-winsep')
+
+-- palette switcher
+load.on_events('UIEnter', 'core.palette', function()
+  require('core.palette').setup()
+end)

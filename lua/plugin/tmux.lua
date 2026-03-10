@@ -183,7 +183,9 @@ end
 
 ---@return boolean
 local function tmux_mapkey_default_condition()
-  return not tmux_is_zoomed() and nvim_tabpage_has_only_win() and not nvim_in_term()
+  return not tmux_is_zoomed()
+    and nvim_tabpage_has_only_win()
+    and not nvim_in_term()
 end
 
 ---@return boolean

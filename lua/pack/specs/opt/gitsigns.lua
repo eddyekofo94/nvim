@@ -8,7 +8,7 @@ return {
     postload = function()
       local icons = require('utils.static.icons')
       local gs = require('gitsigns')
-          local map = require("utils.key").map
+      local map = require('utils.key').map
 
       gs.setup({
         preview_config = {

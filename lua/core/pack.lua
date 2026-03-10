@@ -5,8 +5,7 @@ end
 local utils = require('utils')
 
 local config_path = vim.fn.stdpath('config') --[[@as string]]
-local specs_start_path =
-  vim.fs.joinpath(config_path, 'lua/pack/specs/start')
+local specs_start_path = vim.fs.joinpath(config_path, 'lua/pack/specs/start')
 local specs_opt_path = vim.fs.joinpath(config_path, 'lua/pack/specs/opt')
 
 ---@param path string
@@ -39,11 +38,7 @@ local function load_opt()
   utils.pack.add(collect_specs(specs_opt_path))
 end
 
-utils.load.on_events(
-  'UIEnter',
-  'pack.load_opt',
-  vim.schedule_wrap(load_opt)
-)
+utils.load.on_events('UIEnter', 'pack.load_opt', vim.schedule_wrap(load_opt))
 
 utils.load.on_events(
   { 'CmdUndefined', 'SessionLoadPost', 'FileType', 'TermOpen' },

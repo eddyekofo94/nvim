@@ -10,9 +10,10 @@ function M.icon_provider(bufnr)
   bufnr = bufnr or 0
   local filetype = vim.bo[bufnr].filetype
 
-  local devicons_ok, devicons = pcall(require, "nvim-web-devicons")
+  local devicons_ok, devicons = pcall(require, 'nvim-web-devicons')
   if devicons_ok and devicons then
-    local icon, color = devicons.get_icon_color_by_filetype(filetype, { default = true })
+    local icon, color =
+      devicons.get_icon_color_by_filetype(filetype, { default = true })
     return icon, color
   end
 
@@ -25,7 +26,7 @@ end
 ---@return table # The merged table
 function M.extend_tbl(default, opts)
   opts = opts or {}
-  return default and vim.tbl_deep_extend("force", default, opts) or opts
+  return default and vim.tbl_deep_extend('force', default, opts) or opts
 end
 
 --- Serve a notification with a custom title
@@ -35,9 +36,13 @@ end
 function M.notify(msg, level, opts)
   vim.schedule(function()
     if not level then
-      level = "info"
+      level = 'info'
     end
-    vim.notify(msg, vim.log.levels[level:upper()], M.extend_tbl({ title = "Custom" }, opts))
+    vim.notify(
+      msg,
+      vim.log.levels[level:upper()],
+      M.extend_tbl({ title = 'Custom' }, opts)
+    )
   end)
 end
 
@@ -48,15 +53,19 @@ end
 function M.notify_once(msg, level, opts)
   vim.schedule(function()
     if not level then
-      level = "info"
+      level = 'info'
     end
-    vim.notify_once(msg, vim.log.levels[level:upper()], M.extend_tbl({ title = "Custom" }, opts))
+    vim.notify_once(
+      msg,
+      vim.log.levels[level:upper()],
+      M.extend_tbl({ title = 'Custom' }, opts)
+    )
   end)
 end
 
 --- regex used for matching a valid URL/URI string
 M.url_matcher =
-  "\\v\\c%(%(h?ttps?|ftp|file|ssh|git)://|[a-z]+[@][a-z]+[.][a-z]+:)%([&:#*@~%_\\-=?!+;/0-9a-z]+%(%([.;/?]|[.][.]+)[&:#*@~%_\\-=?!+/0-9a-z]+|:\\d+|,%(%(%(h?ttps?|ftp|file|ssh|git)://|[a-z]+[@][a-z]+[.][a-z]+:)@![0-9a-z]+))*|\\([&:#*@~%_\\-=?!+;/.0-9a-z]*\\)|\\[[&:#*@~%_\\-=?!+;/.0-9a-z]*\\]|\\{%([&:#*@~%_\\-=?!+;/.0-9a-z]*|\\{[&:#*@~%_\\-=?!+;/.0-9a-z]*})\\})+"
+  '\\v\\c%(%(h?ttps?|ftp|file|ssh|git)://|[a-z]+[@][a-z]+[.][a-z]+:)%([&:#*@~%_\\-=?!+;/0-9a-z]+%(%([.;/?]|[.][.]+)[&:#*@~%_\\-=?!+/0-9a-z]+|:\\d+|,%(%(%(h?ttps?|ftp|file|ssh|git)://|[a-z]+[@][a-z]+[.][a-z]+:)@![0-9a-z]+))*|\\([&:#*@~%_\\-=?!+;/.0-9a-z]*\\)|\\[[&:#*@~%_\\-=?!+;/.0-9a-z]*\\]|\\{%([&:#*@~%_\\-=?!+;/.0-9a-z]*|\\{[&:#*@~%_\\-=?!+;/.0-9a-z]*})\\})+'
 
 --- Delete the syntax matching rules for URLs/URIs if set
 ---@param win integer? the window id to remove url highlighting in (default: current window)
@@ -65,7 +74,7 @@ function M.delete_url_match(win)
     win = vim.api.nvim_get_current_win()
   end
   for _, match in ipairs(vim.fn.getmatches(win)) do
-    if match.group == "HighlightURL" then
+    if match.group == 'HighlightURL' then
       vim.fn.matchdelete(match.id, win)
     end
   end
@@ -79,7 +88,7 @@ function M.set_url_match(win)
     win = vim.api.nvim_get_current_win()
   end
   M.delete_url_match(win)
-  vim.fn.matchadd("HighlightURL", M.url_matcher, 15, -1, { window = win })
+  vim.fn.matchadd('HighlightURL', M.url_matcher, 15, -1, { window = win })
   vim.w[win].highlighturl_enabled = true
 end
 

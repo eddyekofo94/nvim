@@ -326,13 +326,19 @@ vim.api.nvim_create_autocmd('UIEnter', {
   end,
 })
 
-vim.cmd [[
+vim.cmd([[
   let &t_Cs = "\e[4:3m"
   let &t_Ce = "\e[4:0m"
-]]
+]])
 
-vim.api.nvim_set_var('t_Cs', vim.api.nvim_replace_termcodes('<Esc>[4::3m', true, true, true))
-vim.api.nvim_set_var('t_Ce', vim.api.nvim_replace_termcodes('<Esc>[4::0m', true, true, true))
+vim.api.nvim_set_var(
+  't_Cs',
+  vim.api.nvim_replace_termcodes('<Esc>[4::3m', true, true, true)
+)
+vim.api.nvim_set_var(
+  't_Ce',
+  vim.api.nvim_replace_termcodes('<Esc>[4::0m', true, true, true)
+)
 
 vim.g.netrw_banner = 0
 vim.g.netrw_cursor = 5
@@ -376,16 +382,12 @@ require('utils.load').on_events(
   end
 )
 
-require('utils.load').on_cmds(
-  'UpdateRemotePlugins',
-  'load_runtime',
-  function()
-    vim.g.loaded_python3_provider = nil
-    vim.g.loaded_remote_plugins = nil
-    vim.cmd.runtime('provider/python3.vim')
-    vim.cmd.runtime('plugin/rplugin.vim')
-  end
-)
+require('utils.load').on_cmds('UpdateRemotePlugins', 'load_runtime', function()
+  vim.g.loaded_python3_provider = nil
+  vim.g.loaded_remote_plugins = nil
+  vim.cmd.runtime('provider/python3.vim')
+  vim.cmd.runtime('plugin/rplugin.vim')
+end)
 
 vim.opt.gcr = {
   'c-ci-ve:blinkoff500-blinkon500-block',
@@ -395,7 +397,7 @@ vim.opt.gcr = {
   'r-cr:hor20-Cursor/lCursor',
 }
 
-vim.cmd [[
+vim.cmd([[
   let &t_Cs = "\e[4:3m"
   let &t_Ce = "\e[4:0m"
-]]
+]])

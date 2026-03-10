@@ -144,7 +144,10 @@ M.only = function()
   if success then
     vim.api.nvim_echo({ { 'Focusing current window', 'Normal' } }, false, {})
   else
-    vim.notify('Could not close all windows: ' .. tostring(err), vim.log.levels.ERROR)
+    vim.notify(
+      'Could not close all windows: ' .. tostring(err),
+      vim.log.levels.ERROR
+    )
   end
 end
 
@@ -153,7 +156,7 @@ M.smart_close = function(force)
   local win_config = vim.api.nvim_win_get_config(win_id)
   local tab_wins = vim.api.nvim_tabpage_list_wins(0)
   local buftype = vim.api.nvim_get_option_value('buftype', { buf = 0 })
-  local fs = require 'utils.fs'
+  local fs = require('utils.fs')
 
   if win_config.relative ~= '' then
     vim.api.nvim_win_close(win_id, false)
@@ -187,13 +190,16 @@ M.close_others = function()
       local b = vim.api.nvim_win_get_buf(w)
       if b and vim.api.nvim_buf_is_valid(b) then
         local n = vim.api.nvim_buf_get_name(b)
-        table.insert(names_to_report, (n ~= '') and vim.fn.fnamemodify(n, ':t') or '[No Name]')
+        table.insert(
+          names_to_report,
+          (n ~= '') and vim.fn.fnamemodify(n, ':t') or '[No Name]'
+        )
       end
     end
   end
 
   local ok = pcall(function()
-    vim.cmd 'confirm only'
+    vim.cmd('confirm only')
   end)
 
   if ok and #names_to_report > 0 then

@@ -4,7 +4,7 @@ return {
   data = {
     events = { event = 'InsertEnter' },
     postload = function()
-      require('better_escape').setup {
+      require('better_escape').setup({
         timeout = 300,
         mappings = {
           i = {
@@ -19,7 +19,7 @@ return {
             },
           },
         },
-      }
+      })
     end,
   },
 }

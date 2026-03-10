@@ -435,8 +435,14 @@ do
   hl.persist(function()
     local hl_utils = require('utils.hl')
     local normal = hl_utils.get(0, { name = 'Normal', winhl_link = false })
-    local float_border = hl_utils.get(0, { name = 'FloatBorder', winhl_link = false })
-    if not normal or not normal.bg or not float_border or not float_border.bg then
+    local float_border =
+      hl_utils.get(0, { name = 'FloatBorder', winhl_link = false })
+    if
+      not normal
+      or not normal.bg
+      or not float_border
+      or not float_border.bg
+    then
       return
     end
     local blended_bg = hl_utils.cblend(normal.bg, float_border.bg, 0.5).dec

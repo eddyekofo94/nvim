@@ -591,7 +591,12 @@ return {
         end
 
         -- Set keymap for opening the file from preview buffer
-        vim.keymap.set('n', '<CR>', preview_edit, { buffer = preview_buf, desc = 'Open file from preview' })
+        vim.keymap.set(
+          'n',
+          '<CR>',
+          preview_edit,
+          { buffer = preview_buf, desc = 'Open file from preview' }
+        )
         vim.api.nvim_create_autocmd('BufReadCmd', {
           desc = 'Edit corresponding file in oil preview buffers.',
           group = vim.api.nvim_create_augroup('oil.preview_edit', {}),

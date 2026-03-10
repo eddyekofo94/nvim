@@ -60,7 +60,7 @@ function M.range(buf, start, finish)
 end
 
 M.close_buffer = function(force)
-  local listed_bufs = vim.fn.getbufinfo { buflisted = 1 }
+  local listed_bufs = vim.fn.getbufinfo({ buflisted = 1 })
   local bufnr = vim.api.nvim_get_current_buf()
 
   if #listed_bufs <= 1 and not force then
@@ -74,19 +74,22 @@ M.close_buffer = function(force)
   local display_path = require('utils.fs').get_project_path()
   local buftype = vim.api.nvim_get_option_value('buftype', { buf = bufnr })
 
-  local alt = vim.fn.bufnr '#'
+  local alt = vim.fn.bufnr('#')
   if alt > 0 and vim.api.nvim_buf_is_valid(alt) and vim.bo[alt].buflisted then
-    vim.cmd 'buffer #'
+    vim.cmd('buffer #')
   else
     if not pcall(vim.cmd, 'bnext') then
-      vim.cmd 'enew'
+      vim.cmd('enew')
     end
   end
 
-  local cmd = (force or buftype == 'terminal') and 'bdelete!' or 'confirm bdelete'
-  if pcall(function()
-    vim.cmd(string.format('silent! %s %d', cmd, bufnr))
-  end) then
+  local cmd = (force or buftype == 'terminal') and 'bdelete!'
+    or 'confirm bdelete'
+  if
+    pcall(function()
+      vim.cmd(string.format('silent! %s %d', cmd, bufnr))
+    end)
+  then
     vim.api.nvim_echo({
       { ' 󰆓  Closed: ', 'Special' },
       { display_path, 'Directory' },

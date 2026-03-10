@@ -161,13 +161,9 @@ function M.lazy_load(spec, path)
       goto continue
     end
     lazy = true
-    require('utils.load')['on_' .. trig](
-      spec.data[trig],
-      spec.src,
-      function()
-        M.load(spec, path)
-      end
-    )
+    require('utils.load')['on_' .. trig](spec.data[trig], spec.src, function()
+      M.load(spec, path)
+    end)
     ::continue::
   end
 
@@ -299,11 +295,7 @@ function M.build(spec, path)
     )
   else
     vim.notify(
-      string.format(
-        '[utils.pack] Error building plugin %s: %s',
-        spec.src,
-        err
-      ),
+      string.format('[utils.pack] Error building plugin %s: %s', spec.src, err),
       vim.log.levels.ERROR
     )
   end

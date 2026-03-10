@@ -1,9 +1,9 @@
 local M = {}
-local u = require "utils"
-local un = require "utils.snip.nodes"
-local uf = require "utils.snip.funcs"
-local us = require "utils.snip.snips"
-local ls = require "luasnip"
+local u = require('utils')
+local un = require('utils.snip.nodes')
+local uf = require('utils.snip.funcs')
+local us = require('utils.snip.snips')
+local ls = require('luasnip')
 local sn = ls.snippet_node
 local t = ls.text_node
 local i = ls.insert_node
@@ -21,16 +21,18 @@ local function is_nvim_lua()
 
   -- Check if the file or its cwd is in nvim runtime path
   local bufname = vim.api.nvim_buf_get_name(0)
-  if vim.iter(vim.api.nvim_list_runtime_paths()):any(function(rtp)
-    return u.fs.contains(rtp, bufname)
-  end) then
+  if
+    vim.iter(vim.api.nvim_list_runtime_paths()):any(function(rtp)
+      return u.fs.contains(rtp, bufname)
+    end)
+  then
     vim.b._ls_is_nvim_lua = true
     return true
   end
 
   -- Check if the file contains 'vim.xxx'
   for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
-    if line:match "vim%." then
+    if line:match('vim%.') then
       vim.b._ls_is_nvim_lua = true
       return true
     end
@@ -43,146 +45,146 @@ M.snippets = {
   -- 1. SMART VIM.API
   -- Trigger: 'api'
   -- Lets you choose between buf, win, tab, or general nvim_ functions
-  us.msn({ { trig = "api" } }, {
-    t "vim.api.nvim_",
+  us.msn({ { trig = 'api' } }, {
+    t('vim.api.nvim_'),
     c(1, {
-      i(nil, ""), -- Custom/Other
-      sn(nil, { t "buf_", i(1, "get_lines") }),
-      sn(nil, { t "win_", i(1, "get_config") }),
-      sn(nil, { t "tabpage_", i(1, "list_wins") }),
-      sn(nil, { t "get_", i(1, "current_buf") }),
+      i(nil, ''), -- Custom/Other
+      sn(nil, { t('buf_'), i(1, 'get_lines') }),
+      sn(nil, { t('win_'), i(1, 'get_config') }),
+      sn(nil, { t('tabpage_'), i(1, 'list_wins') }),
+      sn(nil, { t('get_'), i(1, 'current_buf') }),
     }),
-    t "(",
+    t('('),
     i(2),
-    t ")",
+    t(')'),
     i(0),
   }),
 
   -- 2. SMART VIM.FN
   -- Trigger: 'vfn'
   -- Simple prefix, but positions you for the function call
-  us.msn({ { trig = "vfn" } }, {
-    t "vim.fn.",
-    i(1, "expand"),
-    t "(",
+  us.msn({ { trig = 'vfn' } }, {
+    t('vim.fn.'),
+    i(1, 'expand'),
+    t('('),
     i(2, "'%'"),
-    t ")",
+    t(')'),
     i(0),
   }),
 
   -- 3. THE UPDATED NOTIFY (Best Practice)
   us.msn({
-    { trig = "nt" },
-    { trig = "not" },
-    { trig = "noti" },
-    { trig = "notify" },
+    { trig = 'nt' },
+    { trig = 'not' },
+    { trig = 'noti' },
+    { trig = 'notify' },
   }, {
-    t 'vim.notify("',
-    i(1, "message"),
-    t '", vim.log.levels.',
+    t('vim.notify("'),
+    i(1, 'message'),
+    t('", vim.log.levels.'),
     c(2, {
-      i(nil, "INFO"),
-      i(nil, "WARN"),
-      i(nil, "ERROR"),
-      i(nil, "DEBUG"),
+      i(nil, 'INFO'),
+      i(nil, 'WARN'),
+      i(nil, 'ERROR'),
+      i(nil, 'DEBUG'),
     }),
-    t ")",
+    t(')'),
     i(0),
   }),
   us.msn({
-    { trig = "conf" },
-    { trig = "config" },
+    { trig = 'conf' },
+    { trig = 'config' },
   }, {
-    t "config = function(",
-    i(1, "_, opts"), -- Placeholder for arguments
-    t { ")", "  " },
+    t('config = function('),
+    i(1, '_, opts'), -- Placeholder for arguments
+    t({ ')', '  ' }),
     i(0), -- Cursor lands here to start typing logic
-    t { "", "end," },
+    t({ '', 'end,' }),
   }),
   us.msns({
-    { trig = "sb" },
-    { trig = "#!", snippetType = "autosnippet" },
-    desc = "Shebang",
+    { trig = 'sb' },
+    { trig = '#!', snippetType = 'autosnippet' },
+    desc = 'Shebang',
   }, {
-    t "#!",
+    t('#!'),
     c(1, {
-      i(nil, "/usr/bin/env luajit"),
-      i(nil, "/usr/bin/env lua5.4"),
-      i(nil, "/usr/bin/env lua5.3"),
-      i(nil, "/usr/bin/env lua5.2"),
-      i(nil, "/usr/bin/env lua5.1"),
-      i(nil, "/usr/bin/luajit"),
-      i(nil, "/usr/bin/lua5.4"),
-      i(nil, "/usr/bin/lua5.3"),
-      i(nil, "/usr/bin/lua5.2"),
-      i(nil, "/usr/bin/lua5.1"),
+      i(nil, '/usr/bin/env luajit'),
+      i(nil, '/usr/bin/env lua5.4'),
+      i(nil, '/usr/bin/env lua5.3'),
+      i(nil, '/usr/bin/env lua5.2'),
+      i(nil, '/usr/bin/env lua5.1'),
+      i(nil, '/usr/bin/luajit'),
+      i(nil, '/usr/bin/lua5.4'),
+      i(nil, '/usr/bin/lua5.3'),
+      i(nil, '/usr/bin/lua5.2'),
+      i(nil, '/usr/bin/lua5.1'),
     }),
   }),
   us.msn({
-    { trig = "lv" },
-    { trig = "lc" },
-    { trig = "l=" },
+    { trig = 'lv' },
+    { trig = 'lc' },
+    { trig = 'l=' },
   }, {
-    t "local ",
-    i(1, "var"),
-    t " = ",
-    un.body(2, 0, "value"),
+    t('local '),
+    i(1, 'var'),
+    t(' = '),
+    un.body(2, 0, 'value'),
   }),
   us.msn({
-    { trig = "lf" },
-    { trig = "lfn" },
-    { trig = "lfun" },
-    { trig = "lfunc" },
+    { trig = 'lf' },
+    { trig = 'lfn' },
+    { trig = 'lfun' },
+    { trig = 'lfunc' },
   }, {
-    t "local function ",
-    i(1, "func"),
-    t "(",
+    t('local function '),
+    i(1, 'func'),
+    t('('),
     i(2),
-    t { ")", "" },
+    t({ ')', '' }),
     un.body(3, 1),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
   us.msn({
-    { trig = "fn" },
-    { trig = "fun" },
-    { trig = "func" },
+    { trig = 'fn' },
+    { trig = 'fun' },
+    { trig = 'func' },
   }, {
     d(1, function()
       if
         u.ts.find_node({
-          "field", --- { function() ... end, ... }
-          "arguments", -- foo(function() ... end, ...)
-          "assignment", -- val = function() ... end
-          "return_statement", -- return function() ... end
-          "table_constructor", -- unnamed function in list
-          "binary_expression", -- <expression> and function() ... end
-          "parenthesized_expression", -- (function() ... end)()
+          'field', --- { function() ... end, ... }
+          'arguments', -- foo(function() ... end, ...)
+          'assignment', -- val = function() ... end
+          'return_statement', -- return function() ... end
+          'table_constructor', -- unnamed function in list
+          'binary_expression', -- <expression> and function() ... end
+          'parenthesized_expression', -- (function() ... end)()
         }, { ignore_injections = false })
       then
         -- Unnamed function
         return sn(nil, {
-          t "function(",
-          r(1, "params"),
-          t { ")", "" },
+          t('function('),
+          r(1, 'params'),
+          t({ ')', '' }),
         })
       end
       -- Named function
       return sn(nil, {
-        t "function ",
-        i(1, "func"),
-        t "(",
-        r(2, "params"),
-        t { ")", "" },
+        t('function '),
+        i(1, 'func'),
+        t('('),
+        r(2, 'params'),
+        t({ ')', '' }),
       })
     end),
     un.body(2, 1),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
   us.mssn(
     {
-      { trig = "mn" },
-      { trig = "main" },
-      common = { desc = "main function" },
+      { trig = 'mn' },
+      { trig = 'main' },
+      common = { desc = 'main function' },
     },
     c(1, {
       un.fmtad(
@@ -192,7 +194,7 @@ M.snippets = {
           }
         ]],
         {
-          args = r(1, "args"),
+          args = r(1, 'args'),
           body = un.body(2, 1),
         }
       ),
@@ -203,7 +205,7 @@ M.snippets = {
           }
         ]],
         {
-          args = r(1, "args"),
+          args = r(1, 'args'),
           body = un.body(2, 1),
         }
       ),
@@ -218,10 +220,10 @@ M.snippets = {
   ),
   us.msn(
     {
-      { trig = "ifn" },
-      { trig = "ifun" },
-      { trig = "ifunc" },
-      common = { desc = "Immediate function evaluation" },
+      { trig = 'ifn' },
+      { trig = 'ifun' },
+      { trig = 'ifunc' },
+      common = { desc = 'Immediate function evaluation' },
     },
     un.fmtad(
       [[
@@ -237,83 +239,83 @@ M.snippets = {
     )
   ),
   us.msn({
-    { trig = "me" },
-    { trig = "meth" },
+    { trig = 'me' },
+    { trig = 'meth' },
   }, {
-    t "function ",
-    i(1, "class"),
-    t ":",
-    i(2, "method"),
-    t "(",
+    t('function '),
+    i(1, 'class'),
+    t(':'),
+    i(2, 'method'),
+    t('('),
     i(3),
-    t { ")", "" },
+    t({ ')', '' }),
     un.body(4, 1),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
-  us.sn({ trig = "if" }, {
-    t "if ",
-    i(1, "condition"),
-    t { " then", "" },
+  us.sn({ trig = 'if' }, {
+    t('if '),
+    i(1, 'condition'),
+    t({ ' then', '' }),
     un.body(2, 1),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
   us.msn({
-    { trig = "ife" },
-    { trig = "ifel" },
-    { trig = "ifelse" },
+    { trig = 'ife' },
+    { trig = 'ifel' },
+    { trig = 'ifelse' },
   }, {
-    t "if ",
-    i(1, "condition"),
-    t { " then", "" },
+    t('if '),
+    i(1, 'condition'),
+    t({ ' then', '' }),
     un.body(2, 1),
-    t { "", "else", "" },
+    t({ '', 'else', '' }),
     un.idnt(1),
     i(0),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
   us.msn({
-    { trig = "ifei" },
-    { trig = "ifeif" },
-    { trig = "ifeli" },
-    { trig = "ifelif" },
-    { trig = "ifelsei" },
-    { trig = "ifelseif" },
+    { trig = 'ifei' },
+    { trig = 'ifeif' },
+    { trig = 'ifeli' },
+    { trig = 'ifelif' },
+    { trig = 'ifelsei' },
+    { trig = 'ifelseif' },
   }, {
-    t "if ",
-    i(1, "condition_1"),
-    t { " then", "" },
+    t('if '),
+    i(1, 'condition_1'),
+    t({ ' then', '' }),
     un.body(2, 1),
-    t { "", "elseif " },
-    i(3, "condition_2"),
-    t { "", "" },
+    t({ '', 'elseif ' }),
+    i(3, 'condition_2'),
+    t({ '', '' }),
     un.idnt(1),
     i(0),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
-  us.snr({ trig = "^(%s*)elif" }, {
+  us.snr({ trig = '^(%s*)elif' }, {
     un.idnt(function(_, parent)
       return uf.get_indent_depth(parent.captures[1]) - 1
     end),
-    t { "elseif " },
-    i(1, "condition"),
-    t { " then", "" },
+    t({ 'elseif ' }),
+    i(1, 'condition'),
+    t({ ' then', '' }),
     un.body(2, function(_, parent)
       return uf.get_indent_depth(parent.snippet.captures[1])
     end, false),
   }),
   us.msn({
-    { trig = "eli" },
-    { trig = "elif" },
-    { trig = "elsei" },
-    { trig = "elseif" },
+    { trig = 'eli' },
+    { trig = 'elif' },
+    { trig = 'elsei' },
+    { trig = 'elseif' },
   }, {
-    t "elseif ",
-    i(1, "condition"),
-    t { " then", "" },
+    t('elseif '),
+    i(1, 'condition'),
+    t({ ' then', '' }),
     un.body(2, 1, false),
   }),
   us.sn(
-    { trig = "for", desc = "For loop" },
+    { trig = 'for', desc = 'For loop' },
     c(1, {
       un.fmtad(
         [[
@@ -322,9 +324,9 @@ M.snippets = {
           end
         ]],
         {
-          idx = r(1, "idx"),
-          val = r(2, "val"),
-          iter = r(3, "iter"),
+          idx = r(1, 'idx'),
+          val = r(2, 'val'),
+          iter = r(3, 'iter'),
           body = un.body(4, 1),
         }
       ),
@@ -335,9 +337,9 @@ M.snippets = {
           end
         ]],
         {
-          key = i(1, "key"),
-          val = r(2, "val"),
-          iter = r(3, "iter"),
+          key = i(1, 'key'),
+          val = r(2, 'val'),
+          iter = r(3, 'iter'),
           body = un.body(4, 1),
         }
       ),
@@ -348,8 +350,8 @@ M.snippets = {
           end
         ]],
         {
-          val = r(1, "val"),
-          iter = r(2, "iter"),
+          val = r(1, 'val'),
+          iter = r(2, 'iter'),
           body = un.body(3, 1),
         }
       ),
@@ -360,9 +362,9 @@ M.snippets = {
           end
         ]],
         {
-          idx = r(1, "idx"),
-          start = r(2, "start"),
-          stop = r(3, "stop"),
+          idx = r(1, 'idx'),
+          start = r(2, 'start'),
+          stop = r(3, 'stop'),
           body = un.body(4, 1),
         }
       ),
@@ -373,29 +375,29 @@ M.snippets = {
           end
         ]],
         {
-          idx = r(1, "idx"),
-          start = r(2, "start"),
-          stop = r(3, "stop"),
-          step = i(4, "step"),
+          idx = r(1, 'idx'),
+          start = r(2, 'start'),
+          stop = r(3, 'stop'),
+          step = i(4, 'step'),
           body = un.body(5, 1),
         }
       ),
     }),
     {
       stored = {
-        idx = i(nil, "_"),
-        val = i(nil, "val"),
-        iter = i(nil, "iter"),
-        start = i(nil, "start"),
-        stop = i(nil, "stop"),
+        idx = i(nil, '_'),
+        val = i(nil, 'val'),
+        iter = i(nil, 'iter'),
+        start = i(nil, 'start'),
+        stop = i(nil, 'stop'),
       },
     }
   ),
   us.msn(
     {
-      { trig = "fip" },
-      { trig = "forip" },
-      common = { desc = "for ... in ipairs(...) loop" },
+      { trig = 'fip' },
+      { trig = 'forip' },
+      common = { desc = 'for ... in ipairs(...) loop' },
     },
     un.fmtad(
       [[
@@ -404,18 +406,18 @@ M.snippets = {
         end
       ]],
       {
-        idx = i(1, "i"),
-        val = i(2, "val"),
-        iter = i(3, "iter"),
+        idx = i(1, 'i'),
+        val = i(2, 'val'),
+        iter = i(3, 'iter'),
         body = un.body(4, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = "fp" },
-      { trig = "forp" },
-      common = { desc = "for ... in pairs(...) loop" },
+      { trig = 'fp' },
+      { trig = 'forp' },
+      common = { desc = 'for ... in pairs(...) loop' },
     },
     un.fmtad(
       [[
@@ -424,19 +426,19 @@ M.snippets = {
         end
       ]],
       {
-        key = i(1, "key"),
-        val = i(2, "val"),
-        iter = i(3, "iter"),
+        key = i(1, 'key'),
+        val = i(2, 'val'),
+        iter = i(3, 'iter'),
         body = un.body(4, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = "forr" },
-      { trig = "forange" },
-      { trig = "forrange" },
-      common = { desc = "for ... in ... loop" },
+      { trig = 'forr' },
+      { trig = 'forange' },
+      { trig = 'forrange' },
+      common = { desc = 'for ... in ... loop' },
     },
     un.fmtad(
       [[
@@ -445,17 +447,17 @@ M.snippets = {
         end
       ]],
       {
-        val = i(1, "val"),
-        iter = i(2, "iter"),
+        val = i(1, 'val'),
+        iter = i(2, 'iter'),
         body = un.body(3, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = "fi" },
-      { trig = "fori" },
-      common = { desc = "for i = ... loop" },
+      { trig = 'fi' },
+      { trig = 'fori' },
+      common = { desc = 'for i = ... loop' },
     },
     c(1, {
       un.fmtad(
@@ -465,9 +467,9 @@ M.snippets = {
           end
         ]],
         {
-          idx = r(1, "idx"),
-          start = r(2, "start"),
-          stop = r(3, "stop"),
+          idx = r(1, 'idx'),
+          start = r(2, 'start'),
+          stop = r(3, 'stop'),
           body = un.body(4, 1),
         }
       ),
@@ -478,10 +480,10 @@ M.snippets = {
           end
         ]],
         {
-          idx = r(1, "idx"),
-          start = r(2, "start"),
-          stop = r(3, "stop"),
-          step = i(4, "step"),
+          idx = r(1, 'idx'),
+          start = r(2, 'start'),
+          stop = r(3, 'stop'),
+          step = i(4, 'step'),
           body = un.body(5, 1),
         }
       ),
@@ -489,131 +491,132 @@ M.snippets = {
     {
       common_opts = {
         stored = {
-          idx = i(nil, "i"),
-          start = i(nil, "start"),
-          stop = i(nil, "stop"),
+          idx = i(nil, 'i'),
+          start = i(nil, 'start'),
+          stop = i(nil, 'stop'),
         },
       },
     }
   ),
   us.msn({
-    { trig = "wh" },
-    { trig = "while" },
+    { trig = 'wh' },
+    { trig = 'while' },
   }, {
-    t "while ",
-    i(1, "condition"),
-    t { " do", "" },
+    t('while '),
+    i(1, 'condition'),
+    t({ ' do', '' }),
     un.body(2, 1),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
-  us.sn({ trig = "do" }, {
-    t { "do", "" },
+  us.sn({ trig = 'do' }, {
+    t({ 'do', '' }),
     un.body(1, 1),
-    t { "", "end" },
+    t({ '', 'end' }),
   }),
   us.msn({
-    { trig = "rt" },
-    { trig = "ret" },
+    { trig = 'rt' },
+    { trig = 'ret' },
   }, {
-    t "return",
+    t('return'),
   }),
-  us.sn({ trig = "pr" }, {
-    t "print(",
+  us.sn({ trig = 'pr' }, {
+    t('print('),
     i(1),
-    t ")",
+    t(')'),
   }),
   us.sn(
     {
-      trig = "pl",
-      dscr = "Print a line",
+      trig = 'pl',
+      dscr = 'Print a line',
     },
-    un.fmtad("print(<q><v><q>)", {
+    un.fmtad('print(<q><v><q>)', {
       q = un.qt(),
       v = c(1, {
-        i(nil, "----------------------------------------"),
-        i(nil, "........................................"),
-        i(nil, "========================================"),
-        i(nil, "########################################"),
+        i(nil, '----------------------------------------'),
+        i(nil, '........................................'),
+        i(nil, '========================================'),
+        i(nil, '########################################'),
       }),
     })
   ),
   us.msn({
-    { trig = "rq" },
-    { trig = "req" },
+    { trig = 'rq' },
+    { trig = 'req' },
   }, {
-    t "require(",
+    t('require('),
     i(1),
-    t ")",
+    t(')'),
   }),
-  us.sn({ trig = "ps" }, {
-    t "pairs(",
+  us.sn({ trig = 'ps' }, {
+    t('pairs('),
     i(1),
-    t ")",
+    t(')'),
   }),
   us.msn({
-    { trig = "ip" },
-    { trig = "ips" },
+    { trig = 'ip' },
+    { trig = 'ips' },
   }, {
-    t "ipairs(",
+    t('ipairs('),
     i(1),
-    t ")",
+    t(')'),
   }),
   us.sn(
-    { trig = "pck" },
-    un.fmtad("print(<q><v_esc>: <q> .. <inspect>(<v>)<e>)", {
+    { trig = 'pck' },
+    un.fmtad('print(<q><v_esc>: <q> .. <inspect>(<v>)<e>)', {
       q = un.qt(),
       v = i(1),
       inspect = d(2, function()
         return sn(
           nil,
           c(1, is_nvim_lua() and {
-            i(nil, "vim.inspect"),
-            i(nil, "tostring"),
-            i(nil, "inspect"),
+            i(nil, 'vim.inspect'),
+            i(nil, 'tostring'),
+            i(nil, 'inspect'),
           } or {
-            i(nil, "inspect"),
-            i(nil, "tostring"),
-            i(nil, "vim.inspect"),
+            i(nil, 'inspect'),
+            i(nil, 'tostring'),
+            i(nil, 'vim.inspect'),
           })
         )
       end),
       v_esc = d(3, function(texts)
-        local str = vim.fn.escape(texts[1][1], "\\" .. uf.get_quotation_type())
+        local str = vim.fn.escape(texts[1][1], '\\' .. uf.get_quotation_type())
         return sn(nil, i(1, str))
       end, { 1 }),
       e = i(4),
     })
   ),
   us.sn(
-    { trig = "ck", priority = 999 },
-    un.fmtad("<q><v_esc>: <q> .. <inspect>(<v>)", {
+    { trig = 'ck', priority = 999 },
+    un.fmtad('<q><v_esc>: <q> .. <inspect>(<v>)', {
       q = un.qt(),
       v = i(1),
       inspect = d(2, function()
         return sn(
           nil,
           c(1, is_nvim_lua() and {
-            i(nil, "vim.inspect"),
-            i(nil, "tostring"),
-            i(nil, "inspect"),
+            i(nil, 'vim.inspect'),
+            i(nil, 'tostring'),
+            i(nil, 'inspect'),
           } or {
-            i(nil, "inspect"),
-            i(nil, "tostring"),
-            i(nil, "vim.inspect"),
+            i(nil, 'inspect'),
+            i(nil, 'tostring'),
+            i(nil, 'vim.inspect'),
           })
         )
       end),
       v_esc = d(3, function(texts)
-        local str = vim.fn.escape(texts[1][1], "\\" .. uf.get_quotation_type())
+        local str = vim.fn.escape(texts[1][1], '\\' .. uf.get_quotation_type())
         return sn(nil, i(1, str))
       end, { 1 }),
     })
   ),
   us.snr(
-    { trig = "(%S*)(%s*)%.%.%s*ck" },
-    un.fmtad("<spc>.. <q>, <v_esc>: <q> .. <inspect>(<v>)", {
+    { trig = '(%S*)(%s*)%.%.%s*ck' },
+    un.fmtad('<spc>.. <q>, <v_esc>: <q> .. <inspect>(<v>)', {
       spc = f(function(_, snip, _)
-        return snip.captures[1] == "" and snip.captures[2] or snip.captures[1] .. " "
+        return snip.captures[1] == '' and snip.captures[2]
+          or snip.captures[1] .. ' '
       end, {}, {}),
       q = un.qt(),
       v = i(1),
@@ -621,24 +624,24 @@ M.snippets = {
         return sn(
           nil,
           c(1, is_nvim_lua() and {
-            i(nil, "vim.inspect"),
-            i(nil, "tostring"),
-            i(nil, "inspect"),
+            i(nil, 'vim.inspect'),
+            i(nil, 'tostring'),
+            i(nil, 'inspect'),
           } or {
-            i(nil, "inspect"),
-            i(nil, "tostring"),
-            i(nil, "vim.inspect"),
+            i(nil, 'inspect'),
+            i(nil, 'tostring'),
+            i(nil, 'vim.inspect'),
           })
         )
       end),
       v_esc = d(3, function(texts)
-        local str = vim.fn.escape(texts[1][1], "\\" .. uf.get_quotation_type())
+        local str = vim.fn.escape(texts[1][1], '\\' .. uf.get_quotation_type())
         return sn(nil, i(1, str))
       end, { 1 }),
     })
   ),
   us.sn(
-    { trig = "nf", desc = "Disable stylua format" },
+    { trig = 'nf', desc = 'Disable stylua format' },
     un.fmtad(
       [[
         -- stylua: ignore start
@@ -650,8 +653,8 @@ M.snippets = {
   ),
   us.ssn(
     {
-      trig = "mod",
-      desc = "Define a module",
+      trig = 'mod',
+      desc = 'Define a module',
     },
     un.fmtad(
       [[
@@ -662,18 +665,18 @@ M.snippets = {
         return <mod>
       ]],
       {
-        mod = i(1, "M"),
+        mod = i(1, 'M'),
         body = un.body(2, 0),
       }
     )
   ),
   us.msn(
     {
-      { trig = "st" },
-      { trig = "cls" },
-      { trig = "class" },
-      { trig = "struct" },
-      common = { desc = "Class definition" },
+      { trig = 'st' },
+      { trig = 'cls' },
+      { trig = 'class' },
+      { trig = 'struct' },
+      common = { desc = 'Class definition' },
     },
     un.fmtad(
       [[
@@ -685,7 +688,7 @@ M.snippets = {
         end
       ]],
       {
-        class_name = i(1, "class_name"),
+        class_name = i(1, 'class_name'),
         opts = i(2),
         body = un.body(2, 1),
       }

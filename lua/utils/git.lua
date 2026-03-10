@@ -146,7 +146,9 @@ function M.resolve_context(buf, fallback_args)
   -- Check cache
   local cache_key = buf .. '|' .. vim.inspect(fallback_args)
   local cached = _resolve_context_cache[cache_key]
-  if cached and (vim.uv.hrtime() / 1e6) - cached.time < _resolve_context_ttl then
+  if
+    cached and (vim.uv.hrtime() / 1e6) - cached.time < _resolve_context_ttl
+  then
     return cached.work_tree, cached.git_dir
   end
 

@@ -159,6 +159,10 @@ return {
             -- lua/configs/fzf-lua.lua
             fzf_ui.register(function(_, items)
               local n_items = #items
+              local split = require('fzf-lua.config').setup_opts.winopts.split
+              if type(split) == 'function' then
+                return { winopts = { split = split } }
+              end
               return {
                 winopts = {
                   split = string.format(
@@ -166,10 +170,7 @@ return {
                     -- window to avoid window resizing and content shifting
                     'let g:_fzf_n_items =%d | %s | unlet g:_fzf_n_items',
                     n_items,
-                    vim.trim(
-                      require('fzf-lua.config').setup_opts.winopts.split --[[@as string]]
-                    ),
-                    n_items
+                    vim.trim(split --[[@as string]])
                   ),
                 },
               }

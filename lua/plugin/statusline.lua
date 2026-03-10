@@ -147,7 +147,8 @@ end
 ---Get diff stats for current buffer
 ---@return string
 function _G._statusline.gitdiff()
-  local ok, work_tree, git_dir = pcall(utils.git.resolve_context,
+  local ok, work_tree, git_dir = pcall(
+    utils.git.resolve_context,
     0,
     { { '--git-dir', vim.env.DOT_DIR, '--work-tree', vim.env.HOME } }
   )
@@ -192,7 +193,8 @@ end
 ---Get string representation of current git branch
 ---@return string
 function _G._statusline.gitbranch()
-  local ok, work_tree, git_dir = pcall(utils.git.resolve_context,
+  local ok, work_tree, git_dir = pcall(
+    utils.git.resolve_context,
     0,
     { { '--git-dir', vim.env.DOT_DIR, '--work-tree', vim.env.HOME } }
   )
@@ -557,16 +559,16 @@ vim.api.nvim_create_autocmd('WinClosed', {
 
 local function filepath()
   local bufname = vim.api.nvim_buf_get_name(0)
-  local absolute_path = bufname:gsub("^oil://", "")
+  local absolute_path = bufname:gsub('^oil://', '')
 
   -- Oil buffer: show path relative to project root
-  if vim.bo.filetype == "oil" and absolute_path ~= "" then
+  if vim.bo.filetype == 'oil' and absolute_path ~= '' then
     local project_root = utils.fs.cwd_dir(absolute_path)
     if project_root then
       local project_parent = vim.fs.dirname(project_root)
-      return absolute_path:gsub("^" .. vim.pesc(project_parent) .. "/", "")
+      return absolute_path:gsub('^' .. vim.pesc(project_parent) .. '/', '')
     else
-      return vim.fn.fnamemodify(absolute_path, ":~")
+      return vim.fn.fnamemodify(absolute_path, ':~')
     end
   end
 
@@ -592,7 +594,7 @@ function _G._statusline.fname()
   local fpath = filepath()
 
   -- Oil buffer: only show path, no filename
-  if vim.bo.filetype == "oil" then
+  if vim.bo.filetype == 'oil' then
     return fpath
   end
 

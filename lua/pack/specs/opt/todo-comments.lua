@@ -13,14 +13,22 @@ return {
           },
           TODO = { icon = ' ', color = 'info' },
           HACK = { icon = ' ', color = 'warning' },
-          WARN = { icon = ' ', color = 'warning', alt = { 'WARNING', 'XXX' } },
+          WARN = {
+            icon = ' ',
+            color = 'warning',
+            alt = { 'WARNING', 'XXX' },
+          },
           PERF = {
             icon = ' ',
             alt = { 'REFACTOR', 'REFC', 'OPTIM', 'PERFORMANCE', 'OPTIMIZE' },
           },
           NOTE = { icon = ' ', color = 'hint', alt = { 'INFO', 'REVIEW' } },
           EXAMPLE = { icon = '󰄛 ', color = 'hint', alt = { 'E.G.' } },
-          CLEAN_UP = { icon = ' ', color = 'error', alt = { 'CLEAN', 'DISABLED' } },
+          CLEAN_UP = {
+            icon = ' ',
+            color = 'error',
+            alt = { 'CLEAN', 'DISABLED' },
+          },
           DEBUG = { icon = ' ', color = 'error' },
           TEST = {
             icon = '󰙨 ',

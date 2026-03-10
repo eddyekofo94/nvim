@@ -196,7 +196,7 @@ function M.is_root_dir(dir)
 end
 
 function M.is_git_repo()
-  vim.fn.system 'git rev-parse --is-inside-work-tree'
+  vim.fn.system('git rev-parse --is-inside-work-tree')
 
   return vim.v.shell_error == 0
 end
@@ -227,8 +227,10 @@ function M.is_full_path(path)
 end
 
 function M.is_new_file()
-  local filename = vim.fn.expand '%'
-  return filename ~= '' and vim.bo.buftype == '' and vim.fn.filereadable(filename) == 0
+  local filename = vim.fn.expand('%')
+  return filename ~= ''
+    and vim.bo.buftype == ''
+    and vim.fn.filereadable(filename) == 0
 end
 
 function M.get_project_path()
