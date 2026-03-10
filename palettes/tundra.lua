@@ -17,7 +17,7 @@ return {
   base0F = '#9CA3AF',
   white = '#FFFFFF',
   darker_black = '#0b1221',
-  black = '#111827', --  nvim bg
+  black = '#111827',
   black2 = '#1a2130',
   one_bg = '#1e2534',
   one_bg2 = '#282f3e',
@@ -29,7 +29,7 @@ return {
   red = '#FCA5A5',
   baby_pink = '#FECDD3',
   pink = '#ff8e8e',
-  line = '#282f3e', -- for lines like vertsplit
+  line = '#282f3e',
   green = '#B5E8B0',
   vibrant_green = '#B5E8B0',
   nord_blue = '#9baaf2',
@@ -45,4 +45,8 @@ return {
   lightbg = '#282f3e',
   pmenu_bg = '#FCA5A5',
   folder_bg = '#A5B4FC',
+  lavender = '#7287fd',
+  maroon = '#d20f39',
+  rosewater = '#dc8a78',
+  sapphire = '#209fb5',
 }

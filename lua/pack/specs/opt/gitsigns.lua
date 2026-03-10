@@ -1,19 +1,24 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/lewis6991/gitsigns.nvim',
+  src = "https://github.com/lewis6991/gitsigns.nvim",
   data = {
-    events = { 'BufReadPre', 'SessionLoadPost' },
-    cmds = 'Gitsigns',
-    keys = { lhs = '<Leader>gH', opts = { desc = 'Git list repo hunks' } },
+    events = { "BufReadPre", "SessionLoadPost" },
+    cmds = "Gitsigns",
+    keys = { lhs = "<Leader>gH", opts = { desc = "Git list repo hunks" } },
     postload = function()
-      local icons = require('utils.static.icons')
-      local gs = require('gitsigns')
-      local map = require('utils.key').map
+      local icons = require "utils.static.icons"
+      local gs = require "gitsigns"
+      local map = require("utils.key").map
 
-      gs.setup({
+      gs.setup {
+        attach_to_untracked = true,
+        sign_priority = 6,
+        update_debounce = 100,
+        status_formatter = nil, -- Use default
+        max_file_length = 40000,
         preview_config = {
-          border = 'solid',
-          style = 'minimal',
+          border = "solid",
+          style = "minimal",
         },
         signs = {
           add = { text = vim.trim(icons.GitSignAdd) },
@@ -27,7 +32,7 @@ return {
         current_line_blame = false,
         current_line_blame_opts = {
           virt_text = true,
-          virt_text_pos = 'eol',
+          virt_text_pos = "eol",
           delay = 100,
         },
         worktrees = {
@@ -38,7 +43,7 @@ return {
             gitdir = vim.env.DOT_DIR,
           },
         },
-      })
+      }
 
       -- Setup keymaps
       -- Navigation
@@ -108,11 +113,11 @@ return {
       -- stylua: ignore end
 
       -- Auto-refresh fugitive buffers on staging/unstaging hunks
-      vim.api.nvim_create_autocmd('User', {
-        pattern = 'GitSignsChanged',
-        desc = 'Automatically refresh fugitive buffers on staging/unstaging hunks.',
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "GitSignsChanged",
+        desc = "Automatically refresh fugitive buffers on staging/unstaging hunks.",
         group = vim.api.nvim_create_augroup(
-          'gitsigns.fugitive_integration',
+          "gitsigns.fugitive_integration",
           {}
         ),
         callback = function(args)
@@ -120,11 +125,11 @@ return {
           for _, buf in ipairs(vim.api.nvim_list_bufs()) do
             -- Only update fugitive buffers that matches the updated file
             if
-              vim.bo[buf].ft == 'fugitive'
-              and require('utils.fs').contains(
+              vim.bo[buf].ft == "fugitive"
+              and require("utils.fs").contains(
                 vim.fn.fnamemodify(
-                  vim.api.nvim_buf_get_name(buf):match('fugitive://(.*)'),
-                  ':h:h'
+                  vim.api.nvim_buf_get_name(buf):match "fugitive://(.*)",
+                  ":h:h"
                 ),
                 file
               )

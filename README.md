@@ -596,7 +596,10 @@ See [`nvim-pack-lock.json`](nvim-pack-lock.json).
 - [session](lua/plugin/session.lua)
     - Automatically load (disabled), save, and remove sessions for projects
     - Use `Session...` commands to manipulate sessions
-
+- colorschemes
+    - to generate:
+    python3 scripts/generate_colorscheme.py --all
+    
 Like many vim builtin plugins, these plugins can be disabled by setting the
 `g:loaded_...` flag before loading them.
 

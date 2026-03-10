@@ -137,7 +137,7 @@ return {
       vim.api.nvim_create_autocmd('BufEnter', {
         group = augroup,
         callback = function(args)
-          if not vim.g._fzf_active then
+          if vim.api.nvim_buf_is_valid(args.buf) and not vim.g._fzf_active then
             vim.b[args.buf].focus_disable = false
           end
         end,

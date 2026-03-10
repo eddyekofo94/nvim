@@ -164,7 +164,7 @@ end
 local function navigate(direction, count)
   count = count or 1
   if
-    (nvim_at_border(direction) or nvim_in_floating_win())
+    (nvim_at_border(direction) or vim.api.nvim_win_get_config(vim.api.nvim_get_current_win()).relative ~= '')
     and tmux_should_move(direction)
   then
     tmux_navigate(direction, count)
@@ -191,7 +191,7 @@ end
 ---@return boolean
 local function tmux_mapkey_close_win_condition()
   return not tmux_is_zoomed()
-    and not nvim_in_floating_win()
+    and not vim.api.nvim_win_get_config(vim.api.nvim_get_current_win()).relative ~= ''
     and nvim_has_only_win()
 end
 
@@ -208,7 +208,7 @@ end
 ---@return fun(): boolean
 local function tmux_mapkey_navigate_condition(direction)
   return function()
-    return (nvim_at_border(direction) or nvim_in_floating_win())
+    return (nvim_at_border(direction) or vim.api.nvim_win_get_config(vim.api.nvim_get_current_win()).relative ~= '')
       and tmux_should_move(direction)
   end
 end
