@@ -1,6 +1,6 @@
 -- Name:         jabuti
 -- Description:  Generated from palette
--- Last Updated: Tue 10 Mar 2026 03:11 p.m.
+-- Last Updated: Thu 12 Mar 2026 07:45 p.m.
 
 vim.cmd.hi('clear')
 vim.g.colors_name = 'jabuti'
@@ -217,7 +217,7 @@ local hlgroups = {
   ['@annotation'] = { fg = purple },
   ['@attribute'] = { fg = purple },
   ['@constant'] = { fg = orange },
-  ['@constructor'] = { fg = green },
+  ['@constructor'] = { fg = rosewater },
   ['@field'] = { fg = blue },
   ['@include'] = { fg = dark_purple },
   ['@method'] = { fg = purple },

@@ -10,10 +10,15 @@ package.path = package.path:gsub('%./%?%.lua;?', '')
 -- https://github.com/neovim/neovim/commit/2257ade3dc2daab5ee12d27807c0b3bcf103cd29
 vim.loader.enable()
 
+-- Add palettes to runtimepath for colorscheme discovery
+vim.opt.runtimepath:append(vim.fn.stdpath('config') .. '/palettes')
+
 require('core.options')
 require('core.keymaps')
+require('core.commands')
 require('core.autocmds')
 require('core.pack')
+require('core.palette')
 
 local load = require('utils.load')
 

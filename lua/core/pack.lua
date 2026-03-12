@@ -45,3 +45,13 @@ utils.load.on_events(
   'pack.load_opt',
   load_opt
 )
+
+vim.api.nvim_create_user_command('PackInstallAll', function()
+  vim.pack.install(nil, { target = 'opt' })
+  vim.pack.install(nil, { target = 'start' })
+end, {})
+
+vim.api.nvim_create_user_command('PackUpdateAll', function()
+  vim.pack.update(nil, { target = 'opt' })
+  vim.pack.update(nil, { target = 'start' })
+end, {})

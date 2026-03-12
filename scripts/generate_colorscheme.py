@@ -50,8 +50,6 @@ def generate_colorscheme(palette_name: str, palette: dict) -> str:
         "sun": get_color("sun", "#ffe9b6"),
         "folder_bg": get_color("folder_bg", "blue", "#61afef"),
         "dark_purple": get_color("dark_purple", "#c7a0dc"),
-        "nord_blue": get_color("nord_blue", "#88c0d0"),
-        "rosewater": get_color("rosewater", "#f5e0dc"),
     }
 
     var_decls = []
@@ -245,7 +243,7 @@ vim.g.terminal_color_15 = white[1]"""
         ("@annotation", "purple"),
         ("@attribute", "purple"),
         ("@constant", "orange"),
-        ("@constructor", "green"),
+        ("@constructor", "rosewater"),
         ("@field", "blue"),
         ("@include", "dark_purple"),
         ("@method", "purple"),
@@ -581,7 +579,7 @@ def load_palette(path: str) -> dict:
         line = line.strip().rstrip(",")
         if not line or line.startswith("--"):
             continue
-        key_match = re.match(r"(\w+)\s*=\s*(?:\{([^}]+)\}|'([^']+)')", line)
+        key_match = re.match(r'(\w+)\s*=\s*(?:\{([^}]+)\}|["\']([^"\']+)["\'])', line)
         if key_match:
             key = key_match.group(1)
             if key_match.group(2):
@@ -597,9 +595,32 @@ def load_palette(path: str) -> dict:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Generate colorschemes from palettes")
-    parser.add_argument("palette", nargs="?", help="Palette name")
+    parser = argparse.ArgumentParser(
+        description="Generate colorscheme files from palette tables",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python generate_colorscheme.py --all              Generate all palettes
+  python generate_colorscheme.py rosepine           Generate specific palette
+  python generate_colorscheme.py --list            List available palettes
+  python generate_colorscheme.py --info            Show colorscheme info
+  python generate_colorscheme.py rosepine --preview Show color preview
+
+Palettes are loaded from: ~/.config/nvim/palettes/
+Output is written to:     ~/.config/nvim/colors/
+""",
+    )
+    parser.add_argument("palette", nargs="?", help="Palette name to generate")
     parser.add_argument("--all", action="store_true", help="Generate all palettes")
+    parser.add_argument(
+        "--list", "-l", action="store_true", help="List available palettes"
+    )
+    parser.add_argument(
+        "--info", "-i", action="store_true", help="Show colorscheme information"
+    )
+    parser.add_argument(
+        "--preview", "-p", action="store_true", help="Preview colors in terminal"
+    )
     parser.add_argument("--output", "-o", default="colors", help="Output directory")
     args = parser.parse_args()
 
@@ -607,6 +628,56 @@ def main():
     palettes_dir = os.path.join(config_dir, "palettes")
     output_dir = os.path.join(config_dir, args.output)
     os.makedirs(output_dir, exist_ok=True)
+
+    if args.list:
+        print("Available palettes:")
+        print("-" * 40)
+        for filename in sorted(os.listdir(palettes_dir)):
+            if filename.endswith(".lua"):
+                palette_name = filename[:-4]
+                palette_path = os.path.join(palettes_dir, filename)
+                try:
+                    palette = load_palette(palette_path)
+                    colors_used = len(palette)
+                    print(f"  {palette_name:<25} ({colors_used} colors)")
+                except Exception:
+                    print(f"  {palette_name:<25} (error loading)")
+        print("-" * 40)
+        print(
+            f"Total: {len([f for f in os.listdir(palettes_dir) if f.endswith('.lua')])} palettes"
+        )
+        return
+
+    if args.info:
+        print("Colorscheme Generator Info")
+        print("=" * 50)
+        print(f"Palettes directory: {palettes_dir}")
+        print(f"Output directory:   {output_dir}")
+        print()
+        print("Highlight groups generated:")
+        print("  - UI highlights (Cursor, Visual, etc.)")
+        print("  - Syntax highlights (String, Keyword, etc.)")
+        print("  - Treesitter TS groups (TSFunction, TSParameter, etc.)")
+        print("  - Treesitter @ groups (@string, @keyword, etc.)")
+        print("  - LSP semantic tokens (@lsp.*)")
+        print("  - Diagnostics (DiagnosticError, etc.)")
+        print("  - Filetypes (html*, markdown*, etc.)")
+        print("  - Plugins (Telescope, GitSigns, etc.)")
+        print("  - Statusline components")
+        print()
+        print("Run with --preview to see color samples")
+        return
+
+    if args.preview and args.palette:
+        palette = load_palette(os.path.join(palettes_dir, f"{args.palette}.lua"))
+        print(f"Color preview for: {args.palette}")
+        print("-" * 40)
+        for name, hex in sorted(palette.items()):
+            if isinstance(hex, list):
+                hex = hex[0] if hex else "#808080"
+            print(f"  {name:<20} {hex}")
+        print("-" * 40)
+        return
 
     if args.all:
         for filename in os.listdir(palettes_dir):

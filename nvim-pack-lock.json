@@ -254,6 +254,10 @@
       "rev": "81def742a9393f5639611d0cff6c2d7da1241915",
       "src": "https://github.com/FluxxField/smart-motion.nvim"
     },
+    "themeswitcher.nvim": {
+      "rev": "9d6821421aff7abf2d7ed278096ed9afbdbaf7f2",
+      "src": "https://github.com/uhhuhuhuhuh/themeswitcher.nvim"
+    },
     "todo-comments.nvim": {
       "rev": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668",
       "src": "https://github.com/folke/todo-comments.nvim"
@@ -261,6 +265,10 @@
     "treesj": {
       "rev": "186084dee5e9c8eec40f6e39481c723dd567cb05",
       "src": "https://github.com/Wansmer/treesj"
+    },
+    "triptych.nvim": {
+      "rev": "18746e1d2b804ffb5922f0f6999f8df88f3f8c90",
+      "src": "https://github.com/simonmclean/triptych.nvim"
     },
     "ts-autotag.nvim": {
       "rev": "35f79f6253dff5cc43cf943d74c4b2734370a81d",
@@ -309,6 +317,10 @@
     "vimtex": {
       "rev": "f707368022cdb851716be0d2970b90599c84a6a6",
       "src": "https://github.com/lervag/vimtex"
+    },
+    "volt": {
+      "rev": "620de1321f275ec9d80028c68d1b88b409c0c8b1",
+      "src": "https://github.com/nvzone/volt"
     },
     "which-key.nvim": {
       "rev": "3aab2147e74890957785941f0c1ad87d0a44c15a",

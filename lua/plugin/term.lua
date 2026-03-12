@@ -244,20 +244,14 @@ function M.setup()
   end
   vim.g.loaded_term_plugin = true
 
-  -- Wisely exit terminal mode with <Esc>
-  vim.keymap.set(
-    "t",
-    "<Esc>",
-    [[v:lua.require'utils.term'.running_tui() ? "<Esc>" : "<Cmd>stopi<CR>"]],
-    { expr = true, replace_keycodes = false, desc = "Exit terminal mode" }
-  )
-  -- Use `<C-\\><Esc>` instead to force send `<Esc>` to the terminal regardless
-  -- of the underlying app
+  -- Send Escape directly to terminal
+  vim.keymap.set("t", "<Esc>", "<Esc>", { replace_keycodes = false, desc = "Send Escape to terminal" })
+  -- Use `<C-\\><Esc>` instead to exit terminal mode
   vim.keymap.set(
     "t",
     "<C-\\><Esc>",
-    "<Esc>",
-    { expr = true, replace_keycodes = false, desc = "Send <Esc> to terminal" }
+    "<Cmd>stopi<CR>",
+    { replace_keycodes = false, desc = "Exit terminal mode" }
   )
   -- Make `<C-[>` the same as `<Esc>` in terminals with kitty keyboard protocol
   -- support where `<C-[>` and `<Esc>` are treated differently
@@ -361,5 +355,28 @@ vim.keymap.set("t", "<A-|>", function()
   vim.cmd.vsplit()
   vim.cmd.terminal()
 end, { desc = "Open new terminal vertically" })
+
+vim.api.nvim_create_user_command("FTerm", function(opts)
+  local cmd = opts.args and #opts.args > 0 and opts.args or vim.o.shell
+  vim.cmd.terminal(cmd)
+  vim.cmd "resize 100%"
+  local win = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_win_get_buf(win)
+  vim.w[win].term_fullscreen = true
+  vim.keymap.set("t", "q", function()
+    vim.api.nvim_buf_delete(buf, { force = true })
+  end, { buffer = buf, desc = "Close terminal" })
+end, { nargs = "?", desc = "Open terminal fullscreen" })
+
+vim.api.nvim_create_user_command("LazyGit", function()
+  vim.cmd.terminal("LazyGit")
+  vim.cmd "resize 100%"
+  local win = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_win_get_buf(win)
+  vim.w[win].term_fullscreen = true
+  vim.keymap.set("t", "q", function()
+    vim.api.nvim_buf_delete(buf, { force = true })
+  end, { buffer = buf, desc = "Close terminal" })
+end, { desc = "Open LazyGit fullscreen" })
 
 return M

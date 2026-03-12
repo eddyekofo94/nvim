@@ -156,6 +156,21 @@ function M.lazy_load(spec, path)
   ---cmd/key/event triggers to serve as a 'library'
   local lazy = spec.data.lazy
 
+  -- Normalize singular forms to plural for lazy-loading
+  local data = spec.data
+  if data.event and not data.events then
+    data.events = data.event
+    data.event = nil
+  end
+  if data.cmd and not data.cmds then
+    data.cmds = data.cmd
+    data.cmd = nil
+  end
+  if data.key and not data.keys then
+    data.keys = data.key
+    data.key = nil
+  end
+
   for _, trig in ipairs({ 'cmds', 'keys', 'events' }) do
     if not spec.data[trig] then
       goto continue
@@ -167,7 +182,17 @@ function M.lazy_load(spec, path)
     ::continue::
   end
 
+  -- Plugins in start/ directory should always be loaded
+  -- Only opt plugins can be truly lazy-loaded
+  -- Check for both plugin/ dir (vim plugins) and lua/ dir (lua plugins)
+  local plugin_path = M.path(spec)
+  local is_start = vim.fn.isdirectory(plugin_path .. '/plugin') == 1
+    or vim.fn.isdirectory(plugin_path .. '/lua') == 1
+
   if not lazy and not (spec.data and spec.data.asdeps) then
+    M.load(spec, path)
+  elseif is_start then
+    -- Start plugins must be loaded regardless of lazy setting
     M.load(spec, path)
   end
 end

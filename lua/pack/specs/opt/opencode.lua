@@ -106,12 +106,36 @@ return {
 
       local group = vim.api.nvim_create_augroup('opencode.settings', {})
 
+      local saved_heights = {}
+
+      local function lock_opencode_heights()
+        for win, _ in pairs(saved_heights) do
+          if vim.api.nvim_win_is_valid(win) then
+            pcall(vim.api.nvim_win_set_height, win, saved_heights[win])
+          end
+        end
+      end
+
+      local function save_opencode_heights()
+        saved_heights = {}
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          local buf = vim.api.nvim_win_get_buf(win)
+          if vim.startswith(vim.bo[buf].ft, 'opencode') then
+            saved_heights[win] = vim.api.nvim_win_get_height(win)
+          end
+        end
+      end
+
       vim.api.nvim_create_autocmd('FileType', {
         desc = 'FileType settings for opencode buffers.',
         pattern = 'opencode*',
         group = group,
         callback = function(args)
           vim.b[args.buf].winbar_no_attach = true
+          vim.b[args.buf].focus_disable = true
+          vim.b[args.buf].winfixbuf = true
+          vim.b[args.buf].winfixwidth = true
+          vim.b[args.buf].winfixheight = true
         end,
       })
 
@@ -123,10 +147,40 @@ return {
             return
           end
           vim.b[args.buf].focus_disable = true
-          for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
-            if vim.api.nvim_win_is_valid(win) then
-              vim.w[win].focus_disable = true
-            end
+          vim.b[args.buf].winfixbuf = true
+          vim.b[args.buf].winfixwidth = true
+          vim.b[args.buf].winfixheight = true
+          vim.opt_local.winfixbuf = true
+          vim.opt_local.winfixwidth = true
+          vim.opt_local.winfixheight = true
+          save_opencode_heights()
+        end,
+      })
+
+      vim.api.nvim_create_autocmd('WinLeave', {
+        desc = 'Save opencode heights before leaving window.',
+        group = group,
+        callback = function()
+          save_opencode_heights()
+        end,
+      })
+
+      vim.api.nvim_create_autocmd('WinEnter', {
+        desc = 'Restore opencode heights after entering window.',
+        group = group,
+        callback = function()
+          vim.defer_fn(lock_opencode_heights, 100)
+        end,
+      })
+
+      vim.api.nvim_create_autocmd('TextChanged', {
+        desc = 'Redraw on text changes in opencode.',
+        group = group,
+        callback = function(args)
+          if vim.startswith(vim.bo[args.buf].ft, 'opencode') then
+            vim.cmd('redraw!')
+            save_opencode_heights()
+            vim.defer_fn(lock_opencode_heights, 50)
           end
         end,
       })

@@ -1,43 +1,43 @@
 -- Name:         bearded-arc
 -- Description:  Generated from palette
--- Last Updated: Tue 10 Mar 2026 03:11 p.m.
+-- Last Updated: Thu 12 Mar 2026 07:45 p.m.
 
 vim.cmd.hi('clear')
 vim.g.colors_name = 'bearded-arc'
 
 -- stylua: ignore start
-local baby_pink = { '#808080' }
-local black = { '#808080' }
-local black2 = { '#808080' }
-local blue = { '#808080' }
-local cyan = { '#808080' }
-local dark_purple = { '#808080' }
-local darker_black = { '#808080' }
-local folder_bg = { '#808080' }
-local green = { '#808080' }
-local grey = { '#808080' }
-local grey_fg = { '#808080' }
-local grey_fg2 = { '#808080' }
+local baby_pink = { '#F38CEC' }
+local black = { '#1c2433' }
+local black2 = { '#232b3a' }
+local blue = { '#69C3FF' }
+local cyan = { '#22ECDB' }
+local dark_purple = { '#B78AFF' }
+local darker_black = { '#19212e' }
+local folder_bg = { '#69C3FF' }
+local green = { '#3CEC85' }
+local grey = { '#444c5b' }
+local grey_fg = { '#4e5665' }
+local grey_fg2 = { '#58606f' }
 local lavender = { '#7287fd' }
-local light_grey = { '#808080' }
-local line = { '#808080' }
+local light_grey = { '#626a79' }
+local line = { '#303847' }
 local maroon = { '#d20f39' }
-local nord_blue = { '#808080' }
-local one_bg = { '#808080' }
-local one_bg2 = { '#808080' }
-local one_bg3 = { '#808080' }
-local orange = { '#808080' }
-local pink = { '#808080' }
-local purple = { '#808080' }
-local red = { '#808080' }
+local nord_blue = { '#6da4cd' }
+local one_bg = { '#262e3d' }
+local one_bg2 = { '#303847' }
+local one_bg3 = { '#3a4251' }
+local orange = { '#FF955C' }
+local pink = { '#ee9cdd' }
+local purple = { '#bd93ff' }
+local red = { '#FF738A' }
 local rosewater = { '#dc8a78' }
 local sapphire = { '#209fb5' }
-local statusline = { '#808080' }
-local sun = { '#808080' }
-local teal = { '#808080' }
-local vibrant_green = { '#808080' }
-local white = { '#808080' }
-local yellow = { '#808080' }
+local statusline = { '#232b3a' }
+local sun = { '#f6d96d' }
+local teal = { '#12c7c4' }
+local vibrant_green = { '#9bdead' }
+local white = { '#ABB7C1' }
+local yellow = { '#EACD61' }
 -- stylua: ignore end
 
 -- Terminal colors
@@ -217,7 +217,7 @@ local hlgroups = {
   ['@annotation'] = { fg = purple },
   ['@attribute'] = { fg = purple },
   ['@constant'] = { fg = orange },
-  ['@constructor'] = { fg = green },
+  ['@constructor'] = { fg = rosewater },
   ['@field'] = { fg = blue },
   ['@include'] = { fg = dark_purple },
   ['@method'] = { fg = purple },
