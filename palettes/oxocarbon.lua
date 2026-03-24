@@ -30,8 +30,5 @@ return {
   pmenu_bg = "#3ddbd9",
   folder_bg = "#78a9ff",
   lavender = "#c7d1ff",
-  maroon = "#d20f39",
-  rosewater = "#dc8a78",
-  sapphire = "#209fb5",
 }
 

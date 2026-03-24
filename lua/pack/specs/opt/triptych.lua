@@ -9,9 +9,9 @@ return {
       'nvim-tree/nvim-web-devicons',
     },
     postload = function()
-      local lmap = require('utils.map').lmap
+      local lmap = require('utils.key').lmap
 
-      lmap('-', '<cmd>Triptych<CR>', '[Triptych] File explorer')
+      lmap('e', '<cmd>Triptych<CR>', '[Triptych] File explorer')
 
       require('triptych').setup {
         mappings = {

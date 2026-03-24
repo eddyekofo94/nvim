@@ -1,5 +1,68 @@
 local lsp = require('utils.lsp')
 
+local M = {}
+local attached = {}
+
+vim.api.nvim_create_autocmd('LspAttach', {
+  desc = 'Setup document highlight on LspAttach.',
+  callback = function(args)
+    if not require('utils.load').loaded['core.lsp'] then
+      return
+    end
+    local key = args.data.client_id .. ':' .. args.buf
+    if attached[key] then
+      return
+    end
+    attached[key] = true
+    M.on_attach(
+      vim.lsp.get_client_by_id(args.data.client_id),
+      args.buf
+    )
+  end,
+})
+
+function M.on_attach(client, buf)
+  local group = vim.api.nvim_create_augroup(
+    'lsp.document_highlight.' .. buf,
+    { clear = true }
+  )
+  vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+    group = group,
+    buffer = buf,
+    callback = function()
+      local clients = vim.lsp.get_clients({ bufnr = buf })
+      for _, c in ipairs(clients) do
+        if c:supports_method('textDocument/documentHighlight', buf) then
+          vim.lsp.buf.document_highlight()
+          return
+        end
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+    group = group,
+    buffer = buf,
+    callback = vim.lsp.buf.clear_references,
+  })
+  vim.api.nvim_create_autocmd('LspDetach', {
+    group = group,
+    buffer = buf,
+    callback = function(detach_args)
+      if detach_args.data.client_id == client.id then
+        vim.lsp.buf.clear_references()
+        local remaining = vim.lsp.get_clients({ bufnr = buf })
+        local has_highlight = vim.iter(remaining):any(function(c)
+          return c.id ~= detach_args.data.client_id
+            and c:supports_method('textDocument/documentHighlight', buf)
+        end)
+        if not has_highlight then
+          vim.api.nvim_del_augroup_by_id(group)
+        end
+      end
+    end,
+  })
+end
+
 vim.lsp.config(
   '*',
   vim.tbl_deep_extend('force', lsp.default_config, {
@@ -137,7 +200,7 @@ do
       vim.defer_fn(function()
         lsp_autostop_pending = nil
         for _, client in ipairs(vim.lsp.get_clients()) do
-          if vim.tbl_isempty(client.attached_buffers) then
+          if not next(client.attached_buffers or {}) then
             lsp.soft_stop(client)
           end
         end
@@ -178,14 +241,14 @@ do
     group = group,
     callback = function(args)
       local buf = args.buf
-      for _, client in ipairs(vim.lsp.get_active_clients({ buffer = buf })) do
+      for _, client in ipairs(vim.lsp.get_clients({ buffer = buf })) do
         if timers[client.id] then
           timers[client.id]:close()
         end
         timers[client.id] = vim.defer_fn(function()
           if vim.api.nvim_buf_is_valid(buf) then
             local client = vim.lsp.get_client_by_id(client.id)
-            if client and not vim.tbl_isempty(client.attached_buffers) then
+            if client and next(client.attached_buffers or {}) then
               vim.notify(
                 '[LSP] stopping ' .. client.name .. ' due to inactivity',
                 vim.log.levels.DEBUG
@@ -210,44 +273,6 @@ do
     end,
   })
 end
-
--- Highlight references of the symbol under the cursor
-vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('lsp.document_highlight', {}),
-  desc = 'Setup document highlight on CursorHold.',
-  callback = function(args)
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-    if
-      not client
-      or not client:supports_method('textDocument/documentHighlight')
-    then
-      return
-    end
-
-    local augroup =
-      vim.api.nvim_create_augroup('lsp.document_highlight.' .. args.buf, {})
-    vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
-      group = augroup,
-      buffer = args.buf,
-      callback = vim.lsp.buf.document_highlight,
-    })
-    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
-      group = augroup,
-      buffer = args.buf,
-      callback = vim.lsp.buf.clear_references,
-    })
-    vim.api.nvim_create_autocmd('LspDetach', {
-      group = augroup,
-      buffer = args.buf,
-      callback = function(detach_args)
-        if detach_args.data.client_id == args.data.client_id then
-          vim.api.nvim_del_augroup_by_id(augroup)
-          vim.lsp.buf.clear_references()
-        end
-      end,
-    })
-  end,
-})
 
 -- Keymaps
 do
@@ -299,6 +324,7 @@ do
   vim.keymap.set({ 'n', 'x' }, '<Leader><', function() vim.lsp.buf.incoming_calls() end, { desc = 'Show incoming calls' })
   vim.keymap.set({ 'n', 'x' }, '<Leader>>', function() vim.lsp.buf.outgoing_calls() end, { desc = 'Show outgoing calls' })
   -- vim.keymap.set({ 'n', 'x' }, '<Leader>s', function() vim.lsp.buf.document_symbol() end, { desc = 'Show document symbols' })
-  -- vim.keymap.set({ 'n', 'x' }, '<Leader>S', function() vim.lsp.buf.workspace_symbol() end, { desc = 'Show workspace symbols' })
   -- stylua: ignore end
 end
+
+return M

@@ -599,7 +599,6 @@ See [`nvim-pack-lock.json`](nvim-pack-lock.json).
 - colorschemes
     - to generate:
     python3 scripts/generate_colorscheme.py --all
-    
 Like many vim builtin plugins, these plugins can be disabled by setting the
 `g:loaded_...` flag before loading them.
 

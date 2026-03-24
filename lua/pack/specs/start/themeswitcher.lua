@@ -2,6 +2,7 @@
 return {
   src = "https://github.com/uhhuhuhuhuh/themeswitcher.nvim",
   data = {
+    enabled = false,
     postload = function()
       require("themeswitcher").setup {
         themes = {

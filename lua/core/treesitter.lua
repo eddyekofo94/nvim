@@ -11,7 +11,7 @@ local function ts_buf_call_wrap(cb)
     end
     local args = { ... }
     vim.api.nvim_buf_call(buf or 0, function()
-      cb(buf, unpack(args))
+      pcall(cb, buf, unpack(args))
     end)
   end
 end

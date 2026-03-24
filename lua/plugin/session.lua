@@ -66,7 +66,6 @@ M.opts = {
       'WinClosed',
       'DirChanged',
       'FileChangedShellPost',
-      'VimLeave',
     },
     ---Condition to automatically save sessions
     ---@type fun(): boolean
@@ -206,9 +205,7 @@ function M.load(session, notify)
     vim.g._session_loaded = session
     vim.api.nvim_exec_autocmds('SessionLoadPost', {})
 
-    vim.schedule(function()
-      require('utils.key').check_conflicts()
-    end)
+
   end)
 end
 

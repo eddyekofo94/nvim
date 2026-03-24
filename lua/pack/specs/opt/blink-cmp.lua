@@ -71,7 +71,6 @@ return {
           return vim.fn.reg_recording() == "" and vim.fn.reg_executing() == ""
         end,
         fuzzy = {
-          -- Don't error when rust fuzzy lib is unavailable
           implementation = pcall(require, "blink.cmp.fuzzy.rust")
               and "prefer_rust"
             or "lua",
@@ -229,9 +228,6 @@ return {
             -- Recommended: Add a secondary trigger just in case your terminal
             -- is swallowing C-space
             ["<C-@>"] = { "show", "hide", "fallback" }, -- <C-@> is often what <C-space> sends
-            ["<C-y>"] = {
-              "select_and_accept",
-            },
             ["<C-e>"] = { "hide", "fallback" },
             ["<Tab>"] = {
               "show",

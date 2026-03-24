@@ -32,8 +32,4 @@ return {
   violet = '#9A86FD',
   darkgreen = '#1B312E',
   brownred = '#5D2932'
-  lavender = '#7287fd',
-  maroon = '#d20f39',
-  rosewater = '#dc8a78',
-  sapphire = '#209fb5',
 }

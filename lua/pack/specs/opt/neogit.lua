@@ -11,7 +11,7 @@ return {
     },
     postload = function()
       vim.opt.fillchars = { diff = ' ' }
-      local lmap = require('utils.map').lmap
+      local lmap = require('utils.key').lmap
 
       local neogit = require('neogit')
 

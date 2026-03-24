@@ -13,10 +13,7 @@ return {
       'TSUninstall',
       'TSUpdate',
     },
-    -- Skip loading nvim-treesitter for plugin-specific filetypes containing
-    -- underscores (e.g. 'cmp_menu') to improve initial cmdline responsiveness
-    -- on slower systems
-    events = { event = 'FileType', pattern = '[^_]\\+' },
+    ft = { 'markdown' },
     postload = function()
       local ensure_installed = {
         'javascript',

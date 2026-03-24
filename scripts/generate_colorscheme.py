@@ -17,6 +17,26 @@ def generate_colorscheme(palette_name: str, palette: dict) -> str:
                 return val
         return default
 
+    def blend_hex(hex1, hex2, alpha):
+        def c(x):
+            return max(0, min(255, round(x)))
+
+        return (
+            f"#{c(alpha * int(hex1[1:3], 16) + (1 - alpha) * int(hex2[1:3], 16)):02x}"
+            f"{c(alpha * int(hex1[3:5], 16) + (1 - alpha) * int(hex2[3:5], 16)):02x}"
+            f"{c(alpha * int(hex1[5:7], 16) + (1 - alpha) * int(hex2[5:7], 16)):02x}"
+        )
+
+    blended = {
+        "lavender": blend_hex(get_color("purple"), get_color("white"), 0.7),
+        "rosewater": blend_hex(get_color("pink"), get_color("white"), 0.65),
+        "maroon": blend_hex(get_color("pink"), get_color("teal"), 0.8),
+        "sapphire": blend_hex(get_color("blue"), get_color("teal"), 0.55),
+        "sun": blend_hex(get_color("yellow"), get_color("white"), 0.7),
+        "nord_blue": blend_hex(get_color("blue"), get_color("grey"), 0.55),
+        "baby_pink": blend_hex(get_color("pink"), get_color("white"), 0.75),
+    }
+
     colors = {
         "green": get_color("green", "base0B", "#98c379"),
         "vibrant_green": get_color("vibrant_green", "green", "#98c379"),
@@ -25,14 +45,14 @@ def generate_colorscheme(palette_name: str, palette: dict) -> str:
         "baby_pink": get_color("baby_pink", "pink", "#ff79c6"),
         "blue": get_color("blue", "base0D", "#61afef"),
         "one_bg3": get_color("one_bg3", "base04", "#555555"),
-        "maroon": get_color("maroon", "#eba0ac"),
+        "maroon": get_color("maroon", "baby_pink", "pink", "#eba0ac"),
         "teal": get_color("teal", "#14b8a6"),
         "one_bg2": get_color("one_bg2", "base03", "#444444"),
         "black": get_color("black", "base00", "#1e1e1e"),
         "black2": get_color("black2", "base01", "#282828"),
         "darker_black": get_color("darker_black", "#191919"),
         "one_bg": get_color("one_bg", "base02", "#333333"),
-        "sapphire": get_color("sapphire", "#74c7ec"),
+        "sapphire": get_color("sapphire", "nord_blue", "blue", "#74c7ec"),
         "white": get_color("white", "base05", "#d4d4d4"),
         "light_grey": get_color("light_grey", "#606060"),
         "grey_fg2": get_color("grey_fg2", "base07", "#777777"),
@@ -42,14 +62,17 @@ def generate_colorscheme(palette_name: str, palette: dict) -> str:
         "pink": get_color("pink", "#ff79c6"),
         "purple": get_color("purple", "base0E", "#c678dd"),
         "cyan": get_color("cyan", "base0C", "#56b6c2"),
-        "lavender": get_color("lavender", "#b4befe"),
+        "dark_purple": get_color("dark_purple", "#c7a0dc"),
+        "folder_bg": get_color("folder_bg", "blue", "#61afef"),
         "line": get_color("line", "#3e3e3e"),
         "statusline": get_color("statusline_bg", "lightbg", get_color("black2")),
-        "nord_blue": get_color("nord_blue", "#88c0d0"),
-        "rosewater": get_color("rosewater", "#f5e0dc"),
-        "sun": get_color("sun", "#ffe9b6"),
-        "folder_bg": get_color("folder_bg", "blue", "#61afef"),
-        "dark_purple": get_color("dark_purple", "#c7a0dc"),
+        "lavender": blended["lavender"],
+        "rosewater": blended["rosewater"],
+        "maroon": blended["maroon"],
+        "sapphire": blended["sapphire"],
+        "sun": blended["sun"],
+        "nord_blue": blended["nord_blue"],
+        "baby_pink": blended["baby_pink"],
     }
 
     var_decls = []
@@ -140,6 +163,7 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  WinBarNC = { bg = black, fg = grey_fg },")
     hl("  WinSeparator = { fg = line },")
     hl("  lCursor = { link = 'Cursor' },")
+    hl("  HighlightedYankRegion = { reverse = true },")
 
     # Syntax
     hl("  Boolean = { fg = sun, italic = true, bold = true },")
@@ -149,19 +173,20 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  Delimiter = { fg = orange },")
     hl("  Error = { fg = red },")
     hl("  Float = { link = 'Number' },")
-    hl("  Function = { fg = purple },")
+    hl("  Function = { fg = blue },")
     hl("  Number = { fg = orange },")
     hl("  SpecialKey = { fg = grey },")
     hl("  String = { fg = green },")
     hl("  Todo = { fg = black, bg = blue, bold = true },")
     hl("  Type = { fg = yellow },")
     hl("  PreProc = { fg = sapphire },")
+    hl("  PreCondit = { fg = purple },")
     hl("  Include = { fg = dark_purple },")
     hl("  Define = { fg = purple },")
     hl("  Conditional = { fg = maroon },")
-    hl("  Repeat = { fg = red },")
-    hl("  Typedef = { fg = red },")
-    hl("  Exception = { fg = red },")
+    hl("  Repeat = { fg = teal },")
+    hl("  Typedef = { fg = teal },")
+    hl("  Exception = { fg = maroon },")
     hl("  Statement = { fg = lavender },")
     hl("  Keyword = { fg = pink, italic = true },")
     hl("  Enum = { link = 'Macro' },")
@@ -173,18 +198,18 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  EndOfBuffer = { fg = black },")
     hl("  Search = { fg = black, bg = teal },")
     hl("  Identifier = { fg = lavender },")
-    hl("  Operator = { fg = pink },")
+    hl("  Operator = { fg = rosewater, bold = true },")
     hl("  Pmenu = { link = 'NormalFloat' },")
     hl("  Macro = { fg = lavender },")
     hl("  Directory = { fg = folder_bg },")
 
     # Treesitter TS groups
-    ts = [
+    ts_simple = [
         ("TSAnnotation", "purple"),
         ("TSAttribute", "purple"),
         ("TSBoolean", "sun"),
         ("TSComment", "grey_fg"),
-        ("TSConditional", "red"),
+        ("TSConditional", "maroon"),
         ("TSConstBuiltin", "dark_purple"),
         ("TSConstant", "white"),
         ("TSConstructor", "green"),
@@ -192,18 +217,16 @@ vim.g.terminal_color_15 = white[1]"""
         ("TSFloat", "purple"),
         ("TSFuncBuiltin", "orange"),
         ("TSFuncMacro", "green"),
-        ("TSFunction", "purple"),
-        ("TSFunctionCall", "red"),
-        ("TSInclude", "red"),
+        ("TSFunction", "blue"),
+        ("TSFunctionCall", "teal"),
+        ("TSInclude", "blue"),
         ("TSKeyword", "pink"),
         ("TSKeywordFunction", "purple"),
         ("TSKeywordOperator", "maroon"),
-        ("TSKeywordReturn", "purple"),
+        ("TSKeywordReturn", "teal"),
         ("TSLabel", "blue"),
-        ("TSMath", "blue"),
-        ("TSMethod", "purple"),
+        ("TSMethod", "blue"),
         ("TSMethodCall", "orange"),
-        ("TSNamespace", "purple"),
         ("TSNone", "white"),
         ("TSNumber", "orange"),
         ("TSOperator", "pink"),
@@ -211,7 +234,6 @@ vim.g.terminal_color_15 = white[1]"""
         ("TSParameterReference", "white"),
         ("TSProperty", "lavender"),
         ("TSPunctBracket", "lavender"),
-        ("TSRepeat", "red"),
         ("TSStorageClass", "blue"),
         ("TSString", "green"),
         ("TSStringEscape", "green"),
@@ -220,15 +242,33 @@ vim.g.terminal_color_15 = white[1]"""
         ("TSTag", "sun"),
         ("TSTagAttribute", "green"),
         ("TSText", "green"),
-        ("TSType", "yellow"),
-        ("TSTypeBuiltin", "maroon"),
-        ("TSTypeDefinition", "pink"),
         ("TSURI", "vibrant_green"),
         ("TSVariable", "white"),
-        ("TSVariableBuiltin", "pink"),
     ]
-    for name, color in ts:
+    for name, color in ts_simple:
         hl(f"  {name} = {{ fg = {color} }},")
+
+    hl("  TSType = { fg = yellow, bold = true },")
+    hl("  TSTypeBuiltin = { fg = maroon },")
+    hl("  TSTypeDefinition = { fg = pink, bold = true },")
+    hl("  TSTypeQualifier = { fg = sun, bold = true },")
+    hl("  TSNamespace = { fg = blue },")
+    hl("  TSVariableBuiltin = { fg = pink, italic = true },")
+    hl("  TSPreProc = { link = 'PreProc' },")
+    hl("  TSDebug = { link = 'Debug' },")
+    hl("  TSDefine = { link = 'Define' },")
+    hl("  TSEnvironment = { link = 'Macro' },")
+    hl("  TSEnvironmentName = { link = 'Type' },")
+    hl("  TSError = { link = 'Error' },")
+    hl("  TSException = { fg = maroon },")
+    hl("  TSLiteral = { link = 'String' },")
+    hl("  TSMath = { fg = blue },")
+    hl("  TSRepeat = { fg = teal },")
+    hl("  TSStorageClassLifetime = { fg = blue },")
+    hl("  TSStrike = { fg = grey_fg },")
+    hl("  TSTitle = { link = 'Title' },")
+    hl("  TSTodo = { link = 'Todo' },")
+    hl("  TSTagDelimiter = { fg = green },")
 
     # @ treesitter groups
     at = [
@@ -261,17 +301,13 @@ vim.g.terminal_color_15 = white[1]"""
         ("@function.call", "purple"),
         ("@method.call", "orange"),
         ("@keyword.function", "purple"),
-        ("@keyword.return", "purple"),
-        ("@keyword.operator", "maroon"),
-        ("@keyword.import", "dark_purple"),
-        ("@keyword.exception", "red"),
         ("@type.builtin", "maroon"),
         ("@variable.parameter", "teal"),
         ("@variable.member", "nord_blue"),
         ("@variable.builtin", "pink"),
         ("@constant.builtin", "dark_purple"),
         ("@module", "baby_pink"),
-        ("@function.method", "red"),
+        ("@function.method", "teal"),
         ("@markup.link", "cyan"),
         ("@markup.raw", "lavender"),
         ("@markup.heading", "blue"),
@@ -280,12 +316,8 @@ vim.g.terminal_color_15 = white[1]"""
         ("@diff.plus", "green"),
         ("@diff.minus", "red"),
         ("@diff.delta", "sun"),
-        ("@keyword.repeat", "purple"),
         ("@variable.member.key", "nord_blue"),
         ("@number.float", "pink"),
-        ("@keyword.storage", "yellow"),
-        ("@keyword.directive", "yellow"),
-        ("@string.regexp", "pink"),
     ]
     for name, color in at:
         if name == "@markup.link.url":
@@ -298,6 +330,31 @@ vim.g.terminal_color_15 = white[1]"""
             hl(f"  ['{name}'] = {{ fg = {color}, italic = true }},")
         else:
             hl(f"  ['{name}'] = {{ fg = {color} }},")
+
+    # Lua @ treesitter overrides
+    hl("  ['@function.call.lua'] = { fg = nord_blue },")
+    hl("  ['@variable.member.lua'] = { fg = blue },")
+    hl("  ['@constructor.lua'] = { fg = rosewater },")
+    hl("  ['@function.lua'] = { fg = blue },")
+    hl("  ['@functional.call.lua'] = { fg = nord_blue },")
+    hl("  ['@lsp.type.variable.lua'] = { fg = white },")
+    hl("  ['@lsp.type.parameter.lua'] = { fg = sun },")
+    hl("  ['@lsp.type.function.lua'] = { fg = nord_blue },")
+    hl("  ['@lsp.type.property.lua'] = { fg = lavender },")
+    hl("  ['@lsp.type.method.lua'] = { fg = blue },")
+    hl("  ['@lsp.typemod.variable.global.lua'] = { fg = rosewater },")
+    hl("  ['@variable.parameter.lua'] = { fg = sun },")
+    hl("  ['@lsp.variable.lua'] = { fg = teal },")
+
+    # @ treesitter keyword/control flow overrides
+    hl("  ['@keyword.operator'] = { fg = maroon },")
+    hl("  ['@keyword.return'] = { fg = teal },")
+    hl("  ['@keyword.conditional'] = { fg = maroon },")
+    hl("  ['@keyword.repeat'] = { fg = teal },")
+    hl("  ['@keyword.exception'] = { fg = maroon },")
+    hl("  ['@keyword.import'] = { fg = dark_purple },")
+    hl("  ['@keyword.storage'] = { fg = yellow },")
+    hl("  ['@keyword.directive'] = { fg = yellow },")
 
     # Comment groups with backgrounds
     hl("  ['@comment.todo'] = { fg = black, bg = white, bold = true },")
@@ -331,15 +388,12 @@ vim.g.terminal_color_15 = white[1]"""
         ("@text.danger", "TSDanger"),
         ("@text.diff.add", "DiffAdded"),
         ("@text.diff.delete", "DiffRemoved"),
-        ("@text.emphasis", "TSEmphasis"),
         ("@text.environment", "TSEnvironment"),
         ("@text.environment.name", "TSEnvironmentName"),
         ("@text.literal", "TSLiteral"),
         ("@text.math", "TSMath"),
-        ("@text.note", "TSNote"),
         ("@text.reference", "TSTextReference"),
         ("@text.strike", "TSStrike"),
-        ("@text.strong", "TSStrong"),
         ("@text.title", "TSTitle"),
         ("@text.todo", "TSTodo"),
         ("@text.todo.checked", "Todo"),
@@ -356,6 +410,7 @@ vim.g.terminal_color_15 = white[1]"""
         hl(f"  ['{name}'] = {{ link = '{target}' }},")
 
     # Diagnostic
+    hl("  TSDanger = { fg = red },")
     hl("  DiagnosticError = { fg = red },")
     hl("  DiagnosticHint = { fg = teal },")
     hl("  DiagnosticInfo = { fg = cyan },")
@@ -363,15 +418,15 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  DiagnosticWarn = { fg = yellow },")
     hl("  DiagnosticSignError = { fg = red },")
     hl("  DiagnosticSignHint = { fg = teal },")
-    hl("  DiagnosticSignInfo = { fg = cyan },")
+    hl("  DiagnosticSignInfo = { fg = blue },")
     hl("  DiagnosticSignWarn = { fg = yellow },")
     hl("  DiagnosticUnderlineError = { sp = red, undercurl = true },")
     hl("  DiagnosticUnderlineHint = { sp = teal, undercurl = true },")
-    hl("  DiagnosticUnderlineInfo = { sp = cyan, undercurl = true },")
+    hl("  DiagnosticUnderlineInfo = { sp = blue, undercurl = true },")
     hl("  DiagnosticUnderlineWarn = { sp = yellow, undercurl = true },")
     hl("  DiagnosticVirtualTextError = { bg = black2, fg = red },")
     hl("  DiagnosticVirtualTextHint = { bg = black2, fg = teal },")
-    hl("  DiagnosticVirtualTextInfo = { bg = black2, fg = cyan },")
+    hl("  DiagnosticVirtualTextInfo = { bg = black2, fg = blue },")
     hl("  DiagnosticVirtualTextWarn = { bg = black2, fg = yellow },")
     hl("  DiagnosticUnnecessary = { fg = grey, sp = teal, undercurl = true },")
     hl("  LspCodeLens = { fg = grey },")
@@ -412,7 +467,7 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  ['@keyword.function.go'] = { fg = purple, italic = true },")
     hl("  ['@variable.member.go'] = { fg = nord_blue },")
     hl("  ['@variable.parameter.go'] = { fg = teal },")
-    hl("  ['@function.method.go'] = { fg = red },")
+    hl("  ['@function.method.go'] = { fg = teal },")
     hl("  ['@lsp.type.interface.go'] = { fg = yellow, italic = true },")
     hl("  ['@lsp.type.struct.go'] = { fg = purple },")
     hl("  ['@lsp.type.variable.go'] = { fg = white },")
@@ -488,29 +543,107 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  GitSignsAdd = { link = 'DiffAdd' },")
     hl("  GitSignsChange = { link = 'DiffChange' },")
     hl("  GitSignsDelete = { link = 'DiffDelete' },")
+
+    hl("  -- Telescope")
     hl("  TelescopeBorder = { bg = black2, fg = line },")
     hl("  TelescopeNormal = { bg = black2, fg = white },")
     hl("  TelescopeMatching = { fg = red, bold = true },")
     hl("  TelescopeSelection = { link = 'Visual' },")
     hl("  TelescopeTitle = { bg = teal, fg = black },")
+    hl("  TelescopeResultsTitle = { fg = black, bg = black },")
+    hl("  TelescopePromptBorder = { bg = one_bg, fg = line },")
+    hl("  TelescopePromptNormal = { bg = one_bg, fg = white },")
+    hl("  TelescopeResultsClass = { link = 'Structure' },")
+    hl("  TelescopeResultsField = { link = '@variable.member' },")
+    hl("  TelescopeResultsMethod = { link = 'Function' },")
+    hl("  TelescopeResultsStruct = { link = 'Structure' },")
+    hl("  TelescopeResultsVariable = { link = '@variable' },")
+
+    hl("  -- Snacks")
+    hl("  SnacksPickerBorder = { fg = darker_black, bg = darker_black },")
+    hl("  SnacksPickerTitle = { fg = darker_black, bg = red },")
+    hl("  SnacksPickerListCursorLine = { bg = black2, bold = true },")
+    hl("  SnacksPickerBufType = { bg = red },")
+    hl("  SnacksPickerPreviewBorder = { fg = darker_black, bg = darker_black },")
+    hl("  SnacksPickerPreview = { bg = darker_black },")
+    hl("  SnacksPickerPreviewTitle = { fg = darker_black, bg = green },")
+    hl("  SnacksPickerBoxBorder = { fg = darker_black, bg = darker_black },")
+    hl("  SnacksPickerBox = { fg = white, bg = darker_black },")
+    hl("  SnacksPickerInputBorder = { fg = darker_black, bg = darker_black },")
+    hl("  SnacksPickerInputSearch = { fg = red, bg = darker_black },")
+    hl("  SnacksPickerInput = { bg = darker_black },")
+    hl("  SnacksPickerList = { bg = darker_black },")
+    hl("  SnacksPickerListTitle = { fg = darker_black, bg = darker_black },")
+    hl("  SnacksPickerCursorLine = { bg = darker_black },")
+    hl("  SnacksTitle = { fg = one_bg, bg = red },")
+    hl("  SnacksPickerDir = { fg = grey_fg2 },")
+    hl("  SnacksPickerPathHidden = { fg = grey_fg },")
+    hl("  SnacksPickerMatch = { link = 'IncSearch' },")
     hl("  SnacksPicker = { bg = one_bg },")
+
+    hl("  -- DapUI")
+    hl("  DapUIBreakpointsCurrentLine = { bold = true, fg = white },")
+    hl("  DapUIBreakpointsDisabledLine = { link = 'Comment' },")
+    hl("  DapUIBreakpointsInfo = { fg = blue },")
+    hl("  DapUIBreakpointsPath = { link = 'Directory' },")
+    hl("  DapUIDecoration = { fg = line },")
+    hl("  DapUIFloatBorder = { fg = line },")
+    hl("  DapUILineNumber = { fg = teal },")
+    hl("  DapUIModifiedValue = { bold = true, fg = teal },")
     hl("  DapUIPlayPause = { fg = green },")
+    hl("  DapUIRestart = { fg = green },")
+    hl("  DapUIScope = { link = 'Special' },")
+    hl("  DapUISource = { fg = red },")
+    hl("  DapUIStepBack = { fg = teal },")
     hl("  DapUIStepInto = { fg = teal },")
+    hl("  DapUIStepOut = { fg = teal },")
+    hl("  DapUIStepOver = { fg = teal },")
     hl("  DapUIStop = { fg = red },")
+    hl("  DapUIStoppedThread = { fg = teal },")
+    hl("  DapUIThread = { fg = white },")
+    hl("  DapUIType = { link = 'Type' },")
+    hl("  DapUIUnavailable = { fg = grey },")
+    hl("  DapUIWatchesEmpty = { fg = red },")
+    hl("  DapUIWatchesError = { fg = red },")
     hl("  DapUIWatchesValue = { fg = white },")
 
-    hl("  fugitiveHash = { link = gitHash },")
-    hl("  fugitiveHeader = { link = Title },")
-    hl("  fugitiveHeading = { link = Title },")
+    hl("  -- WhichKey")
+    hl("  WhichKeyDesc = { fg = pink },")
+    hl("  WhichKeyGroup = { fg = blue },")
+    hl("  WhichKeyFloat = { bg = black2 },")
+
+    hl("  -- Flash.nvim")
+    hl("  FlashLabel = { fg = green },")
+    hl("  FlashMatch = { fg = purple },")
+    hl("  FlashCurrent = { fg = sun },")
+    hl("  FlashPrompt = { link = 'NormalFloat' },")
+    hl("  FlashBackdrop = { fg = light_grey },")
+
+    hl("  -- Trouble")
+    hl("  TroublePreview = { fg = red, bg = one_bg, bold = true },")
+
+    hl("  -- lazy.nvim")
+    hl("  LazyProgressTodo = { fg = grey },")
+
+    hl("  -- misc")
+    hl("  InfoMsg = { link = 'DiagnosticInfo' },")
+    hl("  HintMsg = { link = 'DiagnosticHint' },")
+    hl("  SpecialWindowBG = { bg = darker_black },")
+    hl("  FocusedWindow = { fg = white, bg = black },")
+    hl("  UnfocusedWindow = { fg = grey },")
+    hl("  ColorfulWinSep = { fg = red },")
+    hl("  HighlightURL = { fg = teal, underline = true },")
+
+    hl("  -- Fugitive")
+    hl("  fugitiveHash = { link = 'gitHash' },")
+    hl("  fugitiveHeader = { link = 'Title' },")
+    hl("  fugitiveHeading = { link = 'Title' },")
     hl("  fugitiveStagedHeading = { fg = green, bold = true },")
     hl("  fugitiveStagedModifier = { fg = green },")
     hl("  fugitiveUnStagedHeading = { fg = yellow, bold = true },")
     hl("  fugitiveUnstagedModifier = { fg = yellow },")
     hl("  fugitiveUntrackedHeading = { fg = teal, bold = true },")
     hl("  fugitiveUntrackedModifier = { fg = teal },")
-
-    hl("  ColorfulWinSep = { fg = red },")
-    hl("  HighlightURL = { fg = teal, underline = true },")
 
     # Statusline
     hl("  StatusLine = { bg = statusline, fg = white },")
@@ -520,6 +653,9 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  StatusLineGitChanged = { bg = statusline, fg = yellow },")
     hl("  StatusLineGitRemoved = { bg = statusline, fg = red },")
     hl("  StatusLineGitBranch = { bg = statusline, fg = grey_fg },")
+    hl("  StatusLineGitAdd = { fg = green, bg = statusline },")
+    hl("  StatusLineGitChange = { fg = one_bg3, bg = statusline },")
+    hl("  StatusLineGitDelete = { fg = red, bg = statusline },")
     hl("  StatusLineLspError = { bg = statusline, fg = red },")
     hl("  StatusLineLspWarn = { bg = statusline, fg = yellow },")
     hl("  StatusLineLspINFO = { bg = statusline, fg = cyan },")
@@ -528,6 +664,7 @@ vim.g.terminal_color_15 = white[1]"""
     hl("  StatusLineHeader = { bg = one_bg3, fg = white },")
     hl("  StatusLineDimmed = { bg = statusline, fg = grey_fg },")
     hl("  StatusLineHeaderModified = { bg = green, fg = black },")
+    hl("  StatusLineHeaderError = { bg = red, fg = black },")
     hl("  LspReady = { fg = green, bg = statusline },")
     hl("  StatusLineFileError = { fg = red, bg = statusline },")
     hl("  StatusLineFileModified = { fg = green, bg = statusline },")

@@ -36,7 +36,13 @@ return {
       ls.setup({
         ft_func = function()
           load_snippets('all')
-          local langs = ls_ft.from_pos_or_filetype()
+          local langs
+          local ok, result = pcall(ls_ft.from_pos_or_filetype)
+          if ok then
+            langs = result
+          else
+            langs = { vim.bo.ft }
+          end
           for _, lang in ipairs(langs) do
             load_snippets(lang)
           end

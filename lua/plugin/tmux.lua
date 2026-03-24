@@ -22,6 +22,15 @@ local function tmux_exec(command, global)
   return result
 end
 
+---Async tmux exec for VimLeave (non-blocking)
+---@param command string tmux command to execute
+---@param global boolean? command should be executed globally instead of in current pane
+local function tmux_exec_async(command, global)
+  command = global and string.format('tmux %s', command)
+    or string.format('tmux -S %s %s', tmux_get_socket(), command)
+  vim.fn.jobstart(command, { detach = true })
+end
+
 ---Get tmux option value in current pane
 ---@param opt string tmux pane option
 ---@return string tmux pane option value
@@ -52,11 +61,11 @@ local function tmux_set_pane_opt(opt, val)
   )
 end
 
----Unset a tmux pane option
+---Unset a tmux pane option (async for VimLeave)
 ---@param opt string tmux pane option
 ---@return nil
 local function tmux_unset_pane_opt(opt)
-  tmux_exec(
+  tmux_exec_async(
     string.format(
       "set -put %s '%s'",
       vim.env.TMUX_PANE,

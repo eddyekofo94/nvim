@@ -4,7 +4,7 @@ local icons = require('utils.static.icons')
 vim.diagnostic.config({
   severity_sort = true,
   jump = {
-    float = true,
+    callback = vim.diagnostic.open_float,
   },
   float = {
     source = true,

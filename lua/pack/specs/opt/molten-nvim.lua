@@ -111,7 +111,8 @@ return {
           if args.buf ~= vim.api.nvim_get_current_buf() then
             return
           end
-          if require('molten.status').initialized() == 'Molten' then -- this is kinda a hack...
+          local ok, status = pcall(require('molten.status').initialized)
+          if ok and status == 'Molten' then -- this is kinda a hack...
             vim.fn.MoltenUpdateOption('output_win_border', 'single')
             vim.fn.MoltenUpdateOption('virt_lines_off_by_1', nil)
             vim.fn.MoltenUpdateOption('virt_text_output', nil)
@@ -131,7 +132,8 @@ return {
           if args.buf ~= vim.api.nvim_get_current_buf() then
             return
           end
-          if require('molten.status').initialized() == 'Molten' then
+          local ok, status = pcall(require('molten.status').initialized)
+          if ok and status == 'Molten' then
             vim.fn.MoltenUpdateOption('output_win_border', { '', '', '', '' })
             vim.fn.MoltenUpdateOption('virt_lines_off_by_1', true)
             vim.fn.MoltenUpdateOption('virt_text_output', true)

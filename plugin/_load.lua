@@ -36,36 +36,36 @@ load.on_events({ 'CmdlineEnter', 'InsertEnter' }, 'plugin.readline', function()
   require('plugin.readline').setup()
 end)
 
--- winbar
-load.on_events({ 'FileType', 'VimEnter' }, 'plugin.winbar', function()
-  if vim.g.loaded_winbar ~= nil then
-    return
-  end
-
-  require('plugin.winbar').setup({
-    bar = { hover = false },
-  })
-
-  local winbar_api = require('plugin.winbar.api')
-  vim.keymap.set(
-    'n',
-    '<Leader>;',
-    winbar_api.pick,
-    { desc = 'Pick symbols in winbar' }
-  )
-  vim.keymap.set(
-    'n',
-    '[;',
-    winbar_api.goto_context_start,
-    { desc = 'Go to start of current context' }
-  )
-  vim.keymap.set(
-    'n',
-    '];',
-    winbar_api.select_next_context,
-    { desc = 'Select next context' }
-  )
-end)
+-- winbar (disabled - using dropbar.nvim instead)
+-- load.on_events({ 'FileType', 'VimEnter' }, 'plugin.winbar', function()
+--   if vim.g.loaded_winbar ~= nil then
+--     return
+--   end
+--
+--   require('plugin.winbar').setup({
+--     bar = { hover = false },
+--   })
+--
+--   local winbar_api = require('plugin.winbar.api')
+--   vim.keymap.set(
+--     'n',
+--     '<Leader>;',
+--     winbar_api.pick,
+--     { desc = 'Pick symbols in winbar' }
+--   )
+--   vim.keymap.set(
+--     'n',
+--     '[;',
+--     winbar_api.goto_context_start,
+--     { desc = 'Go to start of current context' }
+--   )
+--   vim.keymap.set(
+--     'n',
+--     '];',
+--     winbar_api.select_next_context,
+--     { desc = 'Select next context' }
+--   )
+-- end)
 
 ---Load ui elements e.g. tabline, statusline, statuscolumn
 ---@param name string

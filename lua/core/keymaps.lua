@@ -1,14 +1,14 @@
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
-require('utils.load').on_events(
-  'UIEnter',
-  'keymaps',
+require("utils.load").on_events(
+  "UIEnter",
+  "keymaps",
   vim.schedule_wrap(function()
-    local Key = require('utils.key')
+    local Key = require "utils.key"
     local map = Key.map
 
-    local key = require('utils.key')
+    local key = require "utils.key"
 
     -- Multi-window operations
     -- stylua: ignore start
@@ -54,6 +54,26 @@ require('utils.load').on_events(
     map({ 'x', 'n' }, '<M-g><M-]>', '<C-w>g<C-]>', { desc = 'Split and jump to tag under cursor' })
     map({ 'x', 'n' }, '<M-g><Tab>', '<C-w>g<Tab>', { desc = 'Go to last accessed tab' })
 
+    -- Open URL in browser with gx (works in vim/neovim)
+    map({ 'n', 'x' }, 'gx', function()
+      local url = vim.fn.expand('<cWORD>')
+      if url == '' then
+        url = vim.fn.expand('<cfile>')
+      end
+      local cmd = vim.fn.has('macunix') == 1 and 'open' or 'xdg-open'
+      vim.fn.jobstart({ cmd, url }, { detach = true })
+    end, { desc = 'Open URL in browser' })
+
+    -- Also map Ctrl+Enter (may not work in all terminals)
+    map({ 'n', 'x' }, '<C-CR>', function()
+      local url = vim.fn.expand('<cWORD>')
+      if url == '' then
+        url = vim.fn.expand('<cfile>')
+      end
+      local cmd = vim.fn.has('macunix') == 1 and 'open' or 'xdg-open'
+      vim.fn.jobstart({ cmd, url }, { detach = true })
+    end, { desc = 'Open URL in browser' })
+
     map({ 'x', 'n' }, '<M-=>', '<C-w>=', { desc = 'Make all windows equal size' })
     map({ 'x', 'n' }, '<M-_>', '<C-w>_', { desc = 'Set current window height to maximum' })
     map({ 'x', 'n' }, '<M-|>', '<C-w>|', { desc = 'Set current window width to maximum' })
@@ -79,57 +99,61 @@ require('utils.load').on_events(
     map('t', '<C-x>', vim.api.nvim_replace_termcodes('<C-\\><C-N>', true, true, true), { desc = 'Escape terminal mode' })
     -- stylua: ignore end
 
-    local win = require('utils.win')
+    local win = require "utils.win"
 
-    map('n', '<leader>wx', function()
+    map("n", "<leader>wx", function()
       win.smart_close(false)
-    end, { desc = 'Window: Close (hide buffer)' })
+    end, { desc = "Window: Close (hide buffer)" })
 
-    map('n', '<leader>wX', function()
+    map("n", "<leader>wX", function()
       win.close_others()
-    end, { desc = 'Window: Close others' })
+    end, { desc = "Window: Close others" })
 
     map(
-      'n',
-      '<leader>wv',
-      '<cmd>vsplit<CR>',
-      { desc = 'Window: Split Vertical' }
+      "n",
+      "<leader>wv",
+      "<cmd>vsplit<CR>",
+      { desc = "Window: Split Vertical" }
     )
     map(
-      'n',
-      '<leader>ws',
-      '<cmd>split<CR>',
-      { desc = 'Window: Split Horizontal' }
+      "n",
+      "<leader>ws",
+      "<cmd>split<CR>",
+      { desc = "Window: Split Horizontal" }
     )
+
+    map("n", "<S-x>", function()
+      win.smart_close(true)
+    end, "Smart close (Split/Tab)")
 
     local function copy_all()
       local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-      local content = table.concat(lines, '\n')
-      vim.fn.setreg('+', content)
+      local content = table.concat(lines, "\n")
+      vim.fn.setreg("+", content)
       vim.notify(
-        'Copied entire buffer to system clipboard',
+        "Copied entire buffer to system clipboard",
         vim.log.levels.INFO
       )
     end
 
     local function paste_all()
-      local content = vim.fn.getreg('+')
-      if content == '' then
-        vim.notify('Clipboard is empty!', vim.log.levels.WARN)
+      local content = vim.fn.getreg "+"
+      if content == "" then
+        vim.notify("Clipboard is empty!", vim.log.levels.WARN)
         return
       end
-      local lines = vim.split(content, '[\r\n]')
+      local lines = vim.split(content, "[\r\n]")
       vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-      vim.notify('Buffer replaced from clipboard', vim.log.levels.INFO)
+      vim.notify("Buffer replaced from clipboard", vim.log.levels.INFO)
       vim.cmd.format()
     end
 
-    map('n', '<leader>ya', copy_all, { desc = 'Copy entire buffer' })
+    map("n", "<leader>ya", copy_all, { desc = "Copy entire buffer" })
     map(
-      'n',
-      '<leader>cpa',
+      "n",
+      "<leader>cpa",
       paste_all,
-      { desc = 'Replace entire buffer with clipboard' }
+      { desc = "Replace entire buffer with clipboard" }
     )
 
     -- Search within visual selection, see:
@@ -142,31 +166,31 @@ require('utils.load').on_events(
 
     -- Delete trailing whitespaces
     map(
-      'n',
-      'd<Space>',
+      "n",
+      "d<Space>",
       key.with_cursorpos(key.with_lazyredraw(function()
-        vim.cmd.substitute({
+        vim.cmd.substitute {
           [[/\s\+$//e]],
           range = { 1, vim.api.nvim_buf_line_count(0) },
           mods = { silent = true, keeppatterns = true },
-        })
+        }
       end)),
-      { desc = 'Delete trailing whitespaces' }
+      { desc = "Delete trailing whitespaces" }
     )
 
     -- Select previously changed/yanked text, useful for selecting pasted text
-    map('n', 'gz', '`[v`]', { desc = 'Select previously changed/yanked text' })
-    map('o', 'gz', '<Cmd>normal! `[v`]<CR>', {
-      desc = 'Select previously changed/yanked text',
+    map("n", "gz", "`[v`]", { desc = "Select previously changed/yanked text" })
+    map("o", "gz", "<Cmd>normal! `[v`]<CR>", {
+      desc = "Select previously changed/yanked text",
     })
 
     -- Go to file under cursor, with line number
-    map('n', 'gf', 'gF', { desc = 'Go to file under cursor' })
-    map('n', ']f', 'gF', { desc = 'Go to file under cursor' })
+    map("n", "gf", "gF", { desc = "Go to file under cursor" })
+    map("n", "]f", "gF", { desc = "Go to file under cursor" })
 
     -- Delete selection in select mode
-    map('s', '<BS>', '<C-o>"_s', { desc = 'Delete selection' })
-    map('s', '<C-h>', '<C-o>"_s', { desc = 'Delete selection' })
+    map("s", "<BS>", '<C-o>"_s', { desc = "Delete selection" })
+    map("s", "<C-h>", '<C-o>"_s', { desc = "Delete selection" })
 
     ---Check if given line should join with previews lines in current buffer
     ---@param line string
@@ -176,7 +200,7 @@ require('utils.load').on_events(
       if vim.b.should_join_line then
         return vim.b.should_join_line(line)
       end
-      return line ~= ''
+      return line ~= ""
     end
 
     ---Yank text with paragraphs joined as a single line, supposed to be used
@@ -185,7 +209,7 @@ require('utils.load').on_events(
       local reg = vim.v.register
 
       local yank_joined_paragraphs_autocmd =
-        vim.api.nvim_create_autocmd('TextYankPost', {
+        vim.api.nvim_create_autocmd("TextYankPost", {
           once = true,
           callback = function()
             local joined_lines = {}
@@ -195,8 +219,8 @@ require('utils.load').on_events(
             do
               -- Start a new paragraph if line is an empty line so that the
               -- original paragraphs are kept
-              if line == '' then
-                table.insert(joined_lines, '')
+              if line == "" then
+                table.insert(joined_lines, "")
               end
 
               if not should_join_line(line) then
@@ -207,8 +231,8 @@ require('utils.load').on_events(
               local last_line = table.remove(joined_lines, #joined_lines)
               table.insert(
                 joined_lines,
-                (last_line == '' or last_line == nil) and vim.trim(line)
-                  or string.format('%s %s', last_line, vim.trim(line))
+                (last_line == "" or last_line == nil) and vim.trim(line)
+                  or string.format("%s %s", last_line, vim.trim(line))
               )
               ::continue::
             end
@@ -217,7 +241,7 @@ require('utils.load').on_events(
           end,
         })
 
-      if vim.startswith(vim.fn.mode(), 'n') then
+      if vim.startswith(vim.fn.mode(), "n") then
         -- If joined paragraph yank runs successfully in normal mode, the following
         -- events will trigger in order:
         -- 1. `ModeChanged` with pattern 'n:no'
@@ -233,22 +257,22 @@ require('utils.load').on_events(
         -- So remove the `TextYankPost` autocmd that joins each paragraph as a
         -- single line after changing from operator pending mode 'no' to normal mode
         -- 'n' to prevent it from affecting normal yanking e.g. with `y`
-        vim.api.nvim_create_autocmd('ModeChanged', {
+        vim.api.nvim_create_autocmd("ModeChanged", {
           once = true,
-          pattern = '*:n',
+          pattern = "*:n",
           callback = vim.schedule_wrap(function()
             pcall(vim.api.nvim_del_autocmd, yank_joined_paragraphs_autocmd)
           end),
         })
       end
 
-      vim.api.nvim_feedkeys('y', 'n', false)
+      vim.api.nvim_feedkeys("y", "n", false)
     end
 
     -- Yank paragraphs as single lines, useful for yanking hard-wrapped
     -- paragraphs in nvim and paste it in browsers or other editors
-    map({ 'n', 'x' }, 'gy', yank_joined_paragraphs, {
-      desc = 'Yank text with joined paragraphs',
+    map({ "n", "x" }, "gy", yank_joined_paragraphs, {
+      desc = "Yank text with joined paragraphs",
     })
 
     -- More consistent behavior when &wrap is set
@@ -302,20 +326,20 @@ end
     -- Don't use `map()` here because `<C-l>` is already defined as nvim's
     -- default keymap before loading this config and we want to override it
     vim.keymap.set(
-      { 'n', 'x' },
-      '<C-l>',
+      { "n", "x" },
+      "<C-l>",
       [['<Cmd>ec|noh|sil! dif<CR>' . (v:hlsearch ? '' : '<C-l>')]],
       {
         expr = true,
         replace_keycodes = false,
-        desc = 'Clear and redraw screen',
+        desc = "Clear and redraw screen",
       }
     )
 
     -- Edit current file's directory
     map(
-      { 'n', 'x' },
-      '-',
+      { "n", "x" },
+      "-",
       [[isdirectory(expand('%:p:h')) ? '<Cmd>e%:p:h<CR>' : '<Cmd>e ' . fnameescape(getcwd(0)) . '<CR>']],
       {
         expr = true,
@@ -326,12 +350,12 @@ end
 
     -- Folding
     map(
-      { 'n', 'x' },
-      'zV',
+      { "n", "x" },
+      "zV",
       key.with_lazyredraw(function()
-        vim.cmd.normal({ 'zMzv', bang = true })
+        vim.cmd.normal { "zMzv", bang = true }
       end),
-      { desc = 'Close all folds except current' }
+      { desc = "Close all folds except current" }
     )
 
     -- Don't include extra spaces around quotes
@@ -362,19 +386,19 @@ end
     ---@param motion 'i'|'a'
     ---@return string
     function _G._textobj_fold(motion)
-      local lnum = vim.fn.line('.') --[[@as integer]]
-      local sel_start = vim.fn.line('v')
+      local lnum = vim.fn.line "." --[[@as integer]]
+      local sel_start = vim.fn.line "v"
       local lev = vim.fn.foldlevel(lnum)
       local levp = vim.fn.foldlevel(lnum - 1)
       -- Multi-line selection with cursor on top of selection
       if sel_start > lnum then
-        return (lev == 0 and 'zk' or lev > levp and levp > 0 and 'k' or '')
+        return (lev == 0 and "zk" or lev > levp and levp > 0 and "k" or "")
           .. vim.v.count1
-          .. (motion == 'i' and ']zkV[zj' or ']zV[z')
+          .. (motion == "i" and "]zkV[zj" or "]zV[z")
       end
-      return (lev == 0 and 'zj' or lev > levp and 'j' or '')
+      return (lev == 0 and "zj" or lev > levp and "j" or "")
         .. vim.v.count1
-        .. (motion == 'i' and '[zjV]zk' or '[zV]z')
+        .. (motion == "i" and "[zjV]zk" or "[zV]z")
     end
 
     -- stylua: ignore start
@@ -387,14 +411,14 @@ end
     ---Go to the first line of current paragraph
     local function goto_paragraph_firstline()
       local chunk_size = 10
-      local linenr = vim.fn.line('.')
+      local linenr = vim.fn.line "."
       local count = vim.v.count1
 
       -- If current line is the first line of paragraph, move one line
       -- upwards first to goto the first line of previous paragraph
       if linenr >= 2 then
         local lines = vim.api.nvim_buf_get_lines(0, linenr - 2, linenr, false)
-        if lines[1]:match('^$') and lines[2]:match('%S') then
+        if lines[1]:match "^$" and lines[2]:match "%S" then
           linenr = linenr - 1
         end
       end
@@ -408,16 +432,16 @@ end
         )
         for i, line in ipairs(vim.iter(chunk):rev():totable()) do
           local current_linenr = linenr - i
-          if line:match('^$') then
+          if line:match "^$" then
             count = count - 1
             if count <= 0 then
-              vim.cmd.normal({ "m'", bang = true })
+              vim.cmd.normal { "m'", bang = true }
               vim.cmd(tostring(current_linenr + 1))
               return
             end
           elseif current_linenr <= 1 then
-            vim.cmd.normal({ "m'", bang = true })
-            vim.cmd('1')
+            vim.cmd.normal { "m'", bang = true }
+            vim.cmd "1"
             return
           end
         end
@@ -428,7 +452,7 @@ end
     ---Go to the last line of current paragraph
     local function goto_paragraph_lastline()
       local chunk_size = 10
-      local linenr = vim.fn.line('.')
+      local linenr = vim.fn.line "."
       local buf_line_count = vim.api.nvim_buf_line_count(0)
       local count = vim.v.count1
 
@@ -437,7 +461,7 @@ end
       if buf_line_count - linenr >= 1 then
         local lines =
           vim.api.nvim_buf_get_lines(0, linenr - 1, linenr + 1, false)
-        if lines[1]:match('%S') and lines[2]:match('^$') then
+        if lines[1]:match "%S" and lines[2]:match "^$" then
           linenr = linenr + 1
         end
       end
@@ -447,15 +471,15 @@ end
           vim.api.nvim_buf_get_lines(0, linenr, linenr + chunk_size, false)
         for i, line in ipairs(chunk) do
           local current_linenr = linenr + i
-          if line:match('^$') then
+          if line:match "^$" then
             count = count - 1
             if count <= 0 then
-              vim.cmd.normal({ "m'", bang = true })
+              vim.cmd.normal { "m'", bang = true }
               vim.cmd(tostring(current_linenr - 1))
               return
             end
           elseif current_linenr >= buf_line_count then
-            vim.cmd.normal({ "m'", bang = true })
+            vim.cmd.normal { "m'", bang = true }
             vim.cmd(tostring(buf_line_count))
             return
           end
@@ -473,54 +497,54 @@ end
     -- stylua: ignore end
 
     -- Fzf keymaps
-    map('n', '<Leader>.', '<Cmd>FZF<CR>', { desc = 'Find files' })
-    map('n', '<Leader>ff', '<Cmd>FZF<CR>', { desc = 'Find files' })
+    map("n", "<Leader>.", "<Cmd>FZF<CR>", { desc = "Find files" })
+    map("n", "<Leader>ff", "<Cmd>FZF<CR>", { desc = "Find files" })
     map(
-      'n',
-      '<leader>mm',
-      '<cmd>messages<cr>',
-      { desc = 'Show Neovim messages' }
+      "n",
+      "<leader>mm",
+      "<cmd>messages<cr>",
+      { desc = "Show Neovim messages" }
     )
 
     map(
-      'i',
-      '<C-l>',
+      "i",
+      "<C-l>",
       Key.escape_pair,
-      'Move over a closing element in insert mode'
+      "Move over a closing element in insert mode"
     )
-    map('c', '<CR>', function()
+    map("c", "<CR>", function()
       local cmdtype = vim.fn.getcmdtype()
-      if cmdtype == '/' or cmdtype == '?' then
-        return '<CR>zzzv'
+      if cmdtype == "/" or cmdtype == "?" then
+        return "<CR>zzzv"
       end
-      return '<CR>'
-    end, { expr = true, desc = 'Execute command or search and center' })
+      return "<CR>"
+    end, { expr = true, desc = "Execute command or search and center" })
     -- Nvim's new built-in undotree plugin
-    map('n', '<Leader>uT', '<Cmd>packadd nvim.undotree|Undotree<CR>', {
-      desc = 'Toggle undotree',
+    map("n", "<Leader>uT", "<Cmd>packadd nvim.undotree|Undotree<CR>", {
+      desc = "Toggle undotree",
     })
     map(
-      'n',
-      'dd',
+      "n",
+      "dd",
       function()
         -- to avoid complex logic over multiple lines.
         if vim.v.count > 0 then
-          return 'dd'
+          return "dd"
         end
 
         local line = vim.api.nvim_get_current_line()
-        if line:match('^%s*$') then
+        if line:match "^%s*$" then
           return '"_dd'
         end
-        return 'dd'
+        return "dd"
       end,
       { expr = true, desc = "Don't yank empty lines into the main register" }
     )
-    map('n', '<Leader>Pu', vim.pack.update, { desc = 'Update plugins' })
-    map('n', '<Leader>Pr', function()
-      vim.pack.update(nil, { target = 'lockfile' })
-    end, { desc = 'Restore plugins according to lockfile' })
-    map('n', '<Leader>Pd', function()
+    map("n", "<Leader>Pu", vim.pack.update, { desc = "Update plugins" })
+    map("n", "<Leader>Pr", function()
+      vim.pack.update(nil, { target = "lockfile" })
+    end, { desc = "Restore plugins according to lockfile" })
+    map("n", "<Leader>Pd", function()
       ---@type string[]
       local plug_src_list = vim
         .iter(vim.pack.get())
@@ -531,82 +555,82 @@ end
 
       vim.ui.select(
         plug_src_list,
-        { prompt = 'Plugin to delete: ' },
+        { prompt = "Plugin to delete: " },
         function(choice)
           if choice then
-            vim.pack.del({ choice })
+            vim.pack.del { choice }
           end
         end
       )
-    end, { desc = 'Delete plugin' })
+    end, { desc = "Delete plugin" })
 
     -- Buffer operations (from backup)
     local function copy_all()
       local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-      local content = table.concat(lines, '\n')
-      vim.fn.setreg('+', content)
+      local content = table.concat(lines, "\n")
+      vim.fn.setreg("+", content)
       vim.notify(
-        'Copied entire buffer to system clipboard',
+        "Copied entire buffer to system clipboard",
         vim.log.levels.INFO
       )
     end
 
     local function paste_all()
-      local content = vim.fn.getreg('+')
-      if content == '' then
-        vim.notify('Clipboard is empty!', vim.log.levels.WARN)
+      local content = vim.fn.getreg "+"
+      if content == "" then
+        vim.notify("Clipboard is empty!", vim.log.levels.WARN)
         return
       end
-      local lines = vim.split(content, '[\r\n]')
+      local lines = vim.split(content, "[\r\n]")
       vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-      vim.notify('Buffer replaced from clipboard', vim.log.levels.INFO)
+      vim.notify("Buffer replaced from clipboard", vim.log.levels.INFO)
     end
 
     local function delete_all()
       vim.api.nvim_buf_set_lines(0, 0, -1, false, {})
-      vim.notify('Buffer cleared', vim.log.levels.INFO)
+      vim.notify("Buffer cleared", vim.log.levels.INFO)
     end
 
-    map('n', '<Leader>da', delete_all, { desc = 'Delete all in buffer' })
-    map('n', '<Leader>ya', copy_all, { desc = 'Copy entire buffer' })
+    map("n", "<Leader>da", delete_all, { desc = "Delete all in buffer" })
+    map("n", "<Leader>ya", copy_all, { desc = "Copy entire buffer" })
     map(
-      'n',
-      '<Leader>cpa',
+      "n",
+      "<Leader>cpa",
       paste_all,
-      { desc = 'Replace buffer with clipboard' }
+      { desc = "Replace buffer with clipboard" }
     )
 
     -- Smart line movement
     local function smart_line_move(key)
       return function()
         if vim.v.count == 0 then
-          return 'g' .. key
+          return "g" .. key
         else
           return key
         end
       end
     end
 
-    map({ 'n', 'x' }, 'gh', function()
+    map({ "n", "x" }, "gh", function()
       local current_line = vim.api.nvim_get_current_line()
       local cursor_pos = vim.api.nvim_win_get_cursor(0)
       local current_col = cursor_pos[2] + 1
-      local first_non_blank_match = current_line:match('^(%s*)%S')
+      local first_non_blank_match = current_line:match "^(%s*)%S"
       local first_non_blank_col = 1
       if first_non_blank_match then
         first_non_blank_col = #first_non_blank_match + 1
       end
       if current_col == first_non_blank_col then
-        return '0'
+        return "0"
       else
-        return 'g^'
+        return "g^"
       end
-    end, { expr = true, desc = 'Smart start of line' })
+    end, { expr = true, desc = "Smart start of line" })
     map(
-      { 'n', 'x' },
-      'gl',
-      smart_line_move('$'),
-      { expr = true, desc = 'Smart end of line' }
+      { "n", "x" },
+      "gl",
+      smart_line_move "$",
+      { expr = true, desc = "Smart end of line" }
     )
 
     -- Add lines native
@@ -617,7 +641,7 @@ end
       local target = row + direction
       local lines = {}
       for _ = 1, count do
-        table.insert(lines, '')
+        table.insert(lines, "")
       end
       vim.api.nvim_buf_set_lines(0, target, target, false, lines)
     end
@@ -625,76 +649,76 @@ end
     local function add_lines_native(direction)
       return function()
         vim.g.add_line_dir = direction
-        vim.go.operatorfunc = 'v:lua.add_line_handler'
+        vim.go.operatorfunc = "v:lua.add_line_handler"
         vim.api.nvim_feedkeys(
-          vim.api.nvim_replace_termcodes('g@l', true, true, true),
-          'n',
+          vim.api.nvim_replace_termcodes("g@l", true, true, true),
+          "n",
           false
         )
       end
     end
 
     map(
-      'n',
-      '<Leader>oo',
+      "n",
+      "<Leader>oo",
       add_lines_native(0),
-      { desc = 'Insert line below (native)' }
+      { desc = "Insert line below (native)" }
     )
     map(
-      'n',
-      '<Leader>OO',
+      "n",
+      "<Leader>OO",
       add_lines_native(-1),
-      { desc = 'Insert line above (native)' }
+      { desc = "Insert line above (native)" }
     )
 
     -- Undotree (alternate key)
-    map('n', '<Leader>uT', '<Cmd>Undotree<CR>', { desc = 'Toggle undotree' })
+    map("n", "<Leader>uT", "<Cmd>Undotree<CR>", { desc = "Toggle undotree" })
 
     map(
-      'n',
-      '<leader>ii',
+      "n",
+      "<leader>ii",
       Key.universal_smart_toggle,
-      { desc = 'Universal Smart Toggle' }
+      { desc = "Universal Smart Toggle" }
     )
     map(
-      'n',
-      '<leader>ui',
-      '<Cmd>Inspect<CR>',
-      { desc = 'Inspect element under cursor' }
+      "n",
+      "<leader>ui",
+      "<Cmd>Inspect<CR>",
+      { desc = "Inspect element under cursor" }
     )
   end)
 )
 
-require('utils.load').on_events(
-  'CmdlineEnter',
-  'keymaps.cmdline_abbrevs',
+require("utils.load").on_events(
+  "CmdlineEnter",
+  "keymaps.cmdline_abbrevs",
   function()
-    local key = require('utils.key')
+    local key = require "utils.key"
 
-    key.command_map(':', 'lua =')
-    key.command_abbrev('man', 'Man')
-    key.command_abbrev('tt', 'tab te')
-    key.command_abbrev('bt', 'bot te')
-    key.command_abbrev('ht', 'hor te')
-    key.command_abbrev('vt', 'vert te')
-    key.command_abbrev('rm', '!rm')
-    key.command_abbrev('mv', '!mv')
-    key.command_abbrev('git', '!git')
-    key.command_abbrev('tree', '!tree')
-    key.command_abbrev('mkdir', '!mkdir')
-    key.command_abbrev('touch', '!touch')
-    key.command_abbrev('chmod', '!chmod')
-    key.command_abbrev('ture', 'true')
-    key.command_abbrev('Ture', 'True')
-    key.command_abbrev('flase', 'false')
-    key.command_abbrev('fasle', 'false')
-    key.command_abbrev('Flase', 'False')
-    key.command_abbrev('Fasle', 'False')
-    key.command_abbrev('lcaol', 'local')
-    key.command_abbrev('lcoal', 'local')
-    key.command_abbrev('locla', 'local')
-    key.command_abbrev('sahre', 'share')
-    key.command_abbrev('saher', 'share')
-    key.command_abbrev('balme', 'blame')
+    key.command_map(":", "lua =")
+    key.command_abbrev("man", "Man")
+    key.command_abbrev("tt", "tab te")
+    key.command_abbrev("bt", "bot te")
+    key.command_abbrev("ht", "hor te")
+    key.command_abbrev("vt", "vert te")
+    key.command_abbrev("rm", "!rm")
+    key.command_abbrev("mv", "!mv")
+    key.command_abbrev("git", "!git")
+    key.command_abbrev("tree", "!tree")
+    key.command_abbrev("mkdir", "!mkdir")
+    key.command_abbrev("touch", "!touch")
+    key.command_abbrev("chmod", "!chmod")
+    key.command_abbrev("ture", "true")
+    key.command_abbrev("Ture", "True")
+    key.command_abbrev("flase", "false")
+    key.command_abbrev("fasle", "false")
+    key.command_abbrev("Flase", "False")
+    key.command_abbrev("Fasle", "False")
+    key.command_abbrev("lcaol", "local")
+    key.command_abbrev("lcoal", "local")
+    key.command_abbrev("locla", "local")
+    key.command_abbrev("sahre", "share")
+    key.command_abbrev("saher", "share")
+    key.command_abbrev("balme", "blame")
   end
 )

@@ -32,8 +32,4 @@ return {
   pmenu_bg = '#ee7762',
   folder_bg = '#7fdbca',
   turquoise = '#0e9c9e'
-  lavender = '#7287fd',
-  maroon = '#d20f39',
-  rosewater = '#dc8a78',
-  sapphire = '#209fb5',
 }

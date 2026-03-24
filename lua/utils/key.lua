@@ -53,6 +53,7 @@ end
 
 local warned_keys = {}
 local conflict_count = 0
+local conflicts_list = {}
 ---Set keymaps, don't override existing keymaps unless `opts.unique` is false
 ---@param modes string|string[] mode short-name
 ---@param lhs string left-hand side of the mapping
@@ -124,27 +125,21 @@ end
 
 -- 4. The Summation Report (Horizontal Split)
 function M.get_conflicts()
-  if conflict_count == 0 then
+  if #conflicts_list == 0 then
     vim.notify('✨ No keymap conflicts detected!', vim.log.levels.INFO)
     return
   end
 
   local report = {
-    '📊 KEYMAP CONFLICT AUDIT',
-    'Total unique collisions: ' .. conflict_count,
+    '# Keymap Conflicts Report',
     '',
   }
 
-  for _, data in pairs(warned_keys) do
-    table.insert(report, string.format('🔑 [%s] %s', data.mode, data.lhs))
-    table.insert(report, string.format('   📦 Plugin: %s', data.plugin))
-    table.insert(
-      report,
-      string.format('   📍 Source: %s:%s', data.path, data.line)
-    )
-    table.insert(report, string.format('   ⚙️  Action: %s', data.action))
-    table.insert(report, string.format('   📝 Desc:   %s', data.desc))
-    table.insert(report, '   ' .. string.rep('─', 40))
+  for i, c in ipairs(conflicts_list) do
+    table.insert(report, string.format('## %d. [%s] in `%s`', i, c.lhs, c.mode))
+    table.insert(report, string.format('- Global: `%s` → `%s`', c.global_desc or c.global_action, c.global_action))
+    table.insert(report, string.format('- Buffer: `%s` → `%s`', c.buf_desc or c.buf_action, c.buf_action))
+    table.insert(report, '')
   end
 
   -- Create buffer and set lines
@@ -169,7 +164,7 @@ end
 
 function M.check_conflicts()
   local modes = { 'n', 'i', 'c', 'v', 'x', 'o', 's', 't' }
-  local all_keymaps = {}
+  local by_mode = {}
 
   for _, mode in ipairs(modes) do
     local global_maps = vim.api.nvim_get_keymap(mode)
@@ -178,55 +173,53 @@ function M.check_conflicts()
     for _, map in ipairs(global_maps) do
       local key = vim.keycode(map.lhs)
       if key ~= '' and map.rhs ~= '' and map.rhs ~= map.lhs then
-        all_keymaps[key] = all_keymaps[key] or {}
-        table.insert(all_keymaps[key], {
-          mode = mode,
+        by_mode[mode] = by_mode[mode] or {}
+        by_mode[mode][key] = {
           rhs = map.rhs,
           desc = map.desc,
           source = 'global',
-        })
+        }
       end
     end
 
     for _, map in ipairs(buf_maps) do
       local key = vim.keycode(map.lhs)
       if key ~= '' and map.rhs ~= '' and map.rhs ~= map.lhs then
-        all_keymaps[key] = all_keymaps[key] or {}
-        table.insert(all_keymaps[key], {
-          mode = mode,
+        by_mode[mode] = by_mode[mode] or {}
+        by_mode[mode][key] = {
           rhs = map.rhs,
           desc = map.desc,
           source = 'buffer',
-        })
+        }
       end
     end
   end
 
   warned_keys = {}
   conflict_count = 0
+  conflicts_list = {}
 
-  for key, mappings in pairs(all_keymaps) do
-    if #mappings > 1 then
-      for i = 1, #mappings do
-        for j = i + 1, #mappings do
-          local m1, m2 = mappings[i], mappings[j]
-          if m1.rhs ~= m2.rhs or m1.desc ~= m2.desc then
-            local conflict_id = key .. '_' .. m1.mode .. '_' .. m2.mode
+  for mode, keymaps in pairs(by_mode) do
+    for key, global_map in pairs(keymaps) do
+      local buf_map = vim.api.nvim_buf_get_keymap(0, mode)
+      for _, bm in ipairs(buf_map) do
+        local buf_key = vim.keycode(bm.lhs)
+        if buf_key == key and global_map.source == 'global' then
+          local rhs_match = global_map.rhs == bm.rhs
+          local desc_match = global_map.desc == bm.desc
+          if not (rhs_match and desc_match) then
+            local conflict_id = mode .. ':' .. key
             if not warned_keys[conflict_id] then
               conflict_count = conflict_count + 1
-              warned_keys[conflict_id] = {
+              warned_keys[conflict_id] = true
+              table.insert(conflicts_list, {
                 lhs = key,
-                mode = m1.mode .. '/' .. m2.mode,
-                plugin = 'Multiple sources',
-                path = m1.source .. ' & ' .. m2.source,
-                line = '?',
-                action = m1.rhs,
-                desc = m1.desc or 'No description',
-              }
-              vim.notify(
-                string.format('Conflict #%d: [%s]', conflict_count, key),
-                vim.log.levels.WARN
-              )
+                mode = mode,
+                global_action = global_map.rhs,
+                global_desc = global_map.desc or '',
+                buf_action = bm.rhs,
+                buf_desc = bm.desc or '',
+              })
             end
           end
         end
@@ -234,12 +227,23 @@ function M.check_conflicts()
     end
   end
 
-  if conflict_count > 0 then
+  for i, c in ipairs(conflicts_list) do
     vim.notify(
       string.format(
-        '⚠️  %d keymap conflict(s) detected. Run :check_conflicts to view details.',
-        conflict_count
+        'Conflict #%d: [%s] in mode `%s`\n  Global: %s\n  Buffer: %s',
+        i,
+        c.lhs,
+        c.mode,
+        c.global_desc ~= '' and c.global_desc or c.global_action,
+        c.buf_desc ~= '' and c.buf_desc or c.buf_action
       ),
+      vim.log.levels.WARN
+    )
+  end
+
+  if conflict_count > 0 then
+    vim.notify(
+      string.format('⚠️  %d keymap conflict(s) detected. Run :CheckConflicts for details.', conflict_count),
       vim.log.levels.WARN
     )
   else

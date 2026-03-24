@@ -29,8 +29,4 @@ return {
   lightbg = '#cdc6c3',
   pmenu_bg = '#857e7b',
   folder_bg = '#746d6a',
-  lavender = '#7287fd',
-  maroon = '#d20f39',
-  rosewater = '#dc8a78',
-  sapphire = '#209fb5',
 }

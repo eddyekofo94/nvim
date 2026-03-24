@@ -23,6 +23,7 @@ return {
     DiagnosticSignInfo  = '󰋽 ',
     DiagnosticSignOk    = '󰄬 ',
     DiagnosticSignWarn  = '󰀪 ',
+    Connected           = '󰌘 ',
   },
   kinds = {
     Array               = '󰅪 ',

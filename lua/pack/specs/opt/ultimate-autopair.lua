@@ -4,6 +4,7 @@ return {
   data = {
     events = { 'InsertEnter', 'CmdlineEnter' },
     postload = function()
+      _G.UA_DEBUG_DONT = true
       local ap_utils = require('ultimate-autopair.utils')
 
       ---FileType options memoization
@@ -35,6 +36,16 @@ return {
           return cb(o, vim.b.bigfile or notree, ...)
         end
       end)(ap_utils.getsmartft)
+
+      ap_utils.gettsnode = (function(cb)
+        return function(...)
+          local ok, result = pcall(cb, ...)
+          if not ok or result == nil then
+            return
+          end
+          return result
+        end
+      end)(ap_utils.gettsnode)
 
       ---Record previous cmdline completion types,
       ---`cmdcompltype[1]` is the current completion type,

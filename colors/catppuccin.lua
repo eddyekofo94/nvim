@@ -488,7 +488,7 @@ local hlgroups = {
   ["@diff.delta"] = { fg = sun },
   -- }}}
 
-  ["@string.regexp"] = { fg = pink },
+  ["@string.regexp"] = { fg = sun },
 
   -- Markup (Markdown/Documentation)
   ["@markup.italic"] = { italic = true },

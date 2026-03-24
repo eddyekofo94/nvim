@@ -1,15 +1,15 @@
-local utils = require('utils')
-local icons = require('utils.static.icons')
-local groupid = vim.api.nvim_create_augroup('statusline', {})
+local utils = require "utils"
+local icons = require "utils.static.icons"
+local groupid = vim.api.nvim_create_augroup("statusline", {})
 
 _G._statusline = {}
 
-local diag_signs_default_text = { 'E', 'W', 'I', 'H' }
+local diag_signs_default_text = { "E", "W", "I", "H" }
 local diag_severity_map = {
-  [1] = 'ERROR',
-  [2] = 'WARN',
-  [3] = 'INFO',
-  [4] = 'HINT',
+  [1] = "ERROR",
+  [2] = "WARN",
+  [3] = "INFO",
+  [4] = "HINT",
   ERROR = 1,
   WARN = 2,
   INFO = 3,
@@ -25,11 +25,11 @@ local function get_diagnostic_hl()
   local is_modified = vim.bo.modified
 
   if has_errors then
-    return 'StatusLineFileError'
+    return "StatusLineFileError"
   elseif is_modified then
-    return 'StatusLineFileModified'
+    return "StatusLineFileModified"
   else
-    return 'StatusLine'
+    return "StatusLine"
   end
 end
 
@@ -84,7 +84,7 @@ local function get_diag_sign_text(severity)
   local diag_config = vim.diagnostic.config()
   local signs_text = diag_config
     and diag_config.signs
-    and type(diag_config.signs) == 'table'
+    and type(diag_config.signs) == "table"
     and diag_config.signs.text
   return signs_text
       and (signs_text[severity] or signs_text[diag_severity_map[severity]])
@@ -137,11 +137,11 @@ local modes = {
 ---Get string representation of the current mode
 ---@return string
 function _G._statusline.mode()
-  local hl = vim.bo.mod and 'StatusLineHeaderModified' or 'StatusLineHeader'
+  local hl = vim.bo.mod and "StatusLineHeaderModified" or "StatusLineHeader"
   local mode = vim.fn.mode()
-  local mode_str = (mode == 'n' and (vim.bo.ro or not vim.bo.ma)) and 'RO'
+  local mode_str = (mode == "n" and (vim.bo.ro or not vim.bo.ma)) and "RO"
     or modes[mode]
-  return utils.stl.hl(string.format(' %s ', mode_str), hl) .. ' '
+  return utils.stl.hl(string.format(" %s ", mode_str), hl) .. " "
 end
 
 ---Get diff stats for current buffer
@@ -150,10 +150,10 @@ function _G._statusline.gitdiff()
   local ok, work_tree, git_dir = pcall(
     utils.git.resolve_context,
     0,
-    { { '--git-dir', vim.env.DOT_DIR, '--work-tree', vim.env.HOME } }
+    { { "--git-dir", vim.env.DOT_DIR, "--work-tree", vim.env.HOME } }
   )
   if not ok or not work_tree or not git_dir then
-    return ''
+    return ""
   end
 
   -- Integration with gitsigns.nvim
@@ -161,14 +161,14 @@ function _G._statusline.gitdiff()
   local diff = vim.b.gitsigns_status_dict
     or utils.git.diffstat(
       0,
-      { '--git-dir', git_dir, '--work-tree', work_tree }
+      { "--git-dir", git_dir, "--work-tree", work_tree }
     )
     or {}
   local added = diff.added or 0
   local changed = diff.changed or 0
   local removed = diff.removed or 0
   if added == 0 and removed == 0 and changed == 0 then
-    return ''
+    return ""
   end
 
   local icon_added = utils.stl.escape(vim.trim(icons.GitIconAdd))
@@ -177,16 +177,16 @@ function _G._statusline.gitdiff()
 
   return vim.g.has_nf
       and string.format(
-        '%s%s%s',
-        utils.stl.hl(icon_added, 'StatusLineGitAdded') .. added,
-        utils.stl.hl(icon_changed, 'StatusLineGitChanged') .. changed,
-        utils.stl.hl(icon_removed, 'StatusLineGitRemoved') .. removed
+        "%s%s%s",
+        utils.stl.hl(icon_added, "StatusLineGitAdded") .. added,
+        utils.stl.hl(icon_changed, "StatusLineGitChanged") .. changed,
+        utils.stl.hl(icon_removed, "StatusLineGitRemoved") .. removed
       )
     or string.format(
-      '%s%s%s',
-      icon_added .. utils.stl.hl(tostring(added), 'StatusLineGitAdded'),
-      icon_changed .. utils.stl.hl(tostring(changed), 'StatusLineGitChanged'),
-      icon_removed .. utils.stl.hl(tostring(removed), 'StatusLineGitRemoved')
+      "%s%s%s",
+      icon_added .. utils.stl.hl(tostring(added), "StatusLineGitAdded"),
+      icon_changed .. utils.stl.hl(tostring(changed), "StatusLineGitChanged"),
+      icon_removed .. utils.stl.hl(tostring(removed), "StatusLineGitRemoved")
     )
 end
 
@@ -196,24 +196,24 @@ function _G._statusline.gitbranch()
   local ok, work_tree, git_dir = pcall(
     utils.git.resolve_context,
     0,
-    { { '--git-dir', vim.env.DOT_DIR, '--work-tree', vim.env.HOME } }
+    { { "--git-dir", vim.env.DOT_DIR, "--work-tree", vim.env.HOME } }
   )
   if not ok or not work_tree or not git_dir then
-    return ''
+    return ""
   end
 
-  local use_cur_repo_args = { '--git-dir', git_dir, '--work-tree', work_tree }
+  local use_cur_repo_args = { "--git-dir", git_dir, "--work-tree", work_tree }
 
   local branch = vim.b.gitsigns_status_dict and vim.b.gitsigns_status_dict.head
     or utils.git.execute(
       0,
       vim.list_extend(
         vim.deepcopy(use_cur_repo_args),
-        { 'rev-parse', '--abbrev-ref', 'HEAD' }
+        { "rev-parse", "--abbrev-ref", "HEAD" }
       )
     )
   if not branch then
-    return ''
+    return ""
   end
 
   -- Don't show git branch info if `status.showUntrackedFiles` is 'no'
@@ -223,95 +223,139 @@ function _G._statusline.gitbranch()
   local show_untracked = utils.git.execute(
     0,
     vim.list_extend(vim.deepcopy(use_cur_repo_args), {
-      'config',
-      '--local',
-      '--get',
-      'status.showUntrackedFiles',
+      "config",
+      "--local",
+      "--get",
+      "status.showUntrackedFiles",
     })
   )
   local tracked = utils.git.execute(
     0,
     vim.list_extend(
       vim.deepcopy(use_cur_repo_args),
-      { 'ls-files', vim.api.nvim_buf_get_name(0) }
+      { "ls-files", vim.api.nvim_buf_get_name(0) }
     )
   )
   if
-    (not show_untracked or show_untracked == 'no')
-    and (not tracked or tracked == '')
+    (not show_untracked or show_untracked == "no")
+    and (not tracked or tracked == "")
   then
-    return ''
+    return ""
   end
 
   local sign_gitbranch = utils.stl.hl(
     utils.stl.escape(vim.trim(icons.GitBranch)),
-    'StatusLineGitBranch'
+    "StatusLineGitBranch"
   )
   if vim.g.has_nf then
-    sign_gitbranch = sign_gitbranch .. ' '
+    sign_gitbranch = sign_gitbranch .. " "
   end
 
   return sign_gitbranch
     .. utils.stl.escape(str_shorten(branch, gitbranch_max_width))
 end
 
--- LSP spinner: shows server names with a spinning indicator while busy,
--- green tick when idle
-local spinner_frames =
-  { '⣷', '⣯', '⣟', '⡿', '⢿', '⣻', '⣽', '⣾' }
-local spinner_idx = 1
-local active_progress_count = 0
+-- Per-server LSP progress tracking
+local server_progress = {} -- server_name -> true (busy) or false (done)
 
-vim.api.nvim_create_autocmd('LspProgress', {
+-- Servers that don't send LspProgress events (treat as immediately done)
+local no_progress_servers = {
+  copilot = true,
+}
+
+-- Track servers by LspAttach/LspDetach
+vim.api.nvim_create_autocmd("LspAttach", {
   group = groupid,
-  desc = 'Track LSP progress for statusline spinner.',
+  desc = "Track LSP server attachment for statusline.",
   callback = function(args)
+    local client = args.data and vim.lsp.get_client_by_id(args.data.client_id)
+    if client then
+      -- Server attached
+      if no_progress_servers[client.name] then
+        server_progress[client.name] = false -- done immediately
+      else
+        server_progress[client.name] = true -- busy, waiting for "end"
+      end
+      vim.cmd "redrawstatus"
+    end
+  end,
+})
+
+vim.api.nvim_create_autocmd("LspDetach", {
+  group = groupid,
+  desc = "Track LSP server detachment for statusline.",
+  callback = function(args)
+    local client = args.data and vim.lsp.get_client_by_id(args.data.client_id)
+    if client then
+      -- Server detached - remove from tracking
+      server_progress[client.name] = nil
+      vim.cmd "redrawstatus"
+    end
+  end,
+})
+
+-- Track completion via LspProgress
+vim.api.nvim_create_autocmd("LspProgress", {
+  group = groupid,
+  desc = "Track LSP progress for statusline.",
+  callback = function(args)
+    local client = args.data
+      and args.data.client_id
+      and vim.lsp.get_client_by_id(args.data.client_id)
+    if not client then
+      return
+    end
+
     local kind = args.data
       and args.data.params
       and args.data.params.value
       and args.data.params.value.kind
-    if kind == 'begin' then
-      active_progress_count = active_progress_count + 1
-    elseif kind == 'end' then
-      active_progress_count = math.max(0, active_progress_count - 1)
+    if kind == "end" then
+      -- Server finished initializing
+      server_progress[client.name] = false
+      vim.cmd "redrawstatus"
     end
-    vim.cmd('redrawstatus')
   end,
 })
 
--- Animate spinner while LSP is busy
+-- Animate spinners for busy servers
 if _G.LspSpinnerTimer then
   _G.LspSpinnerTimer:stop()
 end
 _G.LspSpinnerTimer = vim.uv.new_timer()
+local spinner_frames =
+  { "⣷", "⣯", "⣟", "⡿", "⢿", "⣻", "⣽", "⣾" }
+local spinner_idx = 1
 _G.LspSpinnerTimer:start(
   0,
   100,
   vim.schedule_wrap(function()
-    if active_progress_count > 0 then
+    local has_busy = false
+    for _, client in ipairs(vim.lsp.get_clients { bufnr = 0 }) do
+      if server_progress[client.name] == true then
+        has_busy = true
+        break
+      end
+    end
+    if has_busy then
       spinner_idx = (spinner_idx % #spinner_frames) + 1
-      vim.cmd('redrawstatus')
+      vim.cmd "redrawstatus"
     end
   end)
 )
 
----Get LSP status indicator: spinner when busy, tick when idle
----@return string
-local function get_lsp_indicator()
-  local clients = vim.lsp.get_clients({ bufnr = 0 })
-  if #clients == 0 then
-    return ''
-  end
-  if active_progress_count > 0 then
-    return string.format('%%#LspSpinner#%s %%*', spinner_frames[spinner_idx])
-  end
-  return '%#LspReady#󰄬 %*'
-end
----Get current filetype
----@return string
--- function _G._statusline.ft()
---   return vim.bo.ft == '' and '' or vim.bo.ft:gsub('^%l', string.upper)
--- end
+-- Filetypes that cannot have LSP clients
+local lsp_incapable_ft = {
+  [""] = true,
+  fzf = true,
+  help = true,
+  qf = true,
+  quickfix = true,
+  prompt = true,
+  noice = true,
+  noicefloat = true,
+}
+
 
 ---@return string
 function _G._statusline.wordcount()
@@ -334,24 +378,24 @@ function _G._statusline.wordcount()
   end
 
   local vwords, vchars = 0, 0
-  if vim.fn.mode():find('^[vsVS\x16\x13]') then
+  if vim.fn.mode():find "^[vsVS\x16\x13]" then
     stats = stats or vim.fn.wordcount()
     vwords = stats.visual_words
     vchars = stats.visual_chars
   end
 
   if nwords == 0 and nchars == 0 then
-    return ''
+    return ""
   end
 
-  local vwords_count_str = vwords > 0 and vwords .. '/' or ''
-  local vchars_count_str = vchars > 0 and vchars .. '/' or ''
-  local words_s_str = nwords > 1 and 's' or ''
-  local chars_s_str = nchars > 1 and 's' or ''
+  local vwords_count_str = vwords > 0 and vwords .. "/" or ""
+  local vchars_count_str = vchars > 0 and vchars .. "/" or ""
+  local words_s_str = nwords > 1 and "s" or ""
+  local chars_s_str = nchars > 1 and "s" or ""
 
   return str_shorten(
     string.format(
-      '%s%d word%s, %s%d char%s',
+      "%s%d word%s, %s%d char%s",
       vwords_count_str,
       nwords,
       words_s_str,
@@ -361,7 +405,7 @@ function _G._statusline.wordcount()
     ),
     wordcount_max_width,
     string.format(
-      '%s%dW, %s%dC',
+      "%s%dW, %s%dC",
       vwords_count_str,
       nwords,
       vchars_count_str,
@@ -384,7 +428,7 @@ local function update_pdiffs(bufs)
     utils.fs.diff(vim.tbl_map(vim.api.nvim_buf_get_name, bufs))
 
   for i, buf in ipairs(bufs) do
-    if path_diffs[i] ~= '' then
+    if path_diffs[i] ~= "" then
       vim.b[buf]._stl_pdiff = path_diffs[i]
     end
   end
@@ -408,7 +452,7 @@ local function add_buf(buf)
   end
 
   local fname = vim.fs.basename(vim.api.nvim_buf_get_name(buf))
-  if fname == '' then
+  if fname == "" then
     return
   end
 
@@ -467,8 +511,8 @@ for _, buf in ipairs(vim.api.nvim_list_bufs()) do
   add_buf(buf)
 end
 
-vim.api.nvim_create_autocmd({ 'BufAdd', 'BufWinEnter', 'BufFilePost' }, {
-  desc = 'Track new buffer file name.',
+vim.api.nvim_create_autocmd({ "BufAdd", "BufWinEnter", "BufFilePost" }, {
+  desc = "Track new buffer file name.",
   group = groupid,
   -- Delay adding buffer to fnames to ensure attributes, e.g.
   -- `bt`, are set for special buffers, for example, terminal buffers
@@ -481,10 +525,10 @@ vim.api.nvim_create_autocmd({ 'BufAdd', 'BufWinEnter', 'BufFilePost' }, {
   end),
 })
 
-vim.api.nvim_create_autocmd('OptionSet', {
-  desc = 'Remove invisible buffer record.',
+vim.api.nvim_create_autocmd("OptionSet", {
+  desc = "Remove invisible buffer record.",
   group = groupid,
-  pattern = 'buflisted',
+  pattern = "buflisted",
   callback = function(args)
     remove_buf(args.buf, args.file)
     -- For some reason, invoking `:redrawstatus` directly makes oil.nvim open
@@ -499,19 +543,19 @@ vim.api.nvim_create_autocmd('OptionSet', {
 })
 
 vim.api.nvim_create_autocmd({
-  'BufLeave',
-  'BufHidden',
-  'BufDelete',
-  'BufFilePre',
+  "BufLeave",
+  "BufHidden",
+  "BufDelete",
+  "BufFilePre",
 }, {
-  desc = 'Remove invisible buffer from record.',
+  desc = "Remove invisible buffer from record.",
   group = groupid,
   callback = vim.schedule_wrap(function(args)
     remove_buf(args.buf, args.file)
   end),
 })
 
-vim.api.nvim_create_autocmd('WinClosed', {
+vim.api.nvim_create_autocmd("WinClosed", {
   group = groupid,
   callback = function(args)
     local win = tonumber(args.match)
@@ -526,137 +570,108 @@ vim.api.nvim_create_autocmd('WinClosed', {
   end,
 })
 
--- _G._statusline.project_name = function()
---   local icon = '󰉋 '
---   local name = ''
---
---   -- 1. Get current buffer info
---   local buf = vim.api.nvim_get_current_buf()
---   local buf_name = vim.api.nvim_buf_get_name(buf)
---
---   -- 2. Logic to find the root
---   -- If we are in a 'real' file or Oil
---   if
---     buf_name ~= '' and vim.bo[buf].buftype == ''
---     or vim.bo[buf].filetype == 'oil'
---   then
---     local clean_path = buf_name:gsub('^oil://', '')
---     local root = require('utils').fs.cwd_dir(clean_path)
---     if root then
---       name = vim.fn.fnamemodify(root, ':t')
---     end
---   end
---
---   -- 3. FALLBACK: If we're in a float or no root was found above
---   if name == '' then
---     -- getcwd() is reliable here because your other autocmds
---     -- set the 'lcd' for the tab/window previously
---     name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
---   end
---
---   return utils.stl.hl(string.format('%s%s ', icon, name), 'StatusLineDimmed')
--- end
+
 
 local function filepath()
   local bufname = vim.api.nvim_buf_get_name(0)
-  local absolute_path = bufname:gsub('^oil://', '')
+  local absolute_path = bufname:gsub("^oil://", "")
 
   -- Oil buffer: show path relative to project root
-  if vim.bo.filetype == 'oil' and absolute_path ~= '' then
+  if vim.bo.filetype == "oil" and absolute_path ~= "" then
     local project_root = utils.fs.cwd_dir(absolute_path)
     if project_root then
       local project_parent = vim.fs.dirname(project_root)
-      return absolute_path:gsub('^' .. vim.pesc(project_parent) .. '/', '')
+      return absolute_path:gsub("^" .. vim.pesc(project_parent) .. "/", "")
     else
-      return vim.fn.fnamemodify(absolute_path, ':~')
+      return vim.fn.fnamemodify(absolute_path, ":~")
     end
   end
 
-  local fpath = vim.fn.fnamemodify(vim.fn.expand('%'), ':~:.:h')
-  if fpath == '' or fpath == '.' then
-    return ''
+  local fpath = vim.fn.fnamemodify(vim.fn.expand "%", ":~:.:h")
+  if fpath == "" or fpath == "." then
+    return ""
   end
-  return fpath .. '/'
+  return fpath .. "/"
 end
 
 ---@return string
 function _G._statusline.fname()
   local bufname = vim.api.nvim_buf_get_name(0)
-  local fname_root = vim.fn.fnamemodify(bufname, ':t:r')
-  local fname_ext = vim.fn.fnamemodify(bufname, ':e')
+  local fname_root = vim.fn.fnamemodify(bufname, ":t:r")
+  local fname_ext = vim.fn.fnamemodify(bufname, ":e")
   local fname_short = string.format(
-    '%s%s%s',
+    "%s%s%s",
     str_shorten(fname_root, fname_max_width),
-    fname_root ~= '' and fname_ext ~= '' and '.' or '',
+    fname_root ~= "" and fname_ext ~= "" and "." or "",
     str_shorten(fname_ext, fname_ext_max_width)
   )
 
   local fpath = filepath()
 
   -- Oil buffer: only show path, no filename
-  if vim.bo.filetype == 'oil' then
+  if vim.bo.filetype == "oil" then
     return fpath
   end
 
   -- Modified and readonly icons
-  local file_indicator = ''
+  local file_indicator = ""
   if vim.bo.modified then
-    file_indicator = ' ● '
+    file_indicator = " ● "
   elseif vim.bo.readonly or not vim.bo.modifiable then
-    file_indicator = ' 🔒 '
+    file_indicator = " 🔒 "
   end
 
   -- Normal buffer
-  if vim.bo.bt == '' then
+  if vim.bo.bt == "" then
     -- Unnamed normal buffer
-    if bufname == '' then
-      return '[Buffer %n]'
+    if bufname == "" then
+      return "[Buffer %n]"
     end
     -- Named normal buffer, show path + file name with different highlights
-    if fpath ~= '' then
+    if fpath ~= "" then
       local diag_hl = get_diagnostic_hl()
       return string.format(
-        '%%#StatusLineDimmed#%s%%#' .. diag_hl .. '#%s%s',
+        "%%#StatusLineDimmed#%s%%#" .. diag_hl .. "#%s%s",
         fpath,
         fname_short,
         file_indicator
       )
     end
     return string.format(
-      '%%#%s#%s%s',
+      "%%#%s#%s%s",
       get_diagnostic_hl(),
       fname_short,
       file_indicator
     )
   end
 
-  if vim.bo.bt == 'quickfix' then
+  if vim.bo.bt == "quickfix" then
     return utils.stl.escape(
       str_shorten(vim.w.quickfix_title, fname_special_max_width)
-    ) or ''
+    ) or ""
   end
 
   -- Terminal buffer, show terminal command and id
-  if vim.bo.bt == 'terminal' then
+  if vim.bo.bt == "terminal" then
     local path, pid, cmd, comment = utils.term.parse_name(bufname)
     if not path or not pid or not cmd then
       return string.format(
-        '[Terminal] %s',
+        "[Terminal] %s",
         str_shorten(bufname, fname_max_width)
       )
     end
     return string.format(
-      '[Terminal %s] %s [%s]',
+      "[Terminal %s] %s [%s]",
       utils.stl.escape(
         str_shorten(
-          comment ~= '' and comment or pid,
+          comment ~= "" and comment or pid,
           fname_prefix_suffix_max_width
         )
       ),
       utils.stl.escape(str_shorten(cmd, fname_max_width)),
       utils.stl.escape(
         str_shorten(
-          vim.fn.fnamemodify(path, ':~'):gsub('/+$', ''),
+          vim.fn.fnamemodify(path, ":~"):gsub("/+$", ""),
           fname_prefix_suffix_max_width
         )
       )
@@ -664,11 +679,11 @@ function _G._statusline.fname()
   end
 
   -- Other special buffer types
-  local prefix, main = bufname:match('^%s*(%S+)://(.*)')
+  local prefix, main = bufname:match "^%s*(%S+)://(.*)"
   if prefix and main then
     return utils.stl.escape(
       string.format(
-        '[%s] %s',
+        "[%s] %s",
         str_shorten(
           utils.str.snake_to_pascal(vim.fs.basename(prefix)) --[[@as string]],
           fname_prefix_suffix_max_width
@@ -680,7 +695,7 @@ function _G._statusline.fname()
 
   return utils.stl.escape(
     str_shorten(
-      vim.api.nvim_eval_statusline('%F', {}).str,
+      vim.api.nvim_eval_statusline("%F", {}).str,
       fname_special_max_width
     )
   )
@@ -690,38 +705,38 @@ end
 ---@return string
 function _G._statusline.venv()
   local venv_name = vim.env.VIRTUAL_ENV
-      and vim.fn.fnamemodify(vim.env.VIRTUAL_ENV, ':~:.')
+      and vim.fn.fnamemodify(vim.env.VIRTUAL_ENV, ":~:.")
     or vim.env.CONDA_DEFAULT_ENV
-  return venv_name and string.format('venv: %s', venv_name) or ''
+  return venv_name and string.format("venv: %s", venv_name) or ""
 end
 
 ---Text filetypes
 ---@type table<string, true>
 local is_text = {
-  [''] = true,
-  ['tex'] = true,
-  ['markdown'] = true,
-  ['text'] = true,
+  [""] = true,
+  ["tex"] = true,
+  ["markdown"] = true,
+  ["text"] = true,
 }
 
 ---Check if current buffer is a python/jupyter notebook buffer
 ---@return boolean
 local function is_python()
-  return vim.startswith(vim.bo.ft, 'python')
-    or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':e') == 'ipynb'
+  return vim.startswith(vim.bo.ft, "python")
+    or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":e") == "ipynb"
 end
 
 ---Additional info for the current buffer enclosed in parentheses
 ---@return string
 function _G._statusline.info()
-  if vim.bo.bt ~= '' then
-    return ''
+  if vim.bo.bt ~= "" then
+    return ""
   end
 
   local info = {}
   ---@param section string
   local function add_section(section)
-    if section ~= '' then
+    if section ~= "" then
       table.insert(info, section)
     end
   end
@@ -738,13 +753,13 @@ function _G._statusline.info()
 
   add_section(_G._statusline.gitbranch())
   add_section(_G._statusline.gitdiff())
-  return vim.tbl_isempty(info) and ''
-    or string.format('(%s) ', table.concat(info, ', '))
+  return vim.tbl_isempty(info) and ""
+    or string.format("(%s) ", table.concat(info, ", "))
 end
 
-vim.api.nvim_create_autocmd('DiagnosticChanged', {
+vim.api.nvim_create_autocmd("DiagnosticChanged", {
   group = groupid,
-  desc = 'Update diagnostics cache for the status line.',
+  desc = "Update diagnostics cache for the status line.",
   callback = function(args)
     vim.b[args.buf].diag_cnt_cache = vim.diagnostic.count(args.buf)
     vim.b[args.buf].diag_str_cache = nil
@@ -760,21 +775,21 @@ function _G._statusline.diag()
   if vim.b.diag_str_cache then
     return vim.b.diag_str_cache
   end
-  local str = ''
+  local str = ""
   local buf_cnt = vim.b.diag_cnt_cache or {}
-  for serverity_nr, severity in ipairs({ 'Error', 'Warn', 'INFO', 'Hint' }) do
+  for serverity_nr, severity in ipairs { "Error", "Warn", "INFO", "Hint" } do
     local cnt = buf_cnt[serverity_nr] ~= vim.NIL and buf_cnt[serverity_nr] or 0
     if cnt > 0 then
       local icon_text = get_diag_sign_text(serverity_nr)
-      local icon_hl = 'StatusLineDiagnostic' .. severity
+      local icon_hl = "StatusLineDiagnostic" .. severity
       str = str
-        .. (str == '' and '' or ' ')
+        .. (str == "" and "" or " ")
         .. utils.stl.hl(icon_text, icon_hl)
         .. cnt
     end
   end
-  if str:find('%S') then
-    str = str .. ' '
+  if str:find "%S" then
+    str = str .. " "
   end
   vim.b.diag_str_cache = str
   return str
@@ -784,32 +799,59 @@ end
 ---@return string
 function _G._statusline.ft()
   local ft = string.format(
-    ' %s %s ',
+    " %s %s ",
     utils.general.icon_provider(0),
-    vim.bo.ft:gsub('^%l', string.upper)
+    vim.bo.ft:gsub("^%l", string.upper)
   )
-  return vim.bo.ft == '' and '' or utils.stl.hl(ft, 'StatusLineDimmed')
+  return vim.bo.ft == "" and "" or utils.stl.hl(ft, "StatusLineDimmed")
 end
 
----LSP server names with spinner/tick indicator
----Shows: "server1, server2 ⣷" (busy) or "server1, server2 󰄬" (idle)
+---LSP server names with per-server indicators
+---Shows: "copilot ⣷, lua_ls 󰄬" (spinner when busy, tick when done)
 ---@return string
 function _G._statusline.lsp_status()
-  local clients = vim.lsp.get_clients({ bufnr = 0 })
+  local ft = vim.bo.filetype or ""
+  if lsp_incapable_ft[ft] or vim.bo.bt == "nofile" then
+    return ""
+  end
+
+  local clients = vim.lsp.get_clients { bufnr = 0 }
   if #clients == 0 then
-    return utils.stl.hl('No LSP ', 'StatusLineDimmed')
+    return ""
   end
 
-  local names = {}
+  local parts = {}
+  local all_done = true
+
   for _, client in ipairs(clients) do
-    table.insert(names, client.name)
+    local is_busy = server_progress[client.name] == true
+    if is_busy then
+      all_done = false
+    end
+
+    local indicator
+    if is_busy then
+      indicator =
+        string.format("%%#LspSpinner#%s%%*", spinner_frames[spinner_idx])
+    else
+      indicator = string.format("%%#LspReady#%s%%*", "󰄬 ")
+    end
+
+    local server_name = utils.stl.hl(client.name, "StatusLineDimmed")
+    table.insert(parts, string.format("%s %s", server_name, indicator))
   end
 
-  return string.format(
-    '%s %s',
-    utils.stl.hl(table.concat(names, ', '), 'StatusLineDimmed'),
-    get_lsp_indicator()
-  )
+  local result = table.concat(parts, ", ")
+
+  if all_done then
+    return string.format(
+      "%s %s",
+      result,
+      string.format("%%#LspConnected#%s%%* ", icons.diagnostics.Connected)
+    )
+  end
+
+  return result
 end
 
 -- stylua: ignore start
@@ -1012,7 +1054,7 @@ local components = {
 }
 -- stylua: ignore end
 
-local stl = table.concat({
+local stl = table.concat {
   components.mode,
   components.flag,
   components.root,
@@ -1028,9 +1070,9 @@ local stl = table.concat({
   components.ft,
   components.truncate,
   components.lineinfo,
-})
+}
 
-local stl_nc = table.concat({
+local stl_nc = table.concat {
   components.padding,
   components.flag,
   components.root,
@@ -1038,7 +1080,7 @@ local stl_nc = table.concat({
   components.align,
   components.truncate,
   components.pos,
-})
+}
 
 setmetatable(_G._statusline, {
   ---Get statusline string
@@ -1062,6 +1104,7 @@ utils.hl.persist(function()
   utils.hl.set(0, 'StatusLineDiagnosticInfo',  { link = 'DiagnosticSignInfo',   default = true })
   utils.hl.set(0, 'StatusLineDiagnosticWarn',  { link = 'DiagnosticSignWarn',   default = true })
   utils.hl.set(0, 'StatusLineDiagnosticError', { link = 'DiagnosticSignError',  default = true })
+  utils.hl.set(0, 'LspConnected', { fg = 'green', default = true })
 
   utils.hl.set(0, 'StatusLineHeader',          { fg = 'TabLine', bg = 'fg', ctermfg = 'TabLine', ctermbg = 'fg', reverse = true, default = true })
   utils.hl.set(0, 'StatusLineHeaderModified',  { fg = 'Special', bg = 'fg', ctermfg = 'Special', ctermbg = 'fg', reverse = true, default = true })

@@ -369,4 +369,6 @@ function M.on_keys(key_specs, name, load)
   end
 end
 
+M.loaded = loaded
+
 return M
