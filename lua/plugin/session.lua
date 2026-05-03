@@ -351,7 +351,7 @@ function M.setup(opts)
       group = groupid,
       once = true,
       callback = function()
-        if not vim.g._session_loaded and not vim.g._session_disabled then
+        if not vim.g._session_loaded and not vim.g._session_disabled and vim.fn.argc() == 0 then
           M.load()
         end
       end,
