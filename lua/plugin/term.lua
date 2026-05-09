@@ -246,7 +246,7 @@ function M.setup()
 
   -- Send Escape directly to terminal
   vim.keymap.set("t", "<Esc>", "<Esc>", { replace_keycodes = false, desc = "Send Escape to terminal" })
-  -- Use `<C-\\><Esc>` instead to exit terminal mode
+  -- Use `<C-\><Esc>` instead to exit terminal mode
   vim.keymap.set(
     "t",
     "<C-\\><Esc>",

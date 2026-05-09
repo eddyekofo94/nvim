@@ -133,7 +133,7 @@
       "src": "https://github.com/bassamsdata/namu.nvim"
     },
     "neogit": {
-      "rev": "0ea6b87ae19e8e5a235c682f8db1305774824f9b",
+      "rev": "d3890fc3cdf0859845a86b2be306bba01458df1a",
       "src": "https://github.com/NeogitOrg/neogit"
     },
     "neoscroll.nvim": {
@@ -262,6 +262,10 @@
       "rev": "81def742a9393f5639611d0cff6c2d7da1241915",
       "src": "https://github.com/FluxxField/smart-motion.nvim"
     },
+    "termite.nvim": {
+      "rev": "60184a1eaec3bf3f8f404eed4ee69b30f38cfe54",
+      "src": "https://github.com/ruicsh/termite.nvim"
+    },
     "themeswitcher.nvim": {
       "rev": "9d6821421aff7abf2d7ed278096ed9afbdbaf7f2",
       "src": "https://github.com/uhhuhuhuhuh/themeswitcher.nvim"
@@ -283,7 +287,7 @@
       "src": "https://github.com/tronikelis/ts-autotag.nvim"
     },
     "ultimate-autopair.nvim": {
-      "rev": "72e160cb1ce8c0db2ac4315f77d97420a2f4223d",
+      "rev": "6b58234de921437836efe27714b2026ed2ee235a",
       "src": "https://github.com/altermo/ultimate-autopair.nvim"
     },
     "vim-conjoin": {
