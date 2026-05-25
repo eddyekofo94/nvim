@@ -1511,14 +1511,14 @@ return {
         previewers = {
           builtin = {
             extensions = {
-              avif = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              bmp = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              gif = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              jpeg = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              jpg = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              png = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              svg = { "chafa", "--animate=off", "--scale=max", "{file}" },
-              webp = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              avif = { "file", "--", "{file}" },
+              bmp = { "file", "--", "{file}" },
+              gif = { "file", "--", "{file}" },
+              jpeg = { "file", "--", "{file}" },
+              jpg = { "file", "--", "{file}" },
+              png = { "file", "--", "{file}" },
+              svg = { "file", "--", "{file}" },
+              webp = { "file", "--", "{file}" },
             },
             syntax_delay = 80,
             toggle_behavior = "extend",
