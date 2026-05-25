@@ -251,6 +251,16 @@ return {
 
         local listfile = opts and opts.__toggle_listfile
         if type(listfile) ~= "string" or listfile == "" then
+          local fzflua = rawget(_G, "FzfLua")
+          listfile = fzflua
+            and fzflua.utils
+            and fzflua.config
+            and fzflua.utils.map_get(
+              fzflua.config,
+              "__resume_data.opts.__toggle_listfile"
+            )
+        end
+        if type(listfile) ~= "string" or listfile == "" then
           return nil, search_query
         end
 
