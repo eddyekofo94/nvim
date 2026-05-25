@@ -2102,7 +2102,18 @@ return {
         end
 
         local preview_cmd = vim.fn.executable "chafa" == 1
-            and "chafa --animate=off --scale=max -- {}"
+            and table.concat({
+              "chafa",
+              "--format=kitty",
+              "--passthrough=auto",
+              "--animate=off",
+              "--clear",
+              "--align=mid,mid",
+              "--scale=max",
+              "--size=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}",
+              "--",
+              "{}",
+            }, " ")
           or "file -- {}"
 
         return fzf.fzf_exec(table.concat(vim.tbl_map(shellescape, file_cmd), ' '), vim.tbl_deep_extend('force', {
@@ -2114,10 +2125,21 @@ return {
           fzf_opts = {
             ["+0"] = true,
             ["+1"] = true,
-            ["--bind"] = "ctrl-f:preview-page-down,ctrl-b:preview-page-up,alt-j:preview-down,alt-k:preview-up",
             ["--header-first"] = true,
             ["--preview"] = preview_cmd,
-            ["--preview-window"] = "up:70%:wrap",
+            ["--preview-window"] = "up:85%:wrap",
+          },
+          keymap = {
+            builtin = {
+              ["<F4>"] = false,
+            },
+            fzf = {
+              ["ctrl-f"] = "preview-page-down",
+              ["ctrl-b"] = "preview-page-up",
+              ["alt-j"] = "preview-down",
+              ["alt-k"] = "preview-up",
+              ["f4"] = "toggle-preview",
+            },
           },
           actions = {
             ["enter"] = actions.file_edit,
