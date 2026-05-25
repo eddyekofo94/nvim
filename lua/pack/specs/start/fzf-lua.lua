@@ -175,12 +175,19 @@ return {
         return query ~= "" and query or "<empty>"
       end
 
+      local preview_hint = "preview: C-p/F4 | scroll: C-f/C-b"
+
+      local function preview_header(header)
+        return header and header ~= "" and header .. " | " .. preview_hint
+          or preview_hint
+      end
+
       local function with_toggle_header(opts, parts)
         opts = vim.deepcopy(opts or {})
         opts.fzf_opts = vim.tbl_deep_extend("force", opts.fzf_opts or {}, {
           ["--header-first"] = true,
         })
-        opts.header = table.concat(parts, " | ")
+        opts.header = preview_header(table.concat(parts, " | "))
         return opts
       end
 
@@ -1337,6 +1344,7 @@ return {
           },
         },
         buffers = {
+          header = preview_hint,
           show_unlisted = false,
           show_unloaded = true,
           ignore_current_buffer = false,
@@ -1345,6 +1353,9 @@ return {
           no_term_buffers = false,
           cwd_only = false,
           ls_cmd = "ls",
+          fzf_opts = {
+            ["--header-first"] = true,
+          },
         },
         helptags = {
           actions = {
@@ -1388,6 +1399,7 @@ return {
           },
         },
         files = {
+          header = preview_hint,
           actions = {
             ["alt-c"] = actions.change_cwd,
             ["alt-h"] = actions.toggle_hidden,
@@ -1397,6 +1409,7 @@ return {
             ["ctrl-g"] = actions.toggle_files_grep,
           },
           fzf_opts = {
+            ["--header-first"] = true,
             ["--info"] = "inline-right",
           },
           find_opts = [[-type f -not -path '*/\.git/*' -not -path '*/\.venv/*' -printf '%P\n']],
@@ -1405,9 +1418,13 @@ return {
         },
         oldfiles = {
           prompt = "Oldfiles> ",
+          header = preview_hint,
           actions = {
             ["ctrl-e"] = actions.filter_extension,
             ["ctrl-g"] = actions.toggle_files_grep,
+          },
+          fzf_opts = {
+            ["--header-first"] = true,
           },
         },
         frecency = {
@@ -1415,8 +1432,20 @@ return {
           track_by_score = true,
         },
         git = {
+          status = {
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
+          },
           commits = {
             prompt = "GitLogs>",
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
             actions = has_fugitive_gedit_cmd() and {
               ["enter"] = actions.fugitive_edit,
               ["alt-s"] = actions.fugitive_split,
@@ -1430,6 +1459,11 @@ return {
           },
           bcommits = {
             prompt = "GitBLogs>",
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
             actions = has_fugitive_gedit_cmd() and {
               ["enter"] = actions.fugitive_edit,
               ["alt-s"] = actions.fugitive_split,
@@ -1442,6 +1476,11 @@ return {
             } or nil,
           },
           blame = {
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
             actions = {
               ["enter"] = actions.git_goto_line,
               ["alt-s"] = actions.git_buf_split,
@@ -1497,8 +1536,10 @@ return {
             "-e",
           }, " "),
           fzf_opts = {
+            ["--header-first"] = true,
             ["--info"] = "inline-right",
           },
+          header = preview_hint,
           winopts = {
             preview = {
               hidden = false,
@@ -1508,6 +1549,11 @@ return {
         lsp = {
           jump1 = true,
           finder = {
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
             fzf_opts = {
               ["--info"] = "inline-right",
             },
@@ -1515,9 +1561,28 @@ return {
           references = {
             sync = false,
             ignore_current_line = true,
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
           },
-          definitions = { sync = false },
-          typedefs = { sync = false },
+          definitions = {
+            sync = false,
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
+          },
+          typedefs = {
+            sync = false,
+            winopts = {
+              preview = {
+                hidden = true,
+              },
+            },
+          },
           symbols = {
             symbol_style = vim.g.has_nf and 1 or 3,
             symbol_icons = vim.tbl_map(vim.trim, icons.kinds),
@@ -1528,6 +1593,11 @@ return {
         },
         diagnostics = {
           multiline = false,
+          winopts = {
+            preview = {
+              hidden = true,
+            },
+          },
         },
       }
 
@@ -1538,7 +1608,7 @@ return {
       vim.keymap.set('i', '<C-r><C-_>', fzf.complete_from_registers, { desc = 'Fuzzy complete from registers' })
       vim.keymap.set('i', '<C-r><C-r>', fzf.complete_from_registers, { desc = 'Fuzzy complete from registers' })
       vim.keymap.set('i', '<C-x><C-f>', fzf.complete_path, { desc = 'Fuzzy complete path' })
-      vim.keymap.set('n', '<Leader>.', fzf.files, { desc = 'Find files' })
+      vim.keymap.set('n', '<Leader>.', function() fzf.smart_files() end, { desc = 'Smart files' })
 
       local function valid_dir(dir)
         return type(dir) == "string"
@@ -1592,6 +1662,7 @@ return {
         local cwd = smart_files_cwd(opts)
         local real_cwd = vim.uv.fs_realpath(cwd) or cwd
         local oldfiles = vim.v.oldfiles or {}
+        local other_oldfiles_limit = opts.smart_other_oldfiles_limit or 5
 
         -- Filter oldfiles to current cwd
         local cwd_oldfiles = {}
@@ -1622,8 +1693,10 @@ return {
                 table.insert(cwd_oldfiles, rel_path)
               end
             else
-              -- Other directories (last 10)
-              if not other_seen[display_path] and #other_oldfiles < 10 then
+              if
+                not other_seen[display_path]
+                and #other_oldfiles < other_oldfiles_limit
+              then
                 other_seen[display_path] = true
                 table.insert(other_oldfiles, display_path)
               end
@@ -1695,7 +1768,7 @@ return {
           cmd = cmd,
           __smart_files = true,
           formatter = "path.filename_first",
-          header = "Smart Files: recent cwd files first",
+          header = preview_header "Smart Files: recent cwd files first",
           fzf_opts = {
             ["--header-first"] = true,
           },
@@ -1742,7 +1815,7 @@ return {
       vim.keymap.set('n', '<Leader>fc', fzf.changes, { desc = 'Find changes' })
       vim.keymap.set('n', '<Leader>fd', fzf.diagnostics_document, { desc = 'Find document diagnostics' })
       vim.keymap.set('n', '<Leader>fD', fzf.diagnostics_workspace, { desc = 'Find workspace diagnostics' })
-      vim.keymap.set('n', '<Leader>ff', fzf.files, { desc = 'Find files' })
+      vim.keymap.set('n', '<Leader>ff', function() fzf.smart_files() end, { desc = 'Smart files' })
       vim.keymap.set('n', '<Leader>fa', fzf.args, { desc = 'Find args' })
       vim.keymap.set('n', '<Leader>fl', fzf.loclist, { desc = 'Find location list' })
       vim.keymap.set('n', '<Leader>fq', fzf.quickfix, { desc = 'Find quickfix list' })
@@ -1820,6 +1893,9 @@ return {
         utils.hl.set(0, 'FzfLuaSymTypeParameter', { link = 'FzfLuaSymDefault',    default = true })
         utils.hl.set(0, 'FzfLuaSymVariable',      { link = 'FzfLuaSymDefault',    default = true })
         utils.hl.set(0, 'FzfLuaNormal',           { link = 'NormalSpecial'       })
+        utils.hl.set(0, 'FzfLuaBorder',           { link = 'FloatBorder'         })
+        utils.hl.set(0, 'FzfLuaPreviewBorder',    { link = 'FloatBorder'         })
+        utils.hl.set(0, 'FzfLuaPreviewTitle',     { link = 'FloatBorder'         })
         utils.hl.set(0, 'FzfLuaBufFlagAlt',       { link = 'FzfLuaSymDefault'    })
         utils.hl.set(0, 'FzfLuaBufFlagCur',       { link = 'Operator'            })
         utils.hl.set(0, 'FzfLuaLiveSym',          { link = 'WarningMsg'          })
