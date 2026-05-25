@@ -2135,12 +2135,14 @@ return {
               ["<F4>"] = false,
             },
             fzf = {
+              ["enter"] = "print(_open_image)+accept",
               ["f4"] = false,
             },
           },
           actions = {
+            ["_open_image"] = actions.file_edit,
             ["ctrl-c"] = actions.dummy_abort,
-            ["enter"] = actions.file_edit,
+            ["enter"] = actions.dummy_abort,
             ["esc"] = actions.dummy_abort,
           },
         }, opts))
