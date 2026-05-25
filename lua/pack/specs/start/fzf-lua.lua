@@ -131,12 +131,16 @@ return {
 
       ---@diagnostic disable-next-line: duplicate-set-field
       function actions.arg_del(...)
-        pcall(_arg_del, ...)
+        if _arg_del then
+          pcall(_arg_del, ...)
+        end
       end
 
-      ---@diagnostic disable-next-line: duplicate-set-field
-      function actions.vimcmd_buf(...)
-        pcall(_vimcmd_buf, ...)
+      if _vimcmd_buf then
+        ---@diagnostic disable-next-line: duplicate-set-field
+        function actions.vimcmd_buf(...)
+          pcall(_vimcmd_buf, ...)
+        end
       end
 
       ---Switch provider while preserving the last query and cwd
