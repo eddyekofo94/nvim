@@ -1073,6 +1073,23 @@ return {
 
       local use_bottom_float_preview = vim.g.fzf_lua_use_bottom_split ~= true
 
+      function _G.FzfLuaFocus()
+        local winid = vim.g._fzf_win
+        if type(winid) ~= "number" or not vim.api.nvim_win_is_valid(winid) then
+          local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
+          local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
+          winid = winobj and winobj.fzf_winid or nil
+        end
+
+        if type(winid) ~= "number" or not vim.api.nvim_win_is_valid(winid) then
+          return false
+        end
+
+        vim.api.nvim_set_current_win(winid)
+        vim.cmd.startinsert()
+        return true
+      end
+
       local function fzf_split()
         vim.g._fzf_active = true
         local win = require "utils.win"
@@ -1148,7 +1165,10 @@ return {
           row = 1,
           col = 0,
           border = "none",
-          on_create = function()
+          on_create = function(args)
+            vim.g._fzf_active = true
+            vim.g._fzf_win = args and args.winid
+              or vim.api.nvim_get_current_win()
             vim.keymap.set(
               "t",
               "<C-r>",
@@ -1168,13 +1188,16 @@ return {
           on_close = function()
             vim.defer_fn(function()
               vim.g._fzf_active = nil
+              vim.g._fzf_win = nil
               for _, win in ipairs(vim.api.nvim_list_wins()) do
                 if vim.api.nvim_win_is_valid(win) then
                   vim.w[win].focus_disable = false
                   vim.b[vim.api.nvim_win_get_buf(win)].focus_disable = false
                 end
               end
-              pcall(require("focus").resize)
+              pcall(function()
+                require("focus").resize()
+              end)
             end, 50)
             restore_global_opt "splitkeep"
             restore_global_opt "cmdheight"

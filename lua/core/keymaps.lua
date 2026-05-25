@@ -44,8 +44,18 @@ require("utils.load").on_events(
     map({ 'x', 'n' }, '<M-g>t', '<C-w>gt', { desc = 'Go to next tab' })
     map({ 'x', 'n' }, '<M-g>T', '<C-w>gT', { desc = 'Go to previous tab' })
     map({ 'x', 'n' }, '<M-h>', '<C-w><C-h>', { desc = 'Go to the left window' })
-    map({ 'x', 'n' }, '<M-j>', '<C-w><C-j>', { desc = 'Go to the window below' })
-    map({ 'x', 'n' }, '<M-k>', '<C-w><C-k>', { desc = 'Go to the window above' })
+    map({ 'x', 'n' }, '<M-j>', function()
+      if _G.FzfLuaFocus and _G.FzfLuaFocus() then
+        return
+      end
+      vim.cmd.wincmd('j')
+    end, { desc = 'Go to the window below' })
+    map({ 'x', 'n' }, '<M-k>', function()
+      if _G.FzfLuaFocus and _G.FzfLuaFocus() then
+        return
+      end
+      vim.cmd.wincmd('k')
+    end, { desc = 'Go to the window above' })
     map({ 'x', 'n' }, '<M-l>', '<C-w><C-l>', { desc = 'Go to the right window' })
     map({ 'x', 'n' }, '<M-Left>', '<C-w><Left>', { desc = 'Go to the left window' })
     map({ 'x', 'n' }, '<M-Down>', '<C-w><Down>', { desc = 'Go to the window below' })

@@ -263,6 +263,9 @@ local function setup()
   end, { desc = 'Go to left window or tmux pane' })
 
   vim.keymap.set('n', '<M-j>', function()
+    if _G.FzfLuaFocus and _G.FzfLuaFocus() then
+      return
+    end
     local current = vim.fn.winnr()
     vim.cmd('wincmd j')
     if vim.fn.winnr() == current then
@@ -271,6 +274,9 @@ local function setup()
   end, { desc = 'Go to window below or tmux pane' })
 
   vim.keymap.set('n', '<M-k>', function()
+    if _G.FzfLuaFocus and _G.FzfLuaFocus() then
+      return
+    end
     local current = vim.fn.winnr()
     vim.cmd('wincmd k')
     if vim.fn.winnr() == current then
