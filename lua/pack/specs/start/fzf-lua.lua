@@ -73,15 +73,26 @@ return {
               if type(split) == "function" then
                 return { winopts = { split = split } }
               end
+              if type(split) == "string" and split ~= "" then
+                return {
+                  winopts = {
+                    split = string.format(
+                      -- Don't shrink size if a quickfix list is closed for fzf
+                      -- window to avoid window resizing and content shifting
+                      "let g:_fzf_n_items =%d | %s | unlet g:_fzf_n_items",
+                      n_items,
+                      vim.trim(split)
+                    ),
+                  },
+                }
+              end
               return {
                 winopts = {
-                  split = string.format(
-                    -- Don't shrink size if a quickfix list is closed for fzf
-                    -- window to avoid window resizing and content shifting
-                    "let g:_fzf_n_items =%d | %s | unlet g:_fzf_n_items",
-                    n_items,
-                    vim.trim(split --[[@as string]])
-                  ),
+                  height = math.min(10, n_items + 1),
+                  row = 1,
+                  col = 0,
+                  width = 1,
+                  preview = { hidden = true },
                 },
               }
             end)
@@ -1053,6 +1064,66 @@ return {
         utils.win.restore_views(_G._fzf_lua_win_views)
       end
 
+      local use_bottom_float_preview = vim.g.fzf_lua_use_bottom_split ~= true
+
+      local function fzf_split()
+        vim.g._fzf_active = true
+        local win = require "utils.win"
+        win.save_heights "_fzf_lua_win_heights"
+        win.save_views "_fzf_lua_win_views"
+
+        vim.g._fzf_vim_lines = vim.o.lines
+        vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
+        vim.g._fzf_splitkeep = vim.opt.splitkeep:get()
+        vim.opt.splitkeep = "topline"
+        vim.g._fzf_cmdheight = vim.opt.cmdheight:get()
+        vim.opt.cmdheight = 0
+        vim.g._fzf_laststatus = vim.opt.laststatus:get()
+        vim.opt.laststatus = 0
+
+        local fzf_height = 10
+
+        local lastwin, lastwintype
+        for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+          local wintype = vim.fn.win_gettype(winid)
+          if wintype ~= "autocmd" and wintype ~= "popup" then
+            lastwin = winid
+            lastwintype = wintype
+            break
+          end
+        end
+
+        if lastwintype == "loclist" or lastwintype == "quickfix" then
+          vim.g._fzf_qfclosed = lastwintype
+          vim.g._fzf_qfwin = lastwin
+          vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
+          fzf_height = vim.g._fzf_qfheight - 1
+          vim.cmd(lastwintype == "loclist" and "lclose" or "cclose")
+        end
+
+        fzf_height = fzf_height
+          + vim.g._fzf_cmdheight
+          + (vim.g._fzf_laststatus > 0 and 1 or 0)
+
+        if vim.g._fzf_n_items and not vim.g._fzf_qfclosed then
+          fzf_height = math.min(fzf_height, vim.g._fzf_n_items + 1)
+        end
+
+        vim.cmd("botright " .. fzf_height .. "new")
+        vim.g._fzf_win = vim.api.nvim_get_current_win()
+        vim.w.winbar_no_attach = true
+        vim.w.focus_disable = true
+        vim.b.focus_disable = true
+        vim.opt_local.buftype = "nofile"
+        vim.opt_local.bufhidden = "wipe"
+        vim.opt_local.number = false
+        vim.opt_local.relativenumber = false
+        vim.opt_local.swapfile = false
+        vim.opt_local.winfixwidth = true
+        vim.opt_local.winfixheight = true
+        vim.bo.filetype = "fzf"
+      end
+
       fzf.setup {
         -- Default profile 'default-title' disables prompt in favor of title
         -- on nvim >= 0.9, but a fzf windows with split layout cannot have titles
@@ -1064,63 +1135,12 @@ return {
         dir_icon = vim.trim(icons.Folder),
         winopts = {
           backdrop = 100,
-          split = function()
-            vim.g._fzf_active = true
-            local win = require "utils.win"
-            win.save_heights "_fzf_lua_win_heights"
-            win.save_views "_fzf_lua_win_views"
-
-            vim.g._fzf_vim_lines = vim.o.lines
-            vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
-            vim.g._fzf_splitkeep = vim.opt.splitkeep:get()
-            vim.opt.splitkeep = "topline"
-            vim.g._fzf_cmdheight = vim.opt.cmdheight:get()
-            vim.opt.cmdheight = 0
-            vim.g._fzf_laststatus = vim.opt.laststatus:get()
-            vim.opt.laststatus = 0
-
-            local fzf_height = 10
-
-            local lastwin, lastwintype
-            for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-              local wintype = vim.fn.win_gettype(winid)
-              if wintype ~= "autocmd" and wintype ~= "popup" then
-                lastwin = winid
-                lastwintype = wintype
-                break
-              end
-            end
-
-            if lastwintype == "loclist" or lastwintype == "quickfix" then
-              vim.g._fzf_qfclosed = lastwintype
-              vim.g._fzf_qfwin = lastwin
-              vim.g._fzf_qfheight = vim.api.nvim_win_get_height(lastwin)
-              fzf_height = vim.g._fzf_qfheight - 1
-              vim.cmd(lastwintype == "loclist" and "lclose" or "cclose")
-            end
-
-            fzf_height = fzf_height
-              + vim.g._fzf_cmdheight
-              + (vim.g._fzf_laststatus > 0 and 1 or 0)
-
-            if vim.g._fzf_n_items and not vim.g._fzf_qfclosed then
-              fzf_height = math.min(fzf_height, vim.g._fzf_n_items + 1)
-            end
-
-            vim.cmd("botright " .. fzf_height .. "new")
-            vim.g._fzf_win = vim.api.nvim_get_current_win()
-            vim.w.winbar_no_attach = true
-            vim.w.focus_disable = true
-            vim.b.focus_disable = true
-            vim.opt_local.buftype = "nofile"
-            vim.opt_local.bufhidden = "wipe"
-            vim.opt_local.number = false
-            vim.opt_local.relativenumber = false
-            vim.opt_local.swapfile = false
-            vim.opt_local.winfixwidth = true
-            vim.opt_local.winfixheight = true
-            vim.bo.filetype = "fzf"
-          end,
+          split = not use_bottom_float_preview and fzf_split or nil,
+          height = use_bottom_float_preview and 23 or 0.85,
+          width = 1,
+          row = 1,
+          col = 0,
+          border = "none",
           on_create = function()
             vim.keymap.set(
               "t",
@@ -1194,12 +1214,21 @@ return {
             end)
           end,
           ---@diagnostic disable-next-line: missing-fields
-          preview = {
-            border = "none",
-            layout = "horizontal",
-            hidden = true,
-            scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
-          },
+          preview = use_bottom_float_preview
+              and {
+                border = "rounded",
+                layout = "vertical",
+                vertical = "up:12",
+                hidden = false,
+                delay = 80,
+                scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
+              }
+            or {
+              border = "none",
+              layout = "horizontal",
+              hidden = true,
+              scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
+            },
         },
         -- Open help window at top of screen with single border
         help_open_win = function(buf, enter, opts)
