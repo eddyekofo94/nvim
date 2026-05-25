@@ -8,6 +8,9 @@ return {
         src = "https://github.com/kyazdani42/nvim-web-devicons",
         data = { optional = true },
       },
+      {
+        src = "https://github.com/folke/snacks.nvim",
+      },
     },
     cmds = "FzfLua",
     init = function(spec, path)
@@ -125,6 +128,15 @@ return {
       local fzf_utils = require "fzf-lua.utils"
       local utils = require "utils"
       local icons = require "utils.static.icons"
+
+      local ok_snacks, snacks = pcall(require, "snacks")
+      if ok_snacks then
+        pcall(snacks.setup, {
+          image = {
+            enabled = true,
+          },
+        })
+      end
 
       local _arg_del = actions.arg_del
       local _vimcmd_buf = actions.vimcmd_buf
@@ -2101,15 +2113,6 @@ return {
           table.insert(file_cmd, ')')
         end
 
-        local image_preview_cmd = vim.fn.executable "chafa" == 1
-            and { "chafa", "--animate=off", "--scale=max", "{file}" }
-          or { "file", "--", "{file}" }
-
-        local image_preview_extensions = {}
-        for _, ext in ipairs(image_exts) do
-          image_preview_extensions[ext] = image_preview_cmd
-        end
-
         return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Images> ',
           cwd = cwd,
@@ -2118,7 +2121,10 @@ return {
           header = "Images | scroll: C-f/C-b",
           jump1 = false,
           previewer = {
-            extensions = image_preview_extensions,
+            extensions = false,
+            snacks_image = {
+              enabled = true,
+            },
           },
           fzf_opts = {
             ["+0"] = true,
