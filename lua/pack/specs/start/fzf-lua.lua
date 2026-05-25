@@ -2106,6 +2106,7 @@ return {
               "cols=${FZF_PREVIEW_COLUMNS:-120};",
               "lines=${FZF_PREVIEW_LINES:-40};",
               "chafa",
+              "--probe=off",
               "--format=symbols",
               "--colors=full",
               "--color-space=din99d",
@@ -2126,8 +2127,11 @@ return {
           prompt = 'Images> ',
           cwd = cwd,
           previewer = false,
-          header = "preview: native fzf | scroll: C-f/C-b",
+          header = "preview: C-o | scroll: C-f/C-b",
           jump1 = false,
+          _fzf_cli_args = {
+            "--bind=ctrl-o:toggle-preview",
+          },
           fzf_opts = {
             ["+0"] = true,
             ["+1"] = true,
@@ -2144,7 +2148,7 @@ return {
               ["ctrl-b"] = "preview-page-up",
               ["alt-j"] = "preview-down",
               ["alt-k"] = "preview-up",
-              ["f4"] = "toggle-preview",
+              ["f4"] = false,
             },
           },
           actions = {
