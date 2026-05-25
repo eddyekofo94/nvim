@@ -8,9 +8,6 @@ return {
         src = "https://github.com/kyazdani42/nvim-web-devicons",
         data = { optional = true },
       },
-      {
-        src = "https://github.com/folke/snacks.nvim",
-      },
     },
     cmds = "FzfLua",
     init = function(spec, path)
@@ -128,15 +125,6 @@ return {
       local fzf_utils = require "fzf-lua.utils"
       local utils = require "utils"
       local icons = require "utils.static.icons"
-
-      local ok_snacks, snacks = pcall(require, "snacks")
-      if ok_snacks then
-        pcall(snacks.setup, {
-          image = {
-            enabled = true,
-          },
-        })
-      end
 
       local _arg_del = actions.arg_del
       local _vimcmd_buf = actions.vimcmd_buf
@@ -2077,7 +2065,7 @@ return {
         }, opts))
       end
 
-      ---Browse image files with preview visible by default.
+      ---Browse image files without preview.
       ---@param opts table?
       function fzf.images(opts)
         opts = opts or {}
@@ -2118,14 +2106,9 @@ return {
           cwd = cwd,
           cmd = table.concat(vim.tbl_map(shellescape, file_cmd), ' '),
           formatter = "path.filename_first",
-          header = "Images | scroll: C-f/C-b",
+          header = "Images",
           jump1 = false,
-          previewer = {
-            extensions = false,
-            snacks_image = {
-              enabled = true,
-            },
-          },
+          previewer = false,
           fzf_opts = {
             ["+0"] = true,
             ["+1"] = true,
@@ -2133,7 +2116,7 @@ return {
           },
           winopts = {
             preview = {
-              hidden = false,
+              hidden = true,
             },
           },
           keymap = {
@@ -2141,14 +2124,12 @@ return {
               ["<F4>"] = false,
             },
             fzf = {
-              ["enter"] = "print(_open_image)+accept",
               ["f4"] = false,
             },
           },
           actions = {
-            ["_open_image"] = actions.file_edit,
             ["ctrl-c"] = actions.dummy_abort,
-            ["enter"] = actions.dummy_abort,
+            ["enter"] = actions.file_edit,
             ["esc"] = actions.dummy_abort,
           },
         }, opts))
