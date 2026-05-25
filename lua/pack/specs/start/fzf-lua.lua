@@ -2109,6 +2109,8 @@ return {
           header = preview_header "Images",
           jump1 = false,
           fzf_opts = {
+            ["+0"] = true,
+            ["+1"] = true,
             ["--header-first"] = true,
           },
           winopts = {
