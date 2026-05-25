@@ -242,6 +242,10 @@ return {
         local escaped_listfile = shellescape(listfile)
 
         return function(search_query, command)
+          if type(command) ~= "string" or command == "" then
+            return nil, search_query
+          end
+
           if search_query == require("fzf-lua.core").fzf_query_placeholder then
             return nil, search_query
           end
