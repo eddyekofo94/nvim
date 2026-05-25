@@ -1219,7 +1219,7 @@ return {
                 border = "rounded",
                 layout = "vertical",
                 vertical = "up:12",
-                hidden = false,
+                hidden = true,
                 delay = 80,
                 scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
               }
@@ -1229,6 +1229,12 @@ return {
               hidden = true,
               scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
             },
+        },
+        previewers = {
+          builtin = {
+            syntax_delay = 80,
+            toggle_behavior = "extend",
+          },
         },
         -- Open help window at top of screen with single border
         help_open_win = function(buf, enter, opts)
@@ -1249,6 +1255,15 @@ return {
             ["<C-_>"] = "toggle-help",
             ["<F1>"] = "toggle-help",
             ["<F2>"] = "toggle-fullscreen",
+            ["<F3>"] = "toggle-preview-wrap",
+            ["<F4>"] = "toggle-preview",
+            ["<C-p>"] = "toggle-preview",
+            ["<C-f>"] = "preview-page-down",
+            ["<C-b>"] = "preview-page-up",
+            ["<M-j>"] = "preview-down",
+            ["<M-k>"] = "preview-up",
+            ["<M-d>"] = "preview-half-page-down",
+            ["<M-u>"] = "preview-half-page-up",
           },
           fzf = {
             -- fzf '--bind=' options
@@ -1483,6 +1498,11 @@ return {
           }, " "),
           fzf_opts = {
             ["--info"] = "inline-right",
+          },
+          winopts = {
+            preview = {
+              hidden = false,
+            },
           },
         },
         lsp = {
