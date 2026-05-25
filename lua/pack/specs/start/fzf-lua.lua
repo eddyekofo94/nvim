@@ -180,7 +180,7 @@ return {
         return query ~= "" and query or "<empty>"
       end
 
-      local preview_hint = "preview: C-p/F4 | scroll: C-f/C-b"
+      local preview_hint = "preview: F4/F5 | scroll: C-f/C-b"
 
       local function preview_header(header)
         return header and header ~= "" and header .. " | " .. preview_hint
@@ -1189,6 +1189,58 @@ return {
         return true
       end
 
+      function _G.FzfLuaTogglePreviewMax()
+        local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
+        local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
+        if
+          not winobj
+          or not winobj.has_previewer
+          or not winobj:has_previewer()
+        then
+          return false
+        end
+
+        if winobj._dotfiles_preview_max then
+          local state = winobj._dotfiles_preview_max
+          winobj._dotfiles_preview_max = nil
+          winobj.fullscreen = state.fullscreen
+          winobj.preview_hidden = state.preview_hidden
+          winobj.toggle_behavior = state.toggle_behavior
+          winobj._preview_pos_force = state.preview_pos_force
+          winobj.winopts.preview.layout = state.layout
+          winobj.winopts.preview.vertical = state.vertical
+          winobj:redraw()
+          vim.schedule(_G.FzfLuaFocus)
+          return true
+        end
+
+        winobj._dotfiles_preview_max = {
+          fullscreen = winobj.fullscreen,
+          preview_hidden = winobj.preview_hidden,
+          toggle_behavior = winobj.toggle_behavior,
+          preview_pos_force = winobj._preview_pos_force,
+          layout = winobj.winopts.preview.layout,
+          vertical = winobj.winopts.preview.vertical,
+        }
+
+        winobj.fullscreen = true
+        winobj.preview_hidden = false
+        winobj.toggle_behavior = nil
+        winobj._preview_pos_force = "up"
+        winobj.winopts.preview.layout = "vertical"
+        winobj.winopts.preview.vertical = "up:85%"
+        winobj:redraw()
+        vim.schedule(function()
+          if
+            winobj.preview_winid
+            and vim.api.nvim_win_is_valid(winobj.preview_winid)
+          then
+            vim.api.nvim_set_current_win(winobj.preview_winid)
+          end
+        end)
+        return true
+      end
+
       local function fzf_split()
         vim.g._fzf_active = true
         local win = require "utils.win"
@@ -1268,6 +1320,16 @@ return {
             vim.g._fzf_active = true
             vim.g._fzf_win = args and args.winid
               or vim.api.nvim_get_current_win()
+            vim.keymap.set(
+              "t",
+              "<F5>",
+              "<Cmd>lua _G.FzfLuaTogglePreviewMax()<CR>",
+              {
+                nowait = true,
+                buffer = args and args.bufnr or true,
+                desc = "Toggle large preview",
+              }
+            )
             vim.keymap.set(
               "t",
               "<C-r>",
@@ -1386,7 +1448,7 @@ return {
             ["<F2>"] = "toggle-fullscreen",
             ["<F3>"] = "toggle-preview-wrap",
             ["<F4>"] = "toggle-preview",
-            ["<C-p>"] = "toggle-preview",
+            ["<F6>"] = "focus-preview",
             ["<C-f>"] = "preview-page-down",
             ["<C-b>"] = "preview-page-up",
             ["<M-j>"] = "preview-down",
@@ -1407,6 +1469,8 @@ return {
             ["tab"] = "toggle",
             ["shift-tab"] = "toggle+select-all",
             ["ctrl-l"] = "toggle",
+            ["ctrl-n"] = "down",
+            ["ctrl-p"] = "up",
           },
         },
         multiselect = true,
