@@ -2103,6 +2103,8 @@ return {
 
         local preview_cmd = vim.fn.executable "chafa" == 1
             and table.concat({
+              "cols=${FZF_PREVIEW_COLUMNS:-120};",
+              "lines=${FZF_PREVIEW_LINES:-40};",
               "chafa",
               "--format=kitty",
               "--passthrough=auto",
@@ -2110,7 +2112,7 @@ return {
               "--clear",
               "--align=mid,mid",
               "--scale=max",
-              "--size=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}",
+              '--size="${cols}x${lines}"',
               "--",
               "{}",
             }, " ")
