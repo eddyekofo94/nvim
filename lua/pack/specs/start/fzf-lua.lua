@@ -2101,53 +2101,47 @@ return {
           table.insert(file_cmd, ')')
         end
 
-        local preview_cmd = vim.fn.executable "chafa" == 1
-            and table.concat({
-              "cols=${FZF_PREVIEW_COLUMNS:-120};",
-              "lines=${FZF_PREVIEW_LINES:-40};",
-              "chafa",
-              "--format=kitty",
-              "--passthrough=auto",
-              "--animate=off",
-              "--clear",
-              "--align=mid,mid",
-              "--scale=max",
-              '--size="${cols}x${lines}"',
-              "--",
-              "{}",
-            }, " ")
-          or "file -- {}"
+        local image_preview_cmd = vim.fn.executable "chafa" == 1
+            and { "chafa", "--animate=off", "--scale=max", "{file}" }
+          or { "file", "--", "{file}" }
 
-        return fzf.fzf_exec(table.concat(vim.tbl_map(shellescape, file_cmd), ' '), vim.tbl_deep_extend('force', {
+        local image_preview_extensions = {}
+        for _, ext in ipairs(image_exts) do
+          image_preview_extensions[ext] = image_preview_cmd
+        end
+
+        return fzf.files(vim.tbl_deep_extend('force', {
           prompt = 'Images> ',
           cwd = cwd,
-          previewer = false,
-          header = "preview: C-o | scroll: C-f/C-b",
+          cmd = table.concat(vim.tbl_map(shellescape, file_cmd), ' '),
+          formatter = "path.filename_first",
+          header = "Images | scroll: C-f/C-b",
           jump1 = false,
-          _fzf_cli_args = {
-            "--bind=ctrl-o:toggle-preview",
+          previewer = {
+            extensions = image_preview_extensions,
           },
           fzf_opts = {
             ["+0"] = true,
             ["+1"] = true,
             ["--header-first"] = true,
-            ["--preview"] = preview_cmd,
-            ["--preview-window"] = "up:85%:wrap",
+          },
+          winopts = {
+            preview = {
+              hidden = false,
+            },
           },
           keymap = {
             builtin = {
               ["<F4>"] = false,
             },
             fzf = {
-              ["ctrl-f"] = "preview-page-down",
-              ["ctrl-b"] = "preview-page-up",
-              ["alt-j"] = "preview-down",
-              ["alt-k"] = "preview-up",
               ["f4"] = false,
             },
           },
           actions = {
+            ["ctrl-c"] = actions.dummy_abort,
             ["enter"] = actions.file_edit,
+            ["esc"] = actions.dummy_abort,
           },
         }, opts))
       end
