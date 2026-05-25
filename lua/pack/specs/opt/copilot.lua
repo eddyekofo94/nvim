@@ -3,7 +3,7 @@ return {
   src = 'https://github.com/zbirenbaum/copilot.lua',
   data = {
     cmd = { 'Copilot' },
-    ft = { 'markdown', 'sh' },
+    events = { event = 'FileType' },
     postload = function()
       require('copilot').setup({
         filetypes = {

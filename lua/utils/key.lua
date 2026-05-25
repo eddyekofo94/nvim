@@ -111,10 +111,6 @@ function M.map(modes, lhs, rhs, opts)
           desc = description,
         }
 
-        vim.notify(
-          string.format("Conflict #%d: [%s]", conflict_count, lhs),
-          vim.log.levels.WARN
-        )
       end
     end
   end
@@ -274,6 +270,59 @@ end
 vim.api.nvim_create_user_command("CheckConflicts", function()
   M.get_conflicts()
 end, { desc = "Show keymap conflicts report" })
+
+---Show conflicts from duplicate keymap checks during setup
+function M.report_warned()
+  local warned = {}
+  for _, v in pairs(warned_keys) do
+    table.insert(warned, v)
+  end
+
+  if #warned == 0 then
+    vim.notify("✨ No keymap conflicts detected!", vim.log.levels.INFO)
+    return
+  end
+
+  table.sort(warned, function(a, b)
+    if a.mode ~= b.mode then
+      return a.mode < b.mode
+    end
+    return a.lhs < b.lhs
+  end)
+
+  local report = {
+    "# Keymap Conflicts Report",
+    "",
+    string.format("Total: %d conflict(s)", #warned),
+    "",
+  }
+
+  for i, c in ipairs(warned) do
+    table.insert(report, string.format("## %d. [%s] in mode `%s`", i, c.lhs, c.mode))
+    table.insert(report, string.format("- Existing: `%s` (%s)", c.action, c.desc))
+    table.insert(report, string.format("- Source: `%s`", c.plugin))
+    table.insert(report, string.format("- File: %s:%s", c.path, c.line))
+    table.insert(report, "")
+  end
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, report)
+
+  vim.cmd "botright split"
+  local win = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_buf(win, buf)
+
+  vim.api.nvim_set_option_value("number", false, { win = win })
+  vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+  vim.api.nvim_set_option_value("winfixheight", true, { win = win })
+  vim.api.nvim_win_set_height(win, 15)
+  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+end
+
+vim.api.nvim_create_user_command("MapConflicts", function()
+  M.report_warned()
+end, { desc = "Show keymap conflicts detected during setup" })
 
 -- set normal map
 function M.nmap(key, rhs, opts)

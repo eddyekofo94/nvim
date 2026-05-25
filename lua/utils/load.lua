@@ -320,17 +320,18 @@ function M.on_keys(key_specs, name, load)
   vim.list_extend(keys[name], key_specs)
 
   for _, spec in ipairs(key_specs) do
+    local rhs_called = false
     local function rhs()
       if loaded[name] then
         return
       end
+      if rhs_called then
+        return
+      end
+      rhs_called = true
       loaded[name] = true
 
       -- Delete all key triggers associated with the plugin
-      -- Some plugins, e.g. vim-conjoin, detects existing keys, and prepend
-      -- its keymap before existing ones. When there are multiple key triggers
-      -- for such plugin, the one that is not used as the initial trigger can
-      -- has wrong definition
       for _, s in ipairs(keys[name] or {}) do
         local buf = s.opts and (s.opts.buffer == true and 0 or s.opts.buffer)
         if buf then
@@ -352,19 +353,23 @@ function M.on_keys(key_specs, name, load)
       if load then
         load()
       else
-        M.load(name)
+        -- Try to use pack.load if available (for lazy-loaded plugins)
+        local pack = require('utils.pack')
+        local specs = require('utils.pack').specs_registry
+        local spec = specs[name]
+        if spec then
+          pack.load(spec, pack.path(name))
+        else
+          M.load(name)
+        end
       end
-
-      vim.api.nvim_feedkeys(vim.keycode('<Ignore>' .. spec.lhs), 'i', false)
     end
 
     vim.keymap.set(
       spec.mode,
       spec.lhs,
       rhs,
-      vim.tbl_deep_extend('force', spec.opts, {
-        expr = true, -- make operator-pending mode work
-      })
+      spec.opts or {}
     )
   end
 end

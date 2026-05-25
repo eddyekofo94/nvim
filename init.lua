@@ -6,6 +6,11 @@
 -- Remove the current directory from `package.path` to avoid errors.
 package.path = package.path:gsub('%./%?%.lua;?', '')
 
+-- Disable ALL prompts and press-enter messages immediately
+vim.opt.more = false
+vim.opt.confirm = false
+vim.opt.shortmess:append('I')
+
 -- Enable faster lua loader using byte-compilation
 -- https://github.com/neovim/neovim/commit/2257ade3dc2daab5ee12d27807c0b3bcf103cd29
 vim.loader.enable()
@@ -25,3 +30,7 @@ local load = require('utils.load')
 load.on_events('FileType', 'core.treesitter')
 load.on_events('DiagnosticChanged', 'core.diagnostic')
 load.on_events('FileType', 'core.lsp')
+
+-- Final prompt suppression
+vim.opt.more = false
+vim.opt.confirm = false

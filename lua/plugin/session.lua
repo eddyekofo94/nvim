@@ -52,7 +52,7 @@ M.opts = {
   end,
   autoload = {
     enabled = true,
-    events = { 'VimEnter' },
+    events = { 'UIEnter' },
   },
   autosave = {
     enabled = true,
@@ -116,12 +116,7 @@ function M.get(path)
     vim.fn.mkdir(session_dir, 'p')
   end
 
-  -- Find an existing session file that matches the prefix of `path`, e.g.
-  -- if `path` is '/foo/bar/baz', then valid sessions are:
-  -- - '%foo%bar%baz'
-  -- - '%foo%bar'
-  -- - '%foo'
-  -- This enables us to load session from project subdirectories
+  -- Walk up the directory tree to find an existing session file at a parent level
   local cur_path = path
   while not fs.is_root_dir(cur_path) and not fs.is_home_dir(cur_path) do
     local session = vim.fs.joinpath(session_dir, M.dir2session(cur_path))
@@ -131,7 +126,7 @@ function M.get(path)
     cur_path = vim.fs.dirname(cur_path)
   end
 
-  -- If no existing session file is found, use `path` as the new session
+  -- If no existing session file is found, use the project root (or exact path)
   return vim.fs.joinpath(session_dir, M.dir2session(M.opts.root(path) or path))
 end
 
@@ -188,6 +183,7 @@ function M.load(session, notify)
   -- see `plugin/intro.lua` and `:h :intro`
   vim.opt.shortmess:append('I')
   vim.opt.more = false
+
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.fn.win_id2win(win) ~= 1 then
       vim.api.nvim_win_close(win, true)
@@ -195,17 +191,30 @@ function M.load(session, notify)
   end
 
   vim.schedule(function()
-    vim.cmd.source({
-      vim.fn.fnameescape(session),
-      mods = {
-        silent = true,
-        emsg_silent = true,
-      },
-    })
+    -- Ensure more/confirm are disabled before sourcing
+    vim.opt.more = false
+    vim.opt.confirm = false
+
+    local ok, err = pcall(function()
+      vim.cmd.source({
+        vim.fn.fnameescape(session),
+        mods = {
+          silent = true,
+          emsg_silent = true,
+        },
+      })
+    end)
+
+    if not ok then
+      vim.notify('[plugin.session] Failed to load session: ' .. tostring(err), vim.log.levels.ERROR)
+    end
+
     vim.g._session_loaded = session
     vim.api.nvim_exec_autocmds('SessionLoadPost', {})
 
-
+    -- Keep options disabled after session load
+    vim.opt.more = false
+    vim.opt.confirm = false
   end)
 end
 
@@ -334,6 +343,7 @@ function M.setup(opts)
 
   if check_enabled(M.opts.autoload) then
     local groupid = vim.api.nvim_create_augroup('session.auto_load', {})
+
     vim.api.nvim_create_autocmd({ 'StdinReadPre', 'SessionLoadPost' }, {
       desc = 'Detect stdin or manual session loading to disable automatic session loading.',
       group = groupid,
@@ -344,16 +354,42 @@ function M.setup(opts)
       end,
     })
 
-    -- Don't load session if there is no argument, piping from stdin,
-    -- or manually loading a session
     vim.api.nvim_create_autocmd(M.opts.autoload.events, {
       desc = 'Load nvim session automatically on UI attachment.',
       group = groupid,
       once = true,
       callback = function()
-        if not vim.g._session_loaded and not vim.g._session_disabled and vim.fn.argc() == 0 then
-          M.load()
+        if vim.g._session_loaded or vim.g._session_disabled then
+          return
         end
+
+        -- Only autoload session if:
+        -- 1. No arguments (opening nvim without files)
+        -- 2. In a git repo (project root detected)
+        if vim.fn.argc() ~= 0 then
+          vim.g._session_disabled = true
+          return
+        end
+
+        -- Check if we're in a project root (git repo)
+        local project_root = require('utils.fs').root(vim.fn.getcwd(0))
+        if not project_root then
+          vim.g._session_disabled = true
+          return
+        end
+
+        -- Check if session file exists before attempting to load
+        local session_file = M.get()
+        if not vim.uv.fs_stat(session_file) then
+          vim.g._session_disabled = true
+          return
+        end
+
+        vim.defer_fn(function()
+          if not vim.g._session_loaded and not vim.g._session_disabled then
+            M.load(nil, false)
+          end
+        end, 50)
       end,
     })
   end

@@ -102,6 +102,10 @@ return {
         focus.focus_equalise()
       end, "balance windows")
 
+      map("<leader>ww", function()
+        focus.focus_max_or_equal()
+      end, "Toggle maximize window")
+
       map("<leader>vr", "<cmd>FocusSplitRight<cr>", "Split right")
 
       map("<leader>vv", function()

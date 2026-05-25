@@ -16,6 +16,10 @@
       "rev": "fab799d086fd63fa5b389007f63767b23885ebf8",
       "src": "https://github.com/saghen/blink.cmp"
     },
+    "canola.nvim": {
+      "rev": "3fb9d28492ad7a24cd3e0e69e0d2808ed9aaf826",
+      "src": "https://github.com/barrettruth/canola.nvim"
+    },
     "cellular-automaton.nvim": {
       "rev": "1606e9d5d04ff254023c3f3c62842d065708d6d3",
       "src": "https://github.com/Eandrju/cellular-automaton.nvim"

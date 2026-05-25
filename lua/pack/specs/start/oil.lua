@@ -1,6 +1,6 @@
 ---@type pack.spec
 return {
-  src = "https://github.com/stevearc/oil.nvim",
+  src = "https://github.com/barrettruth/canola.nvim",
   data = {
     deps = {
       {

@@ -2,7 +2,7 @@
 return {
   src = "https://github.com/ibhagwan/fzf-lua",
   data = {
-    events = { "VimEnter" },
+    lazy = false,
     deps = {
       {
         src = "https://github.com/kyazdani42/nvim-web-devicons",
@@ -10,96 +10,6 @@ return {
       },
     },
     cmds = "FzfLua",
-    keys = {
-      -- stylua: ignore start
-      { lhs = '<C-_>', mode = 'c', opts = { desc = 'Fuzzy complete command/search history' } },
-      { lhs = '<C-x><C-l>', mode = 'c', opts = { desc = 'Fuzzy complete command/search history' } },
-      { lhs = '<C-r>?', mode = 'i', opts = { desc = 'Fuzzy complete from registers' } },
-      { lhs = '<C-r><C-_>', mode = 'i', opts = { desc = 'Fuzzy complete from registers' } },
-      { lhs = '<C-r><C-r>', mode = 'i', opts = { desc = 'Fuzzy complete from registers' } },
-      { lhs = '<C-x><C-f>', mode = 'i', opts = { desc = 'Fuzzy complete path' } },
-      { lhs = '<Leader>.', opts = { desc = 'Find files' } },
-      { lhs = "<Leader>'", opts = { desc = 'Resume last picker' } },
-      { lhs = '<Leader>`', opts = { desc = 'Find marks' } },
-      { lhs = '<Leader>,', opts = { desc = 'Find buffers' } },
-      { lhs = '<Leader>%', opts = { desc = 'Find tabpages' } },
-      { lhs = '<Leader>/', opts = { desc = 'Grep' } },
-      { lhs = '<Leader>?', opts = { desc = 'Find help files' } },
-      { lhs = '<Leader>*', mode = { 'n', 'x' }, opts = { desc = 'Grep word under cursor' } },
-      { lhs = '<Leader>#', mode = { 'n', 'x' }, opts = { desc = 'Grep word under cursor' } },
-      { lhs = '<Leader>"', opts = { desc = 'Find registers' } },
-      { lhs = '<Leader>:', opts = { desc = 'Find commands' } },
-      { lhs = '<Leader>F', opts = { desc = 'Find all available pickers' } },
-      { lhs = '<Leader>o', opts = { desc = 'Find oldfiles' } },
-      -- { lhs = '<Leader>-', opts = { desc = 'Find lines in buffer' } },
-      { lhs = '<Leader>=', opts = { desc = 'Find lines across buffers' } },
-      -- { lhs = '<Leader>-', opts = { desc = 'Find lines in selection' }, mode = 'x' },
-      { lhs = '<Leader>=', opts = { desc = 'Find lines in selection' }, mode = 'x' },
-      { lhs = '<Leader>n', opts = { desc = 'Find treesitter nodes' } },
-      { lhs = '<Leader>R', opts = { desc = 'Find symbol locations' } },
-      { lhs = '<Leader>f"', opts = { desc = 'Find registers' } },
-      { lhs = '<Leader>f*', mode = { 'n', 'x' }, opts = { desc = 'Grep word under cursor' } },
-      { lhs = '<Leader>f#', mode = { 'n', 'x' }, opts = { desc = 'Grep word under cursor' } },
-      { lhs = '<Leader>f:', opts = { desc = 'Find commands' } },
-      { lhs = '<Leader>f/', opts = { desc = 'Grep' } },
-      { lhs = '<Leader>fH', opts = { desc = 'Find highlights' } },
-      { lhs = "<Leader>f'", opts = { desc = 'Resume last picker' } },
-      { lhs = '<Leader>fA', opts = { desc = 'Find autocmds' } },
-      { lhs = '<Leader>fb', opts = { desc = 'Find buffers' } },
-      { lhs = '<Leader>bb', opts = { desc = 'Find buffers' } },
-      { lhs = '<Leader>fp', opts = { desc = 'Find tabpages' } },
-      { lhs = '<Leader>ft', opts = { desc = 'Find tags' } },
-      { lhs = '<Leader>fc', opts = { desc = 'Find changes' } },
-      { lhs = '<Leader>fd', opts = { desc = 'Find document diagnostics' } },
-      { lhs = '<Leader>fD', opts = { desc = 'Find workspace diagnostics' } },
-      { lhs = '<Leader>ff', opts = { desc = 'Find files' } },
-      { lhs = '<Leader><space>', opts = { desc = 'Find smart' } },
-      { lhs = '<Leader>fa', opts = { desc = 'Find args' } },
-      { lhs = '<Leader>fl', opts = { desc = 'Find location list' } },
-      { lhs = '<Leader>fq', opts = { desc = 'Find quickfix list' } },
-      { lhs = '<Leader>fL', opts = { desc = 'Find location list stack' } },
-      { lhs = '<Leader>fQ', opts = { desc = 'Find quickfix stack' } },
-      { lhs = '<Leader>fgt', opts = { desc = 'Find git tags' } },
-      { lhs = '<Leader>fgs', opts = { desc = 'Find git stash' } },
-      { lhs = '<Leader>fgg', opts = { desc = 'Find git status' } },
-      { lhs = '<Leader>fgL', opts = { desc = 'Find git logs' } },
-      { lhs = '<Leader>fgl', opts = { desc = 'Find git buffer logs' } },
-      { lhs = '<Leader>fgb', opts = { desc = 'Find git branches' } },
-      { lhs = '<Leader>fgB', opts = { desc = 'Find git blame' } },
-      { lhs = '<Leader>fgf', opts = { desc = 'Find git files' } },
-      { lhs = '<Leader>gft', opts = { desc = 'Find git tags' } },
-      { lhs = '<Leader>gfs', opts = { desc = 'Find git stash' } },
-      { lhs = '<Leader>gfg', opts = { desc = 'Find git status' } },
-      { lhs = '<Leader>gfL', opts = { desc = 'Find git logs' } },
-      { lhs = '<Leader>gfl', opts = { desc = 'Find git buffer logs' } },
-      { lhs = '<Leader>gfb', opts = { desc = 'Find git branches' } },
-      { lhs = '<Leader>gfB', opts = { desc = 'Find git blame' } },
-      { lhs = '<Leader>gff', opts = { desc = 'Find git files' } },
-      { lhs = '<Leader>fh', opts = { desc = 'Find help files' } },
-      { lhs = '<Leader>fk', opts = { desc = 'Find keymaps' } },
-      { lhs = '<Leader>f-', opts = { desc = 'Find lines in buffer' } },
-      { lhs = '<Leader>f-', opts = { desc = 'Find lines in selection' }, mode = 'x' },
-      { lhs = '<Leader>f=', opts = { desc = 'Find lines across buffers' } },
-      { lhs = '<Leader>fm', opts = { desc = 'Find marks' } },
-      { lhs = '<Leader>fo', opts = { desc = 'Find oldfiles' } },
-      { lhs = '<Leader>fz', opts = { desc = 'Find directories from z' } },
-      { lhs = '<Leader>fw', opts = { desc = 'Find sessions (workspaces)' } },
-      { lhs = '<Leader>fn', opts = { desc = 'Find treesitter nodes' } },
-      { lhs = '<Leader>fs', opts = { desc = 'Find lsp symbols or treesitter nodes' } },
-      { lhs = '<Leader>fSa', opts = { desc = 'Find code actions' } },
-      { lhs = '<Leader>fSd', opts = { desc = 'Find symbol definitions' } },
-      { lhs = '<Leader>fSD', opts = { desc = 'Find symbol declarations' } },
-      { lhs = '<Leader>fS<C-d>', opts = { desc = 'Find symbol type definitions' } },
-      { lhs = '<Leader>fSs', opts = { desc = 'Find symbol in current document' } },
-      { lhs = '<Leader>fSS', opts = { desc = 'Find symbol in whole workspace' } },
-      { lhs = '<Leader>fSi', opts = { desc = 'Find symbol implementations' } },
-      { lhs = '<Leader>fS<', opts = { desc = 'Find symbol incoming calls' } },
-      { lhs = '<Leader>fS>', opts = { desc = 'Find symbol outgoing calls' } },
-      { lhs = '<Leader>fSr', opts = { desc = 'Find symbol references' } },
-      { lhs = '<Leader>fSR', opts = { desc = 'Find symbol locations' } },
-      { lhs = '<Leader>fF', opts = { desc = 'Find all available pickers' } },
-      -- stylua: ignore end
-    },
     init = function(spec, path)
       -- Disable fzf's default vim plugin
       vim.g.loaded_fzf = 1
@@ -234,6 +144,264 @@ return {
             ["esc"] = actions.resume,
           },
         }
+      end
+
+      -- Shared state between file-like pickers and grep mode for cumulative
+      -- filtering.
+      local _toggle_state = {
+        files_query = "",
+        grep_query = "",
+        source_key = nil,
+        source_opts = nil,
+        listfile = nil,
+      }
+
+      local function shellescape(value)
+        return vim.fn.shellescape(value or "")
+      end
+
+      local function display_query(query)
+        return query ~= "" and query or "<empty>"
+      end
+
+      local function with_toggle_header(opts, parts)
+        opts = vim.deepcopy(opts or {})
+        opts.fzf_opts = vim.tbl_deep_extend("force", opts.fzf_opts or {}, {
+          ["--header-first"] = true,
+        })
+        opts.header = table.concat(parts, " | ")
+        return opts
+      end
+
+      local function cleanup_toggle_list()
+        if _toggle_state.listfile then
+          vim.fn.delete(_toggle_state.listfile)
+          _toggle_state.listfile = nil
+        end
+      end
+
+      vim.api.nvim_create_autocmd("VimLeavePre", {
+        callback = cleanup_toggle_list,
+        desc = "Clean fzf-lua files/grep toggle file list",
+      })
+
+      ---@param files string[]
+      ---@param query string
+      ---@return string?
+      local function write_filtered_file_list(files, query)
+        cleanup_toggle_list()
+
+        if #files == 0 then
+          return nil
+        end
+
+        local listfile = vim.fn.tempname()
+        vim.fn.writefile(files, listfile)
+
+        if query ~= "" then
+          local filtered = vim.fn.tempname()
+          local result = vim
+            .system({
+              "sh",
+              "-c",
+              string.format(
+                "fzf --filter %s < %s > %s",
+                shellescape(query),
+                shellescape(listfile),
+                shellescape(filtered)
+              ),
+            })
+            :wait()
+          vim.fn.delete(listfile)
+          listfile = filtered
+          if result.code ~= 0 then
+            vim.fn.delete(listfile)
+            return nil
+          end
+        end
+
+        _toggle_state.listfile = listfile
+        return listfile
+      end
+
+      ---@param cmd string
+      ---@param query string
+      ---@param cwd string?
+      ---@return string?
+      local function write_filtered_file_list_from_cmd(cmd, query, cwd)
+        cleanup_toggle_list()
+
+        local listfile = vim.fn.tempname()
+        local filter = query ~= ""
+            and string.format(" | fzf --filter %s", shellescape(query))
+          or ""
+        local result = vim
+          .system({
+            "sh",
+            "-c",
+            string.format("(%s)%s > %s", cmd, filter, shellescape(listfile)),
+          }, { cwd = cwd })
+          :wait()
+
+        if result.code ~= 0 then
+          vim.fn.delete(listfile)
+          return nil
+        end
+
+        _toggle_state.listfile = listfile
+        return listfile
+      end
+
+      ---@param cwd string
+      ---@return string[]
+      local function listed_buffer_files(cwd)
+        local files = {}
+        local seen = {}
+
+        for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+          local name = vim.api.nvim_buf_get_name(bufnr)
+          if
+            name ~= ""
+            and vim.fn.filereadable(name) == 1
+            and not seen[name]
+          then
+            seen[name] = true
+            table.insert(files, path.relative_to(name, cwd))
+          end
+        end
+
+        return files
+      end
+
+      ---@param cwd string
+      ---@return string[]
+      local function oldfile_entries(cwd)
+        local files = {}
+        local seen = {}
+
+        for _, name in ipairs(vim.v.oldfiles or {}) do
+          if
+            type(name) == "string"
+            and name ~= ""
+            and vim.fn.filereadable(name) == 1
+            and not seen[name]
+          then
+            seen[name] = true
+            table.insert(files, path.relative_to(name, cwd))
+          end
+        end
+
+        return files
+      end
+
+      ---@return string[]
+      local function argfiles()
+        local files = {}
+        for i = 0, vim.fn.argc() - 1 do
+          local name = vim.fn.argv(i)
+          if type(name) == "string" and name ~= "" then
+            table.insert(files, name)
+          end
+        end
+        return files
+      end
+
+      ---Toggle between files and live_grep picker preserving queries
+      ---between modes for cumulative filtering
+      ---@return nil
+      function actions.toggle_files_grep()
+        local resume = fzf.config.__resume_data
+        if not resume or not resume.opts then
+          return
+        end
+        local key = resume.opts.__smart_files and "smart_files"
+          or resume.opts.__resume_key
+        local query = resume.last_query or ""
+        local cwd = resume.opts.cwd or vim.fn.getcwd(0)
+
+        if key == "files" or key == "smart_files" then
+          local listfile =
+            write_filtered_file_list_from_cmd(resume.opts.cmd, query, cwd)
+          if not listfile then
+            return
+          end
+
+          _toggle_state.files_query = query
+          _toggle_state.source_key = key
+          _toggle_state.source_opts = vim.deepcopy(resume.opts)
+          local grep_opts = with_toggle_header({
+            search_paths = vim.fn.readfile(listfile),
+            query = _toggle_state.grep_query,
+            cwd = cwd,
+            rg_glob = false,
+          }, {
+            "files: " .. display_query(_toggle_state.files_query),
+            "grep: " .. display_query(_toggle_state.grep_query),
+          })
+          fzf.live_grep(grep_opts)
+        elseif key == "buffers" or key == "oldfiles" or key == "args" then
+          local files = key == "buffers" and listed_buffer_files(cwd)
+            or key == "oldfiles" and oldfile_entries(cwd)
+            or argfiles()
+          local listfile = write_filtered_file_list(files, query)
+          if not listfile then
+            return
+          end
+
+          _toggle_state.files_query = query
+          _toggle_state.source_key = key
+          _toggle_state.source_opts = vim.deepcopy(resume.opts)
+          fzf.live_grep(with_toggle_header({
+            search_paths = vim.fn.readfile(listfile),
+            query = _toggle_state.grep_query,
+            cwd = cwd,
+            rg_glob = false,
+          }, {
+            key .. ": " .. display_query(_toggle_state.files_query),
+            "grep: " .. display_query(_toggle_state.grep_query),
+          }))
+        elseif key == "live_grep" or key == "grep" then
+          _toggle_state.grep_query = query
+          local source_key = _toggle_state.source_key or "files"
+          local source_opts = _toggle_state.source_opts or {}
+          cleanup_toggle_list()
+          source_opts.query = _toggle_state.files_query
+          source_opts.resume = true
+          source_opts = with_toggle_header(source_opts, {
+            source_key .. ": " .. display_query(_toggle_state.files_query),
+            "grep: " .. display_query(_toggle_state.grep_query),
+          })
+          local source = fzf[source_key] or fzf.files
+          source(source_opts)
+        end
+      end
+
+      local function extension_query(query)
+        local token = vim.trim(query or ""):match "%S+$" or ""
+        token = token:gsub("^'", ""):gsub("%$$", ""):gsub("^%*+", "")
+        token = token:match "%.([^./]+)$" or token:gsub("^%.", "")
+        if token == "" then
+          return query
+        end
+        return "." .. token .. "$"
+      end
+
+      ---Strictly filter the current file-like picker by extension.
+      ---@return nil
+      function actions.filter_extension()
+        local resume = fzf.config.__resume_data
+        if not resume or not resume.opts then
+          return
+        end
+
+        local key = resume.opts.__smart_files and "smart_files"
+          or resume.opts.__resume_key
+        local opts = vim.deepcopy(resume.opts)
+        opts.query = extension_query(resume.last_query or opts.query or "")
+        opts.resume = true
+
+        local source = fzf[key] or fzf.files
+        source(opts)
       end
 
       ---Change cwd while preserving the last query
@@ -599,6 +767,10 @@ return {
       core.ACTION_DEFINITIONS[actions.search] = { "edit" }
       core.ACTION_DEFINITIONS[actions.ex_run] = { "edit" }
       core.ACTION_DEFINITIONS[actions.insert_register] = { "insert register" }
+      core.ACTION_DEFINITIONS[actions.toggle_files_grep] =
+        { "toggle files/grep" }
+      core.ACTION_DEFINITIONS[actions.filter_extension] =
+        { "extension filter" }
 
       config._action_to_helpstr[actions.toggle_dir] = "toggle-dir"
       config._action_to_helpstr[actions.switch_provider] = "switch-provider"
@@ -628,6 +800,9 @@ return {
       config._action_to_helpstr[actions.fugitive_split] = "fugitive-split"
       config._action_to_helpstr[actions.fugitive_vsplit] = "fugitive-vsplit"
       config._action_to_helpstr[actions.fugitive_tabedit] = "fugitive-tabedit"
+      config._action_to_helpstr[actions.toggle_files_grep] =
+        "toggle-files-grep"
+      config._action_to_helpstr[actions.filter_extension] = "extension-filter"
 
       -- Use different prompts for document and workspace diagnostics
       -- by overriding `fzf.diagnostics_workspace()` and `fzf.diagnostics_document()`
@@ -946,7 +1121,7 @@ return {
             vim.opt_local.winfixheight = true
             vim.bo.filetype = "fzf"
           end,
-          on_create = function(args)
+          on_create = function()
             vim.keymap.set(
               "t",
               "<C-r>",
@@ -964,7 +1139,6 @@ return {
             end
           end,
           on_close = function()
-            local fzf_win = vim.api.nvim_get_current_win()
             vim.defer_fn(function()
               vim.g._fzf_active = nil
               for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -1076,6 +1250,8 @@ return {
             ["alt-s"] = actions.buf_split,
             ["alt-v"] = actions.buf_vsplit,
             ["alt-t"] = actions.buf_tabedit,
+            ["ctrl-e"] = actions.filter_extension,
+            ["ctrl-g"] = actions.toggle_files_grep,
             ["enter"] = actions.buf_edit_or_qf,
           },
         },
@@ -1088,6 +1264,7 @@ return {
         args = {
           files_only = false,
           actions = {
+            ["ctrl-g"] = actions.toggle_files_grep,
             ["ctrl-s"] = actions.arg_search_add,
             ["ctrl-x"] = {
               fn = actions.arg_del,
@@ -1172,7 +1349,8 @@ return {
             ["alt-h"] = actions.toggle_hidden,
             ["alt-i"] = actions.toggle_ignore,
             ["alt-/"] = actions.toggle_dir,
-            ["ctrl-g"] = false,
+            ["ctrl-e"] = actions.filter_extension,
+            ["ctrl-g"] = actions.toggle_files_grep,
           },
           fzf_opts = {
             ["--info"] = "inline-right",
@@ -1183,6 +1361,10 @@ return {
         },
         oldfiles = {
           prompt = "Oldfiles> ",
+          actions = {
+            ["ctrl-e"] = actions.filter_extension,
+            ["ctrl-g"] = actions.toggle_files_grep,
+          },
         },
         frecency = {
           prompt = "Frecency> ",
@@ -1256,6 +1438,7 @@ return {
             ["alt-c"] = actions.change_cwd,
             ["alt-h"] = actions.toggle_hidden,
             ["alt-i"] = actions.toggle_ignore,
+            ["ctrl-g"] = actions.toggle_files_grep,
           },
           rg_opts = table.concat({
             "--no-messages",
@@ -1308,14 +1491,57 @@ return {
       vim.keymap.set('i', '<C-x><C-f>', fzf.complete_path, { desc = 'Fuzzy complete path' })
       vim.keymap.set('n', '<Leader>.', fzf.files, { desc = 'Find files' })
 
+      local function valid_dir(dir)
+        return type(dir) == "string"
+          and dir ~= ""
+          and vim.fn.isdirectory(dir) == 1
+          and vim.fs.normalize(dir)
+      end
+
+      local function smart_files_cwd(opts)
+        local explicit_cwd = valid_dir(opts.cwd)
+        if explicit_cwd then
+          return explicit_cwd
+        end
+
+        local fs_utils = require "utils.fs"
+        local window_cwd = valid_dir(vim.fn.getcwd(0))
+        if
+          window_cwd
+          and not fs_utils.is_home_dir(window_cwd)
+          and not fs_utils.is_root_dir(window_cwd)
+        then
+          return window_cwd
+        end
+
+        local bufname = vim.api.nvim_buf_get_name(0)
+        local buffer_root = bufname ~= "" and fs_utils.cwd_dir(bufname) or nil
+        if
+          buffer_root
+          and not fs_utils.is_home_dir(buffer_root)
+          and not fs_utils.is_root_dir(buffer_root)
+        then
+          return buffer_root
+        end
+
+        if window_cwd then
+          return window_cwd
+        end
+
+        local last_cwd = valid_dir(vim.g._smart_files_last_cwd)
+        if last_cwd then
+          return last_cwd
+        end
+
+        return valid_dir(vim.fn.getcwd()) or valid_dir(vim.uv.cwd()) or "."
+      end
+
       ---Smart file search that prioritizes recent files in cwd
       ---@param opts table?
       function fzf.smart_files(opts)
         opts = opts or {}
-        local last_cwd = vim.g._smart_files_last_cwd
-        local cwd = opts.cwd
-          or (last_cwd and vim.fn.isdirectory(last_cwd) == 1 and last_cwd)
-          or vim.fn.getcwd(0)
+        local cwd = smart_files_cwd(opts)
+        local real_cwd = vim.uv.fs_realpath(cwd) or cwd
         local oldfiles = vim.v.oldfiles or {}
 
         -- Filter oldfiles to current cwd
@@ -1327,7 +1553,8 @@ return {
         for _, f in ipairs(oldfiles) do
           if type(f) == 'string' and f ~= '' then
             -- Check if file exists
-            local exists = vim.uv.fs_stat(f) ~= nil
+            local real_file = vim.uv.fs_realpath(f)
+            local exists = real_file ~= nil
             if not exists then
               goto skip
             end
@@ -1339,8 +1566,8 @@ return {
             end
 
             -- Check if file is in cwd
-            if vim.startswith(f, cwd .. '/') then
-              local rel_path = f:gsub('^' .. vim.pesc(cwd) .. '/?', '')
+            if vim.startswith(real_file, real_cwd .. '/') then
+              local rel_path = real_file:gsub('^' .. vim.pesc(real_cwd) .. '/?', '')
               if not cwd_seen[rel_path] and rel_path ~= '' then
                 cwd_seen[rel_path] = true
                 table.insert(cwd_oldfiles, rel_path)
@@ -1356,21 +1583,34 @@ return {
           end
         end
 
+        local excludes = opts.smart_excludes
+          or { ".git", ".venv", "node_modules", "dist", ".next" }
+
         -- Get file command
         local file_cmd
         if vim.fn.executable('fd') == 1 then
-          file_cmd = { 'fd', '--type', 'f', '--hidden', '--follow', '--exclude', '.git' }
+          file_cmd = { 'fd', '--type', 'f', '--hidden', '--follow' }
+        elseif vim.fn.executable('fdfind') == 1 then
+          file_cmd = { 'fdfind', '--type', 'f', '--hidden', '--follow' }
         else
-          file_cmd = { 'find', '.', '-type', 'f', '-not', '-path', '*/.git/*' }
+          file_cmd = { 'find', '.', '-type', 'f' }
+        end
+
+        for _, exclude in ipairs(excludes) do
+          if file_cmd[1] == 'fd' or file_cmd[1] == 'fdfind' then
+            vim.list_extend(file_cmd, { '--exclude', exclude })
+          else
+            vim.list_extend(file_cmd, { '-not', '-path', '*/' .. exclude .. '/*' })
+          end
         end
 
         -- Build combined command - cwd recent files first, then others, then all files
         local parts = {}
         if #cwd_oldfiles > 0 then
-          table.insert(parts, "echo '" .. table.concat(cwd_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+          table.insert(parts, "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, cwd_oldfiles), " "))
         end
         if #other_oldfiles > 0 then
-          table.insert(parts, "echo '" .. table.concat(other_oldfiles, '\n'):gsub("'", "'\\''") .. "'")
+          table.insert(parts, "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, other_oldfiles), " "))
         end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
@@ -1379,13 +1619,20 @@ return {
 
         -- Use fzf.files with custom command and file icons
         local smart_actions = {
+          ['ctrl-e'] = actions.filter_extension,
+          ['ctrl-g'] = actions.toggle_files_grep,
           ['enter'] = function(selected, o)
             if selected[1] then
-              local dir = selected[1]:match('^([^/]+)/')
-              if dir then
-                local new_cwd = vim.fs.normalize(o.cwd .. '/' .. dir)
-                if vim.fn.isdirectory(new_cwd) == 1 then
-                  vim.g._smart_files_last_cwd = new_cwd
+              local entry = path.entry_to_file(selected[1], o, false)
+              local selected_path = entry.path or entry.bufname or selected[1]
+              local abs_path = path.is_absolute(selected_path) and selected_path
+                or vim.fs.normalize(o.cwd .. "/" .. selected_path)
+              local new_cwd = require("utils.fs").cwd_dir(abs_path)
+                or vim.fs.dirname(abs_path)
+              if new_cwd then
+                local valid_cwd = valid_dir(new_cwd)
+                if valid_cwd then
+                  vim.g._smart_files_last_cwd = valid_cwd
                 end
               end
             end
@@ -1397,6 +1644,12 @@ return {
           prompt = 'Smart Files> ',
           cwd = cwd,
           cmd = cmd,
+          __smart_files = true,
+          formatter = "path.filename_first",
+          header = "Smart Files: recent cwd files first",
+          fzf_opts = {
+            ["--header-first"] = true,
+          },
           actions = smart_actions,
         }, opts))
       end

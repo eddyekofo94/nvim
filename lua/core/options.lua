@@ -2,8 +2,8 @@ vim.g.has_ui = #vim.api.nvim_list_uis() > 0
 vim.g.has_nf = vim.env.TERM ~= 'linux' and vim.env.NVIM_NF ~= nil
 
 vim.opt.exrc = true
-vim.opt.confirm = true
-vim.opt.timeout = false
+vim.opt.timeout = true
+vim.opt.timeoutlen = 300
 vim.opt.shortmess:append({
   I = true,
   c = true,
@@ -62,7 +62,7 @@ vim.opt.laststatus = 3
 vim.o.grepprg = 'rg --vimgrep --no-heading --smart-case'
 vim.o.grepformat = '%f:%l:%c:%m,%f:%l:%m'
 
-vim.opt.timeoutlen = 500
+vim.opt.timeoutlen = 300
 vim.opt.updatetime = 300
 
 vim.opt.sessionoptions = {

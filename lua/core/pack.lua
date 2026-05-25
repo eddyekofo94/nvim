@@ -27,24 +27,23 @@ if vim.fn.argc(-1) > 0 or not vim.uv.fs_stat(utils.pack.root()) then
       collect_specs(specs_opt_path)
     )
   )
-  return
+else
+  -- Defer loading plugin specs in `opt` if no files are given
+  -- Specs under `start` are always loaded on startup
+  utils.pack.add(collect_specs(specs_start_path))
+
+  local function load_opt()
+    utils.pack.add(collect_specs(specs_opt_path))
+  end
+
+  utils.load.on_events('UIEnter', 'pack.load_opt', vim.schedule_wrap(load_opt))
+
+  utils.load.on_events(
+    { 'CmdUndefined', 'SessionLoadPost', 'FileType', 'TermOpen' },
+    'pack.load_opt',
+    load_opt
+  )
 end
-
--- Defer loading plugin specs in `opt` if no files are given
--- Specs under `start` are always loaded on startup
-utils.pack.add(collect_specs(specs_start_path))
-
-local function load_opt()
-  utils.pack.add(collect_specs(specs_opt_path))
-end
-
-utils.load.on_events('UIEnter', 'pack.load_opt', vim.schedule_wrap(load_opt))
-
-utils.load.on_events(
-  { 'CmdUndefined', 'SessionLoadPost', 'FileType', 'TermOpen' },
-  'pack.load_opt',
-  load_opt
-)
 
 vim.api.nvim_create_user_command('PackInstallAll', function()
   vim.pack.install(nil, { target = 'opt' })

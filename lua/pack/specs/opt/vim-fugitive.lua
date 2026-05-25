@@ -1,63 +1,62 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/tpope/vim-fugitive',
+  src = "https://github.com/tpope/vim-fugitive",
   data = {
     cmds = {
-      'G',
-      'GBrowse',
-      'Gcd',
-      'Gclog',
-      'Gdiffsplit',
-      'Gdrop',
-      'Gedit',
-      'Ggrep',
-      'Git',
-      'Glcd',
-      'Glgrep',
-      'Gllog',
-      'Gpedit',
-      'Gread',
-      'Gsplit',
-      'Gtabedit',
-      'Gvdiffsplit',
-      'Gvsplit',
-      'Gwq',
-      'Gwrite',
-      'D',
-      'Dot',
-      'Dread',
-      'Dedit',
-      'Dwrite',
-      'Ddiffsplit',
-      'Dhdiffsplit',
-      'Dvdiffsplit',
-      'DMove',
-      'DRename',
-      'DRemove',
-      'DUnlink',
-      'DDelete',
+      "G",
+      "GBrowse",
+      "Gcd",
+      "Gclog",
+      "Gdiffsplit",
+      "Gdrop",
+      "Gedit",
+      "Ggrep",
+      "Git",
+      "Glcd",
+      "Glgrep",
+      "Gllog",
+      "Gpedit",
+      "Gread",
+      "Gsplit",
+      "Gtabedit",
+      "Gvdiffsplit",
+      "Gvsplit",
+      "Gwq",
+      "Gwrite",
+      "D",
+      "Dot",
+      "Dread",
+      "Dedit",
+      "Dwrite",
+      "Ddiffsplit",
+      "Dhdiffsplit",
+      "Dvdiffsplit",
+      "DMove",
+      "DRename",
+      "DRemove",
+      "DUnlink",
+      "DDelete",
     },
     keys = {
-      { lhs = '<Leader>gs', opts = { desc = 'Git summary' } },
-      { lhs = '<Leader>gw', opts = { desc = 'Git show latest commit' } },
-      { lhs = '<Leader>gP', opts = { desc = 'Git push' } },
+      { lhs = "<Leader>gw", opts = { desc = "Git show latest commit" } },
+      { lhs = "<Leader>gP", opts = { desc = "Git push" } },
       {
-        lhs = '<Leader>gL',
-        opts = { desc = 'Git log entire repo' },
+        lhs = "<Leader>gL",
+        opts = { desc = "Git log entire repo" },
       },
       {
-        lhs = '<Leader>g<Space>',
+        lhs = "<Leader>g<Space>",
         opts = { desc = 'Populate cmdline with ":Git"' },
       },
     },
-    events = { 'BufNew', 'BufWritePost', 'BufReadPre' },
+    events = { "BufNew", "BufWritePost", "BufReadPre" },
     deps = {
       -- Enable :GBrowse command in GitHub/Gitlab repos
-      'https://github.com/tpope/vim-rhubarb',
-      'https://github.com/shumphrey/fugitive-gitlab.vim',
+      "https://github.com/tpope/vim-rhubarb",
+      "https://github.com/shumphrey/fugitive-gitlab.vim",
     },
     postload = function()
-      vim.cmd([[
+      vim.cmd [[
         " By default open the fugitive window in a split below current window instead
         " of at the bottom of screen, preventing it from being squeezed by windows
         " with `winfixheight` set
@@ -70,7 +69,7 @@ return {
         command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#LogComplete GcLog let g:fugitive_prevbuf=bufnr() | exe fugitive#LogCommand(<line1>,<count>,+"<range>",<bang>0,"<mods>",<q-args>, "c")
         command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#LogComplete Gllog let g:fugitive_prevbuf=bufnr() | exe fugitive#LogCommand(<line1>,<count>,+"<range>",<bang>0,"<mods>",<q-args>, "l")
         command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#LogComplete GlLog let g:fugitive_prevbuf=bufnr() | exe fugitive#LogCommand(<line1>,<count>,+"<range>",<bang>0,"<mods>",<q-args>, "l")
-      ]])
+      ]]
 
       -- stylua: ignore start
       -- vim.keymap.set('n', '<Leader>gG',       '<Cmd>Git<CR>',                                  { desc = 'Git summary' })
@@ -84,83 +83,83 @@ return {
       vim.keymap.set('n', '<Leader>g<Space>', ':Git<Space>',                                   { desc = 'Populate cmdline with ":Git"' })
       -- stylua: ignore end
 
-      local group = vim.api.nvim_create_augroup('fugitive', {})
+      local group = vim.api.nvim_create_augroup("fugitive", {})
 
-      vim.api.nvim_create_autocmd('User', {
-        pattern = 'FugitiveIndex',
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "FugitiveIndex",
         group = group,
         callback = function(args)
-          vim.keymap.set({ 'n', 'x' }, '[x', '[c', {
-            desc = 'Go to previous hunk',
+          vim.keymap.set({ "n", "x" }, "[x", "[c", {
+            desc = "Go to previous hunk",
             buffer = args.buf,
             remap = true,
           })
-          vim.keymap.set({ 'n', 'x' }, ']x', ']c', {
-            desc = 'Go to next hunk',
+          vim.keymap.set({ "n", "x" }, "]x", "]c", {
+            desc = "Go to next hunk",
             buffer = args.buf,
             remap = true,
           })
         end,
       })
 
-      vim.api.nvim_create_autocmd('User', {
-        pattern = 'FugitiveObject',
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "FugitiveObject",
         group = group,
         callback = function()
           -- stylua: ignore start
           local goto_next = [[<Cmd>silent! exe "if get(getloclist(0, {'winid':''}), 'winid', 0) | exe v:count.'lne' | else | exe v:count.'cn' | endif"<CR>]]
           local goto_prev = [[<Cmd>silent! exe "if get(getloclist(0, {'winid':''}), 'winid', 0) | exe v:count.'lpr' | else | exe v:count.'cp' | endif"<CR>]]
           -- stylua: ignore end
-          vim.keymap.set('n', '<C-n>', goto_next, { buffer = true })
-          vim.keymap.set('n', '<C-p>', goto_prev, { buffer = true })
-          vim.keymap.set('n', '<C-j>', goto_next, { buffer = true })
-          vim.keymap.set('n', '<C-k>', goto_prev, { buffer = true })
-          vim.keymap.set('n', '<C-^>', function()
+          vim.keymap.set("n", "<C-n>", goto_next, { buffer = true })
+          vim.keymap.set("n", "<C-p>", goto_prev, { buffer = true })
+          vim.keymap.set("n", "<C-j>", goto_next, { buffer = true })
+          vim.keymap.set("n", "<C-k>", goto_prev, { buffer = true })
+          vim.keymap.set("n", "<C-^>", function()
             if vim.g.fugitive_prevbuf then
               vim.cmd.cclose()
               vim.cmd.lclose()
               vim.cmd.buffer(vim.g.fugitive_prevbuf)
               vim.g.fugitive_prevbuf = nil
-              vim.cmd.bw({ '#', bang = true, mods = { emsg_silent = true } })
+              vim.cmd.bw { "#", bang = true, mods = { emsg_silent = true } }
             end
           end, { buffer = true })
         end,
       })
 
-      vim.api.nvim_create_autocmd('BufEnter', {
-        desc = 'Ensure that fugitive buffers are not listed and are wiped out after hidden.',
+      vim.api.nvim_create_autocmd("BufEnter", {
+        desc = "Ensure that fugitive buffers are not listed and are wiped out after hidden.",
         group = group,
-        pattern = 'fugitive://*',
+        pattern = "fugitive://*",
         callback = function(args)
           vim.bo[args.buf].buflisted = false
         end,
       })
 
-      vim.api.nvim_create_autocmd('FileType', {
-        desc = 'Set buffer-local options for fugitive buffers.',
+      vim.api.nvim_create_autocmd("FileType", {
+        desc = "Set buffer-local options for fugitive buffers.",
         group = group,
-        pattern = 'fugitive',
+        pattern = "fugitive",
         callback = function()
           vim.opt_local.winbar = nil
-          vim.opt_local.signcolumn = 'no'
+          vim.opt_local.signcolumn = "no"
           vim.opt_local.number = false
           vim.opt_local.relativenumber = false
         end,
       })
 
-      vim.api.nvim_create_autocmd('FileType', {
-        desc = 'Set buffer-local options for fugitive blame buffers.',
+      vim.api.nvim_create_autocmd("FileType", {
+        desc = "Set buffer-local options for fugitive blame buffers.",
         group = group,
-        pattern = 'fugitiveblame',
+        pattern = "fugitiveblame",
         callback = function()
-          local win_alt = vim.fn.win_getid(vim.fn.winnr('#'))
+          local win_alt = vim.fn.win_getid(vim.fn.winnr "#")
           vim.opt_local.winbar = vim.api.nvim_win_is_valid(win_alt)
-              and vim.wo[win_alt].winbar ~= ''
-              and ' '
-            or ''
+              and vim.wo[win_alt].winbar ~= ""
+              and " "
+            or ""
 
           vim.opt_local.number = false
-          vim.opt_local.signcolumn = 'no'
+          vim.opt_local.signcolumn = "no"
           vim.opt_local.relativenumber = false
         end,
       })
@@ -181,22 +180,22 @@ return {
         -- dir of the buffer later
         if
           vim.b[buf].git_dir
-          and vim.b[buf].git_dir ~= ''
+          and vim.b[buf].git_dir ~= ""
           and vim.b[buf].git_dir ~= vim.env.DOT_DIR
         then
           return
         end
         vim.b[buf].git_dir = nil
         -- Normalize `oil://...` buffers
-        local buf_name = vim.api.nvim_buf_get_name(buf):gsub('^%S+://', '', 1)
-        local buf_path = buf_name ~= '' and buf_name or vim.fn.getcwd(0)
+        local buf_name = vim.api.nvim_buf_get_name(buf):gsub("^%S+://", "", 1)
+        local buf_path = buf_name ~= "" and buf_name or vim.fn.getcwd(0)
         vim.api.nvim_buf_call(buf, function()
           -- `FugitiveDetect()` will fail to detect git dir under current
           -- working directory in the first empty buffer
           -- Workaround: pass current cwd to it
           vim.fn.FugitiveDetect(buf_path)
         end)
-        if vim.b[buf].git_dir and vim.b[buf].git_dir ~= '' then
+        if vim.b[buf].git_dir and vim.b[buf].git_dir ~= "" then
           return
         end
         -- Fallback to dotfiles bare repo
@@ -208,15 +207,15 @@ return {
 
       detect()
 
-      vim.api.nvim_create_autocmd({ 'BufEnter', 'FileType' }, {
-        desc = 'Make fugitive aware of bare repo for dotfiles.',
+      vim.api.nvim_create_autocmd({ "BufEnter", "FileType" }, {
+        desc = "Make fugitive aware of bare repo for dotfiles.",
         group = group,
         callback = function(args)
           detect(args.buf)
         end,
       })
-      vim.api.nvim_create_autocmd('DirChanged', {
-        desc = 'Re-detect current git dir on buf dir changed.',
+      vim.api.nvim_create_autocmd("DirChanged", {
+        desc = "Re-detect current git dir on buf dir changed.",
         group = group,
         callback = function(args)
           detect(args.buf)
@@ -243,14 +242,14 @@ return {
           vim.env.GIT_DIR = vim.env.DOT_DIR
           vim.env.GIT_WORK_TREE = vim.uv.os_homedir()
 
-          vim.cmd[fugitive_cmd]({
+          vim.cmd[fugitive_cmd] {
             args = a.fargs,
             mods = a.smods,
             bang = a.bang,
             reg = opts.register and a.reg,
             range = opts.range and { a.line1, a.line2 },
             count = opts.count and a.count,
-          })
+          }
 
           vim.b.git_dir = buf_git_dir
           vim.env.GIT_DIR = env_git_dir
@@ -258,15 +257,15 @@ return {
         end, opts)
       end
 
-      for _, cmd in ipairs({ 'D', 'Dot' }) do
-        create_dotfiles_cmd(cmd, 'Git', {
-          nargs = '?',
+      for _, cmd in ipairs { "D", "Dot" } do
+        create_dotfiles_cmd(cmd, "Git", {
+          nargs = "?",
           ---@param arglead string leading portion of the argument being completed
           ---@param cmdline string the entire command line
           ---@param cursorpos integer cursor position in the command line
           ---@return string[] completion completion results
           complete = function(arglead, cmdline, cursorpos)
-            return vim.fn['fugitive#Complete'](
+            return vim.fn["fugitive#Complete"](
               arglead,
               cmdline,
               cursorpos,
