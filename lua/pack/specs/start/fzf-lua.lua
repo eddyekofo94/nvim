@@ -171,6 +171,7 @@ return {
 
       local toggle_file_limit = tonumber(vim.g.fzf_lua_toggle_file_limit)
         or 20000
+      local fzf_query_placeholder = "<query>"
 
       local function shellescape(value)
         return vim.fn.shellescape(value or "")
@@ -246,7 +247,7 @@ return {
             return nil, search_query
           end
 
-          if search_query == require("fzf-lua.core").fzf_query_placeholder then
+          if search_query == fzf_query_placeholder then
             return nil, search_query
           end
 
