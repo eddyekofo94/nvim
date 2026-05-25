@@ -240,45 +240,26 @@ return {
         return ("scope: %d%s files"):format(_toggle_state.file_count, limit)
       end
 
-      local function scoped_files_grep_cmd(search_query, command, opts)
-        if type(command) ~= "string" or command == "" then
-          return nil, search_query
-        end
+      ---@param listfile string
+      ---@return function
+      local function files_from_list_grep_cmd(listfile)
+        local escaped_listfile = shellescape(listfile)
 
-        if search_query == "<query>" then
-          return nil, search_query
+        return function(search_query, command)
+          command = command:gsub("%s%-e%s*$", "")
+          if not command:find("--with-filename", 1, true) then
+            command = command .. " --with-filename"
+          end
+          return string.format(
+            "test -s %s && [ -n %s ] && tr '\\n' '\\0' < %s | xargs -0 -n 200 %s -e %s --",
+            escaped_listfile,
+            search_query,
+            escaped_listfile,
+            command,
+            search_query
+          ),
+            search_query
         end
-
-        local listfile = opts and opts.__toggle_listfile
-        if type(listfile) ~= "string" or listfile == "" then
-          local fzflua = rawget(_G, "FzfLua")
-          listfile = fzflua
-            and fzflua.utils
-            and fzflua.config
-            and fzflua.utils.map_get(
-              fzflua.config,
-              "__resume_data.opts.__toggle_listfile"
-            )
-        end
-        if type(listfile) ~= "string" or listfile == "" then
-          return nil, search_query
-        end
-
-        local escaped_listfile = vim.fn.shellescape(listfile)
-        local escaped_query = vim.fn.shellescape(search_query or "")
-        command = command:gsub("%s%-e%s*$", "")
-        if not command:find("--with-filename", 1, true) then
-          command = command .. " --with-filename"
-        end
-        return string.format(
-          "test -s %s && [ -n %s ] && tr '\\n' '\\0' < %s | xargs -0 -n 200 %s -e %s --",
-          escaped_listfile,
-          escaped_query,
-          escaped_listfile,
-          command,
-          escaped_query
-        ),
-          search_query
       end
 
       ---@param listfile string
@@ -291,10 +272,9 @@ return {
         return {
           cwd = cwd,
           exec_empty_query = false,
-          fn_transform_cmd = scoped_files_grep_cmd,
+          fn_transform_cmd = files_from_list_grep_cmd(listfile),
           query = _toggle_state.grep_query,
           rg_glob = false,
-          __toggle_listfile = listfile,
         }
       end
 
