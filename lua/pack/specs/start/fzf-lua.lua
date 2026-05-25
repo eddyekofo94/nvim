@@ -2107,6 +2107,7 @@ return {
           cmd = table.concat(vim.tbl_map(shellescape, file_cmd), ' '),
           formatter = "path.filename_first",
           header = preview_header "Images",
+          jump1 = false,
           fzf_opts = {
             ["--header-first"] = true,
           },
