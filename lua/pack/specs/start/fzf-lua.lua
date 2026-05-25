@@ -2101,22 +2101,26 @@ return {
           table.insert(file_cmd, ')')
         end
 
-        return fzf.files(vim.tbl_deep_extend('force', {
+        local preview_cmd = vim.fn.executable "chafa" == 1
+            and "chafa --animate=off --scale=max -- {}"
+          or "file -- {}"
+
+        return fzf.fzf_exec(table.concat(vim.tbl_map(shellescape, file_cmd), ' '), vim.tbl_deep_extend('force', {
           prompt = 'Images> ',
           cwd = cwd,
-          cmd = table.concat(vim.tbl_map(shellescape, file_cmd), ' '),
-          formatter = "path.filename_first",
-          header = preview_header "Images",
+          previewer = false,
+          header = "preview: native fzf | scroll: C-f/C-b",
           jump1 = false,
           fzf_opts = {
             ["+0"] = true,
             ["+1"] = true,
+            ["--bind"] = "ctrl-f:preview-page-down,ctrl-b:preview-page-up,alt-j:preview-down,alt-k:preview-up",
             ["--header-first"] = true,
+            ["--preview"] = preview_cmd,
+            ["--preview-window"] = "up:70%:wrap",
           },
-          winopts = {
-            preview = {
-              hidden = false,
-            },
+          actions = {
+            ["enter"] = actions.file_edit,
           },
         }, opts))
       end
