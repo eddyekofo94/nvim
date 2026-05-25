@@ -1189,6 +1189,67 @@ return {
         return true
       end
 
+      function _G.FzfLuaPreviewClose()
+        local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
+        local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
+        if not winobj then
+          return false
+        end
+
+        if winobj._dotfiles_preview_max then
+          return _G.FzfLuaTogglePreviewMax()
+        end
+
+        if
+          winobj.preview_winid
+          and vim.api.nvim_win_is_valid(winobj.preview_winid)
+        then
+          winobj:toggle_preview()
+        end
+        vim.schedule(_G.FzfLuaFocus)
+        return true
+      end
+
+      local function set_preview_keymaps(winid)
+        if type(winid) ~= "number" or not vim.api.nvim_win_is_valid(winid) then
+          return
+        end
+
+        local bufnr = vim.api.nvim_win_get_buf(winid)
+        for _, lhs in ipairs { "q", "<Esc>", "<M-q>", "<C-w>q", "<F5>" } do
+          vim.keymap.set("n", lhs, _G.FzfLuaPreviewClose, {
+            buffer = bufnr,
+            nowait = true,
+            desc = "Close fzf preview",
+          })
+        end
+      end
+
+      function _G.FzfLuaFocusPreview()
+        local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
+        local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
+        if
+          not winobj
+          or not winobj.has_previewer
+          or not winobj:has_previewer()
+        then
+          return false
+        end
+
+        if winobj.preview_hidden then
+          winobj:toggle_preview()
+        end
+        if
+          winobj.preview_winid
+          and vim.api.nvim_win_is_valid(winobj.preview_winid)
+        then
+          vim.api.nvim_set_current_win(winobj.preview_winid)
+          set_preview_keymaps(winobj.preview_winid)
+          return true
+        end
+        return false
+      end
+
       function _G.FzfLuaTogglePreviewMax()
         local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
         local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
@@ -1236,6 +1297,7 @@ return {
             and vim.api.nvim_win_is_valid(winobj.preview_winid)
           then
             vim.api.nvim_set_current_win(winobj.preview_winid)
+            set_preview_keymaps(winobj.preview_winid)
           end
         end)
         return true
@@ -1328,6 +1390,16 @@ return {
                 nowait = true,
                 buffer = args and args.bufnr or true,
                 desc = "Toggle large preview",
+              }
+            )
+            vim.keymap.set(
+              "t",
+              "<F6>",
+              "<Cmd>lua _G.FzfLuaFocusPreview()<CR>",
+              {
+                nowait = true,
+                buffer = args and args.bufnr or true,
+                desc = "Focus preview",
               }
             )
             vim.keymap.set(
@@ -1448,7 +1520,6 @@ return {
             ["<F2>"] = "toggle-fullscreen",
             ["<F3>"] = "toggle-preview-wrap",
             ["<F4>"] = "toggle-preview",
-            ["<F6>"] = "focus-preview",
             ["<C-f>"] = "preview-page-down",
             ["<C-b>"] = "preview-page-up",
             ["<M-j>"] = "preview-down",
