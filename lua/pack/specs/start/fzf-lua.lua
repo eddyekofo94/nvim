@@ -187,6 +187,21 @@ return {
           or preview_hint
       end
 
+      local function home_path(pathname)
+        if type(pathname) ~= "string" or pathname == "" then
+          return pathname
+        end
+        return vim.fn.fnamemodify(pathname, ":~")
+      end
+
+      local function reverse_list(items)
+        local reversed = {}
+        for i = #items, 1, -1 do
+          table.insert(reversed, items[i])
+        end
+        return reversed
+      end
+
       local function with_toggle_header(opts, parts)
         opts = vim.deepcopy(opts or {})
         opts.fzf_opts = vim.tbl_deep_extend("force", opts.fzf_opts or {}, {
@@ -1495,6 +1510,16 @@ return {
         },
         previewers = {
           builtin = {
+            extensions = {
+              avif = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              bmp = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              gif = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              jpeg = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              jpg = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              png = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              svg = { "chafa", "--animate=off", "--scale=max", "{file}" },
+              webp = { "chafa", "--animate=off", "--scale=max", "{file}" },
+            },
             syntax_delay = 80,
             toggle_behavior = "extend",
           },
@@ -1537,8 +1562,8 @@ return {
             ["alt-a"] = "toggle-all",
             ["alt-}"] = "last",
             ["alt-{"] = "first",
-            ["tab"] = "toggle",
-            ["shift-tab"] = "toggle+select-all",
+            ["tab"] = "toggle+down",
+            ["shift-tab"] = "toggle+up",
             ["ctrl-l"] = "toggle",
             ["ctrl-n"] = "down",
             ["ctrl-p"] = "up",
@@ -2040,8 +2065,152 @@ return {
         }, opts))
       end
 
+      ---Browse image files with preview visible by default.
+      ---@param opts table?
+      function fzf.images(opts)
+        opts = opts or {}
+        local cwd = smart_files_cwd(opts)
+        local image_exts =
+          { "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "webp" }
+        local file_cmd
+        if vim.fn.executable('fd') == 1 or vim.fn.executable('fdfind') == 1 then
+          local fd = vim.fn.executable('fd') == 1 and 'fd' or 'fdfind'
+          file_cmd = { fd, '--type', 'f', '--hidden', '--follow' }
+          for _, ext in ipairs(image_exts) do
+            vim.list_extend(file_cmd, { '--extension', ext })
+          end
+          vim.list_extend(file_cmd, {
+            '--exclude',
+            '.git',
+            '--exclude',
+            'node_modules',
+          })
+        else
+          file_cmd = {
+            'find',
+            '.',
+            '-type',
+            'f',
+            '(',
+            '-iname',
+            '*.avif',
+          }
+          for _, ext in ipairs({ "bmp", "gif", "jpeg", "jpg", "png", "svg", "webp" }) do
+            vim.list_extend(file_cmd, { '-o', '-iname', '*.' .. ext })
+          end
+          table.insert(file_cmd, ')')
+        end
+
+        return fzf.files(vim.tbl_deep_extend('force', {
+          prompt = 'Images> ',
+          cwd = cwd,
+          cmd = table.concat(vim.tbl_map(shellescape, file_cmd), ' '),
+          formatter = "path.filename_first",
+          header = preview_header "Images",
+          fzf_opts = {
+            ["--header-first"] = true,
+          },
+          winopts = {
+            preview = {
+              hidden = false,
+            },
+          },
+        }, opts))
+      end
+
+      ---Project picker with compact home-relative paths.
+      ---@param opts table?
+      function fzf.projects(opts)
+        opts = opts or {}
+        local ok, project = pcall(require, "project")
+        if not ok then
+          pcall(vim.cmd.packadd, "project.nvim")
+          ok, project = pcall(require, "project")
+        end
+        if not ok then
+          vim.notify("[Fzf-lua] project.nvim not found", vim.log.levels.WARN)
+          return
+        end
+
+        local projects = reverse_list(project.get_recent_projects() or {})
+        if #projects == 0 then
+          vim.notify("[Fzf-lua] no recent projects", vim.log.levels.INFO)
+          return
+        end
+
+        local entries = {}
+        local folder_icon = vim.g.has_nf and vim.trim(icons.Folder) or "dir"
+        for _, project_path in ipairs(projects) do
+          local display = ("%s  %s"):format(folder_icon, home_path(project_path))
+          table.insert(entries, display .. "\t" .. project_path)
+        end
+
+        local function selected_projects(selected)
+          local paths = {}
+          for _, entry in ipairs(selected or {}) do
+            local project_path = entry:match("\t(.+)$") or entry
+            if project_path ~= "" then
+              table.insert(paths, project_path)
+            end
+          end
+          return paths
+        end
+
+        local function open_project(selected)
+          local project_path = selected_projects(selected)[1]
+          if not project_path then
+            return
+          end
+          fzf.files({
+            cwd = project_path,
+            cwd_only = true,
+            hidden = true,
+          })
+        end
+
+        local function delete_project(selected)
+          local ok_history, history = pcall(require, "project.util.history")
+          if not ok_history then
+            return
+          end
+          for _, project_path in ipairs(selected_projects(selected)) do
+            history.delete_project(project_path, true)
+          end
+          actions.resume()
+        end
+
+        local function set_project_cwd(selected)
+          local project_path = selected_projects(selected)[1]
+          if not project_path then
+            return
+          end
+          local ok_api, project_api = pcall(require, "project.api")
+          if ok_api then
+            project_api.set_pwd(project_path, "fzf-lua")
+          else
+            vim.api.nvim_set_current_dir(project_path)
+          end
+          actions.resume()
+        end
+
+        return fzf.fzf_exec(entries, vim.tbl_deep_extend('force', {
+          prompt = 'Projects> ',
+          header = "enter: files | ctrl-w: cd | ctrl-d: delete",
+          fzf_opts = {
+            ["--delimiter"] = "\t",
+            ["--header-first"] = true,
+            ["--with-nth"] = "1",
+          },
+          actions = {
+            ["ctrl-d"] = delete_project,
+            ["ctrl-w"] = set_project_cwd,
+            ["enter"] = open_project,
+          },
+        }, opts))
+      end
+
       vim.keymap.set('n', '<Leader><space>', function() fzf.smart_files() end, { desc = 'Smart files (prioritize recent)' })
-      vim.keymap.set('n', '<Leader>sp', function() vim.cmd.ProjectFzf() end, { desc = 'Find projects (fzf)' })
+      vim.keymap.set('n', '<Leader>sp', function() fzf.projects() end, { desc = 'Find projects (fzf)' })
       vim.keymap.set('n', "<Leader>'", fzf.resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', "<Leader>`", fzf.marks, { desc = 'Find marks' })
       vim.keymap.set('n', '<Leader>,', fzf.buffers, { desc = 'Find buffers' })
@@ -2070,6 +2239,7 @@ return {
       vim.keymap.set('n', '<Leader>f:', fzf.commands, { desc = 'Find commands' })
       vim.keymap.set('n', '<Leader>f/', fzf.live_grep, { desc = 'Grep' })
       vim.keymap.set('n', '<Leader>fH', fzf.highlights, { desc = 'Find highlights' })
+      vim.keymap.set('n', '<Leader>fi', function() fzf.images() end, { desc = 'Find images' })
       vim.keymap.set('n', "<Leader>f'", fzf.resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', '<Leader>fA', fzf.autocmds, { desc = 'Find autocommands' })
       vim.keymap.set('n', '<Leader>fb', fzf.buffers, { desc = 'Find buffers' })
