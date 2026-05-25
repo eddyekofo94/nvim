@@ -242,6 +242,11 @@ return {
         local escaped_listfile = shellescape(listfile)
 
         return function(search_query, command)
+          if search_query == require("fzf-lua.core").fzf_query_placeholder then
+            return nil, search_query
+          end
+
+          local escaped_query = shellescape(search_query)
           command = command:gsub("%s%-e%s*$", "")
           if not command:find("--with-filename", 1, true) then
             command = command .. " --with-filename"
@@ -249,10 +254,10 @@ return {
           return string.format(
             "test -s %s && [ -n %s ] && tr '\\n' '\\0' < %s | xargs -0 -n 200 %s -e %s --",
             escaped_listfile,
-            search_query,
+            escaped_query,
             escaped_listfile,
             command,
-            search_query
+            escaped_query
           ),
             search_query
         end
