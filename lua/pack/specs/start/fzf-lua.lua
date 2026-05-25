@@ -2140,9 +2140,11 @@ return {
         end
 
         local entries = {}
+        local project_by_display = {}
         local folder_icon = vim.g.has_nf and vim.trim(icons.Folder) or "dir"
         for _, project_path in ipairs(projects) do
           local display = ("%s  %s"):format(folder_icon, home_path(project_path))
+          project_by_display[display] = project_path
           table.insert(entries, display .. "\t" .. project_path)
         end
 
@@ -2150,6 +2152,7 @@ return {
           local paths = {}
           for _, entry in ipairs(selected or {}) do
             local project_path = entry:match("\t(.+)$") or entry
+            project_path = project_by_display[project_path] or project_path
             if project_path ~= "" then
               table.insert(paths, project_path)
             end
@@ -2180,7 +2183,7 @@ return {
           actions.resume()
         end
 
-        local function set_project_cwd(selected)
+        local function cd_project(selected)
           local project_path = selected_projects(selected)[1]
           if not project_path then
             return
@@ -2191,20 +2194,21 @@ return {
           else
             vim.api.nvim_set_current_dir(project_path)
           end
-          actions.resume()
+          fzf.smart_files({ cwd = project_path })
         end
 
         return fzf.fzf_exec(entries, vim.tbl_deep_extend('force', {
           prompt = 'Projects> ',
-          header = "enter: files | ctrl-w: cd | ctrl-d: delete",
+          header = "enter: files | alt-c/ctrl-w: cd + files | ctrl-d: delete",
           fzf_opts = {
             ["--delimiter"] = "\t",
             ["--header-first"] = true,
             ["--with-nth"] = "1",
           },
           actions = {
+            ["alt-c"] = cd_project,
             ["ctrl-d"] = delete_project,
-            ["ctrl-w"] = set_project_cwd,
+            ["ctrl-w"] = cd_project,
             ["enter"] = open_project,
           },
         }, opts))
