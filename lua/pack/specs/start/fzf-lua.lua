@@ -1856,6 +1856,16 @@ return {
 
       local smart_files_oldfiles_cache = {}
 
+      local smart_files_image_exts =
+        { "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "webp" }
+
+      local function is_smart_files_image(pathname)
+        local ext = type(pathname) == "string"
+          and pathname:match("%.([^.\\/]+)$")
+        ext = ext and ext:lower()
+        return ext and vim.tbl_contains(smart_files_image_exts, ext) or false
+      end
+
       local function smart_files_cache_key(real_cwd, oldfiles, scan_limit, other_limit)
         return table.concat({
           real_cwd,
@@ -1893,8 +1903,16 @@ return {
             break
           end
           if type(f) == "string" and f ~= "" then
+            if is_smart_files_image(f) then
+              goto skip_oldfile
+            end
+
             local real_file = vim.uv.fs_realpath(f)
             if real_file then
+              if is_smart_files_image(real_file) then
+                goto skip_oldfile
+              end
+
               local display_path = f
               if vim.startswith(f, vim.env.HOME .. "/") then
                 display_path = "~" .. f:gsub("^" .. vim.env.HOME, "")
@@ -1916,6 +1934,7 @@ return {
               end
             end
           end
+          ::skip_oldfile::
         end
 
         smart_files_oldfiles_cache[cache_key] = {
@@ -1931,25 +1950,6 @@ return {
           return nil
         end
         return "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, lines), " ")
-      end
-
-      local image_preview_disabled_cmd = {
-        "printf",
-        "Image preview disabled\n%s\n",
-        "{file}",
-      }
-
-      local function image_preview_disabled_extensions()
-        return {
-          avif = image_preview_disabled_cmd,
-          bmp = image_preview_disabled_cmd,
-          gif = image_preview_disabled_cmd,
-          jpeg = image_preview_disabled_cmd,
-          jpg = image_preview_disabled_cmd,
-          png = image_preview_disabled_cmd,
-          svg = image_preview_disabled_cmd,
-          webp = image_preview_disabled_cmd,
-        }
       end
 
       ---Smart file search that prioritizes recent files in cwd
@@ -1978,6 +1978,14 @@ return {
             vim.list_extend(file_cmd, { '--exclude', exclude })
           else
             vim.list_extend(file_cmd, { '-not', '-path', '*/' .. exclude .. '/*' })
+          end
+        end
+
+        for _, ext in ipairs(smart_files_image_exts) do
+          if file_cmd[1] == "fd" or file_cmd[1] == "fdfind" then
+            vim.list_extend(file_cmd, { "--exclude", "*." .. ext })
+          else
+            vim.list_extend(file_cmd, { "-not", "-iname", "*." .. ext })
           end
         end
 
@@ -2030,11 +2038,6 @@ return {
           fzf_opts = {
             ["+1"] = true,
             ["--header-first"] = true,
-          },
-          previewers = {
-            builtin = {
-              extensions = image_preview_disabled_extensions(),
-            },
           },
           actions = smart_actions,
         }, opts))
