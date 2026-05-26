@@ -1933,6 +1933,25 @@ return {
         return "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, lines), " ")
       end
 
+      local image_preview_disabled_cmd = {
+        "printf",
+        "Image preview disabled\n%s\n",
+        "{file}",
+      }
+
+      local function image_preview_disabled_extensions()
+        return {
+          avif = image_preview_disabled_cmd,
+          bmp = image_preview_disabled_cmd,
+          gif = image_preview_disabled_cmd,
+          jpeg = image_preview_disabled_cmd,
+          jpg = image_preview_disabled_cmd,
+          png = image_preview_disabled_cmd,
+          svg = image_preview_disabled_cmd,
+          webp = image_preview_disabled_cmd,
+        }
+      end
+
       ---Smart file search that prioritizes recent files in cwd
       ---@param opts table?
       function fzf.smart_files(opts)
@@ -2008,28 +2027,13 @@ return {
           formatter = "path.filename_first",
           header = preview_header "Smart Files: recent cwd files first",
           jump1 = false,
-          previewer = false,
-          preview = false,
           fzf_opts = {
             ["+1"] = true,
             ["--header-first"] = true,
-            ["--preview"] = false,
-            ["--preview-window"] = "hidden:right:0",
           },
-          winopts = {
-            preview = {
-              hidden = true,
-              layout = "hidden",
-            },
-          },
-          keymap = {
+          previewers = {
             builtin = {
-              ["<F4>"] = false,
-              ["<F5>"] = false,
-            },
-            fzf = {
-              ["f4"] = false,
-              ["f5"] = false,
+              extensions = image_preview_disabled_extensions(),
             },
           },
           actions = smart_actions,
