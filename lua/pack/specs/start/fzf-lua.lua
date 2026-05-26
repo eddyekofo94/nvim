@@ -405,6 +405,14 @@ return {
           cleanup_toggle_list()
           source_opts.query = _toggle_state.files_query
           source_opts.resume = true
+          if source_key == "files" or source_key == "smart_files" then
+            source_opts.jump1 = false
+            source_opts.__call_opts = vim.tbl_deep_extend(
+              "force",
+              source_opts.__call_opts or {},
+              { jump1 = false }
+            )
+          end
           source_opts = with_toggle_header(source_opts, {
             source_key .. ": " .. display_query(_toggle_state.files_query),
             "grep: " .. display_query(_toggle_state.grep_query),
@@ -1999,7 +2007,9 @@ return {
           __smart_files = true,
           formatter = "path.filename_first",
           header = preview_header "Smart Files: recent cwd files first",
+          jump1 = false,
           fzf_opts = {
+            ["+1"] = true,
             ["--header-first"] = true,
           },
           actions = smart_actions,
