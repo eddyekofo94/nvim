@@ -1179,6 +1179,24 @@ return {
         return false
       end
 
+      function _G.FzfLuaTogglePreviewWrap()
+        local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
+        local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
+        if
+          not winobj
+          or not winobj.has_previewer
+          or not winobj:has_previewer()
+          or not winobj.preview_winid
+          or not vim.api.nvim_win_is_valid(winobj.preview_winid)
+        then
+          return false
+        end
+
+        winobj.preview_wrap = not vim.wo[winobj.preview_winid].wrap
+        vim.wo[winobj.preview_winid].wrap = winobj.preview_wrap
+        return true
+      end
+
       function _G.FzfLuaTogglePreviewMax()
         local ok, loaded_fzf_utils = pcall(require, "fzf-lua.utils")
         local winobj = ok and loaded_fzf_utils.fzf_winobj() or nil
@@ -1311,6 +1329,16 @@ return {
             vim.g._fzf_active = true
             vim.g._fzf_win = args and args.winid
               or vim.api.nvim_get_current_win()
+            vim.keymap.set(
+              "t",
+              "<F3>",
+              "<Cmd>lua _G.FzfLuaTogglePreviewWrap()<CR>",
+              {
+                nowait = true,
+                buffer = args and args.bufnr or true,
+                desc = "Toggle preview wrap",
+              }
+            )
             vim.keymap.set(
               "t",
               "<F5>",
@@ -1457,7 +1485,7 @@ return {
             ["<C-_>"] = "toggle-help",
             ["<F1>"] = "toggle-help",
             ["<F2>"] = "toggle-fullscreen",
-            ["<F3>"] = "toggle-preview-wrap",
+            ["<F3>"] = false,
             ["<F4>"] = "toggle-preview",
             ["<C-f>"] = "preview-page-down",
             ["<C-b>"] = "preview-page-up",
