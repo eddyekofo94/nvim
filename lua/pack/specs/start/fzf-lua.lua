@@ -2060,22 +2060,28 @@ return {
           header = "Images",
           jump1 = false,
           previewer = false,
+          preview = false,
           fzf_opts = {
             ["+0"] = true,
             ["+1"] = true,
             ["--header-first"] = true,
+            ["--preview"] = false,
+            ["--preview-window"] = "hidden:right:0",
           },
           winopts = {
             preview = {
               hidden = true,
+              layout = "hidden",
             },
           },
           keymap = {
             builtin = {
               ["<F4>"] = false,
+              ["<F5>"] = false,
             },
             fzf = {
               ["f4"] = false,
+              ["f5"] = false,
             },
           },
           actions = {
