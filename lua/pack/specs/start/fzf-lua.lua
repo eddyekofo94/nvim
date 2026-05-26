@@ -1211,7 +1211,6 @@ return {
         if winobj._dotfiles_preview_max then
           local state = winobj._dotfiles_preview_max
           winobj._dotfiles_preview_max = nil
-          winobj.fullscreen = state.fullscreen
           winobj.preview_hidden = state.preview_hidden
           winobj.toggle_behavior = state.toggle_behavior
           winobj._preview_pos_force = state.preview_pos_force
@@ -1231,7 +1230,6 @@ return {
         end
 
         winobj._dotfiles_preview_max = {
-          fullscreen = winobj.fullscreen,
           preview_hidden = winobj.preview_hidden,
           toggle_behavior = winobj.toggle_behavior,
           preview_pos_force = winobj._preview_pos_force,
@@ -1239,7 +1237,6 @@ return {
           vertical = winobj.winopts.preview.vertical,
         }
 
-        winobj.fullscreen = true
         winobj.preview_hidden = false
         winobj.toggle_behavior = nil
         winobj._preview_pos_force = "up"
@@ -1249,15 +1246,7 @@ return {
         if winobj.redraw_preview then
           winobj:redraw_preview()
         end
-        vim.schedule(function()
-          if
-            winobj.preview_winid
-            and vim.api.nvim_win_is_valid(winobj.preview_winid)
-          then
-            vim.api.nvim_set_current_win(winobj.preview_winid)
-            set_preview_keymaps(winobj.preview_winid)
-          end
-        end)
+        vim.schedule(_G.FzfLuaFocus)
         return true
       end
 
