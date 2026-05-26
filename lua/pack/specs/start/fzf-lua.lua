@@ -1846,17 +1846,35 @@ return {
         return valid_dir(vim.fn.getcwd()) or valid_dir(vim.uv.cwd()) or "."
       end
 
-      ---Smart file search that prioritizes recent files in cwd
-      ---@param opts table?
-      function fzf.smart_files(opts)
-        opts = opts or {}
-        local cwd = smart_files_cwd(opts)
-        local real_cwd = vim.uv.fs_realpath(cwd) or cwd
+      local smart_files_oldfiles_cache = {}
+
+      local function smart_files_cache_key(real_cwd, oldfiles, scan_limit, other_limit)
+        return table.concat({
+          real_cwd,
+          tostring(scan_limit),
+          tostring(other_limit),
+          tostring(#oldfiles),
+          tostring(oldfiles[1] or ""),
+        }, "\t")
+      end
+
+      local function smart_files_recent_entries(real_cwd, opts)
         local oldfiles = vim.v.oldfiles or {}
         local other_oldfiles_limit = opts.smart_other_oldfiles_limit or 5
         local oldfiles_scan_limit = opts.smart_oldfiles_scan_limit or 1000
+        local cache_ttl_ms = opts.smart_oldfiles_cache_ttl_ms or 2000
+        local cache_key = smart_files_cache_key(
+          real_cwd,
+          oldfiles,
+          oldfiles_scan_limit,
+          other_oldfiles_limit
+        )
+        local now = vim.uv.hrtime() / 1000000
+        local cached = smart_files_oldfiles_cache[cache_key]
+        if cached and now - cached.time <= cache_ttl_ms then
+          return vim.deepcopy(cached.cwd_oldfiles), vim.deepcopy(cached.other_oldfiles)
+        end
 
-        -- Filter oldfiles to current cwd
         local cwd_oldfiles = {}
         local other_oldfiles = {}
         local cwd_seen = {}
@@ -1866,29 +1884,22 @@ return {
           if i > oldfiles_scan_limit then
             break
           end
-          if type(f) == 'string' and f ~= '' then
-            -- Check if file exists
+          if type(f) == "string" and f ~= "" then
             local real_file = vim.uv.fs_realpath(f)
-            local exists = real_file ~= nil
-            if not exists then
-              goto skip
-            end
-
-            -- Convert absolute path to ~ if in home
-            local display_path = f
-            if vim.startswith(f, vim.env.HOME .. '/') then
-              display_path = '~' .. f:gsub('^' .. vim.env.HOME, '')
-            end
-
-            -- Check if file is in cwd
-            if vim.startswith(real_file, real_cwd .. '/') then
-              local rel_path = real_file:gsub('^' .. vim.pesc(real_cwd) .. '/?', '')
-              if not cwd_seen[rel_path] and rel_path ~= '' then
-                cwd_seen[rel_path] = true
-                table.insert(cwd_oldfiles, rel_path)
+            if real_file then
+              local display_path = f
+              if vim.startswith(f, vim.env.HOME .. "/") then
+                display_path = "~" .. f:gsub("^" .. vim.env.HOME, "")
               end
-            else
-              if
+
+              if vim.startswith(real_file, real_cwd .. "/") then
+                local rel_path =
+                  real_file:gsub("^" .. vim.pesc(real_cwd) .. "/?", "")
+                if not cwd_seen[rel_path] and rel_path ~= "" then
+                  cwd_seen[rel_path] = true
+                  table.insert(cwd_oldfiles, rel_path)
+                end
+              elseif
                 not other_seen[display_path]
                 and #other_oldfiles < other_oldfiles_limit
               then
@@ -1896,9 +1907,31 @@ return {
                 table.insert(other_oldfiles, display_path)
               end
             end
-            ::skip::
           end
         end
+
+        smart_files_oldfiles_cache[cache_key] = {
+          time = now,
+          cwd_oldfiles = cwd_oldfiles,
+          other_oldfiles = other_oldfiles,
+        }
+        return vim.deepcopy(cwd_oldfiles), vim.deepcopy(other_oldfiles)
+      end
+
+      local function printf_lines_cmd(lines)
+        if #lines == 0 then
+          return nil
+        end
+        return "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, lines), " ")
+      end
+
+      ---Smart file search that prioritizes recent files in cwd
+      ---@param opts table?
+      function fzf.smart_files(opts)
+        opts = opts or {}
+        local cwd = smart_files_cwd(opts)
+        local real_cwd = vim.uv.fs_realpath(cwd) or cwd
+        local cwd_oldfiles, other_oldfiles = smart_files_recent_entries(real_cwd, opts)
 
         local excludes = opts.smart_excludes
           or { ".git", ".venv", "node_modules", "dist", ".next" }
@@ -1923,11 +1956,13 @@ return {
 
         -- Build combined command - cwd recent files first, then others, then all files
         local parts = {}
-        if #cwd_oldfiles > 0 then
-          table.insert(parts, "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, cwd_oldfiles), " "))
+        local cwd_oldfiles_cmd = printf_lines_cmd(cwd_oldfiles)
+        if cwd_oldfiles_cmd then
+          table.insert(parts, cwd_oldfiles_cmd)
         end
-        if #other_oldfiles > 0 then
-          table.insert(parts, "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, other_oldfiles), " "))
+        local other_oldfiles_cmd = printf_lines_cmd(other_oldfiles)
+        if other_oldfiles_cmd then
+          table.insert(parts, other_oldfiles_cmd)
         end
         table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
