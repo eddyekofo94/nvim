@@ -169,12 +169,7 @@ return {
         source_key = nil,
         source_opts = nil,
         listfile = nil,
-        file_count = 0,
-        file_limited = false,
       }
-
-      local toggle_file_limit = tonumber(vim.g.fzf_lua_toggle_file_limit)
-        or 20000
 
       local function shellescape(value)
         return vim.fn.shellescape(value or "")
@@ -220,62 +215,6 @@ return {
           vim.fn.delete(_toggle_state.listfile)
           _toggle_state.listfile = nil
         end
-        _toggle_state.file_count = 0
-        _toggle_state.file_limited = false
-      end
-
-      ---@param listfile string
-      ---@return integer
-      local function listfile_count(listfile)
-        local output = vim.fn.system { "wc", "-l", listfile }
-        return tonumber(output:match "^%s*(%d+)") or 0
-      end
-
-      ---@return string
-      local function toggle_scope_header()
-        if _toggle_state.file_count <= 0 then
-          return "scope: <empty>"
-        end
-        local limit = _toggle_state.file_limited and "+" or ""
-        return ("scope: %d%s files"):format(_toggle_state.file_count, limit)
-      end
-
-      ---@param listfile string
-      ---@return function
-      local function files_from_list_grep_cmd(listfile)
-        local escaped_listfile = shellescape(listfile)
-
-        return function(search_query, command)
-          command = command:gsub("%s%-e%s*$", "")
-          if not command:find("--with-filename", 1, true) then
-            command = command .. " --with-filename"
-          end
-          return string.format(
-            "test -s %s && [ -n %s ] && tr '\\n' '\\0' < %s | xargs -0 -n 200 %s -e %s --",
-            escaped_listfile,
-            search_query,
-            escaped_listfile,
-            command,
-            search_query
-          ),
-            search_query
-        end
-      end
-
-      ---@param listfile string
-      ---@param cwd string?
-      ---@return table
-      local function list_grep_opts(listfile, cwd)
-        _toggle_state.file_count = listfile_count(listfile)
-        _toggle_state.file_limited = _toggle_state.file_count
-          >= toggle_file_limit
-        return {
-          cwd = cwd,
-          exec_empty_query = false,
-          fn_transform_cmd = files_from_list_grep_cmd(listfile),
-          query = _toggle_state.grep_query,
-          rg_glob = false,
-        }
       end
 
       vim.api.nvim_create_autocmd("VimLeavePre", {
@@ -291,9 +230,6 @@ return {
 
         if #files == 0 then
           return nil
-        end
-        if #files > toggle_file_limit then
-          files = vim.list_slice(files, 1, toggle_file_limit)
         end
 
         local listfile = vim.fn.tempname()
@@ -321,29 +257,6 @@ return {
           end
         end
 
-        if listfile_count(listfile) > toggle_file_limit then
-          local limited = vim.fn.tempname()
-          local result = vim
-            .system({
-              "sh",
-              "-c",
-              string.format(
-                "awk 'NR <= %d { print } NR > %d { exit }' %s > %s",
-                toggle_file_limit,
-                toggle_file_limit,
-                shellescape(listfile),
-                shellescape(limited)
-              ),
-            })
-            :wait()
-          vim.fn.delete(listfile)
-          listfile = limited
-          if result.code ~= 0 then
-            vim.fn.delete(listfile)
-            return nil
-          end
-        end
-
         _toggle_state.listfile = listfile
         return listfile
       end
@@ -363,14 +276,7 @@ return {
           .system({
             "sh",
             "-c",
-            string.format(
-              "(%s)%s | awk 'NR <= %d { print } NR > %d { exit }' > %s",
-              cmd,
-              filter,
-              toggle_file_limit,
-              toggle_file_limit,
-              shellescape(listfile)
-            ),
+            string.format("(%s)%s > %s", cmd, filter, shellescape(listfile)),
           }, { cwd = cwd })
           :wait()
 
@@ -455,28 +361,20 @@ return {
           _toggle_state.source_key = key
           _toggle_state.source_opts = vim.deepcopy(resume.opts)
 
-          if query == "" then
-            fzf.live_grep(with_toggle_header({
-              query = _toggle_state.grep_query,
-              cwd = cwd,
-            }, {
-              "files: " .. display_query(_toggle_state.files_query),
-              "grep: " .. display_query(_toggle_state.grep_query),
-              "scope: cwd",
-            }))
-            return
-          end
-
           local listfile =
             write_filtered_file_list_from_cmd(resume.opts.cmd, query, cwd)
           if not listfile then
             return
           end
 
-          local grep_opts = with_toggle_header(list_grep_opts(listfile, cwd), {
+          local grep_opts = with_toggle_header({
+            search_paths = vim.fn.readfile(listfile),
+            query = _toggle_state.grep_query,
+            cwd = cwd,
+            rg_glob = false,
+          }, {
             "files: " .. display_query(_toggle_state.files_query),
             "grep: " .. display_query(_toggle_state.grep_query),
-            toggle_scope_header(),
           })
           fzf.live_grep(grep_opts)
         elseif key == "buffers" or key == "oldfiles" or key == "args" then
@@ -491,10 +389,14 @@ return {
           _toggle_state.files_query = query
           _toggle_state.source_key = key
           _toggle_state.source_opts = vim.deepcopy(resume.opts)
-          fzf.live_grep(with_toggle_header(list_grep_opts(listfile, cwd), {
+          fzf.live_grep(with_toggle_header({
+            search_paths = vim.fn.readfile(listfile),
+            query = _toggle_state.grep_query,
+            cwd = cwd,
+            rg_glob = false,
+          }, {
             key .. ": " .. display_query(_toggle_state.files_query),
             "grep: " .. display_query(_toggle_state.grep_query),
-            toggle_scope_header(),
           }))
         elseif key == "live_grep" or key == "grep" then
           _toggle_state.grep_query = query
