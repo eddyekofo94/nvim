@@ -1216,6 +1216,8 @@ return {
           winobj._preview_pos_force = state.preview_pos_force
           winobj.winopts.preview.layout = state.layout
           winobj.winopts.preview.vertical = state.vertical
+          winobj._o.winopts.preview.layout = state.source_layout
+          winobj._o.winopts.preview.vertical = state.source_vertical
           winobj:redraw()
           if
             winobj.preview_hidden
@@ -1235,11 +1237,15 @@ return {
           preview_pos_force = winobj._preview_pos_force,
           layout = winobj.winopts.preview.layout,
           vertical = winobj.winopts.preview.vertical,
+          source_layout = winobj._o.winopts.preview.layout,
+          source_vertical = winobj._o.winopts.preview.vertical,
         }
 
         winobj.preview_hidden = false
         winobj.toggle_behavior = nil
         winobj._preview_pos_force = "up"
+        winobj._o.winopts.preview.layout = "vertical"
+        winobj._o.winopts.preview.vertical = "up:85%"
         winobj.winopts.preview.layout = "vertical"
         winobj.winopts.preview.vertical = "up:85%"
         winobj:redraw()
