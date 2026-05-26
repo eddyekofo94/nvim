@@ -1218,6 +1218,14 @@ return {
           winobj.winopts.preview.layout = state.layout
           winobj.winopts.preview.vertical = state.vertical
           winobj:redraw()
+          if
+            winobj.preview_hidden
+            and winobj.validate_preview
+            and winobj:validate_preview()
+            and winobj.close_preview
+          then
+            winobj:close_preview(true)
+          end
           vim.schedule(_G.FzfLuaFocus)
           return true
         end
@@ -1238,6 +1246,9 @@ return {
         winobj.winopts.preview.layout = "vertical"
         winobj.winopts.preview.vertical = "up:85%"
         winobj:redraw()
+        if winobj.redraw_preview then
+          winobj:redraw_preview()
+        end
         vim.schedule(function()
           if
             winobj.preview_winid
