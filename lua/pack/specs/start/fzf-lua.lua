@@ -161,14 +161,36 @@ return {
         }
       end
 
-      -- Shared state between file-like pickers and grep mode for cumulative
-      -- filtering.
+      -- Shared state for the files <-> grep ctrl-g toggle. We deliberately
+      -- avoid stashing fzf-lua's normalized resume opts here. Those carry
+      -- `_normalized = true` and an internal `__call_opts` snapshot, and
+      -- feeding the blob back into a picker makes `config.normalize_opts`
+      -- short-circuit (it bails on `_normalized`), which silently drops our
+      -- action bindings (ctrl-g, ctrl-e, enter) and causes the toggle to
+      -- close the picker after a few rounds instead of switching mode.
+      -- Keep ONLY the minimal data needed to relaunch each side from scratch.
       local _toggle_state = {
-        files_query = "",
-        grep_query = "",
-        source_key = nil,
-        source_opts = nil,
-        listfile = nil,
+        files_query = "", ---@type string
+        grep_query = "", ---@type string
+        source_key = nil, ---@type string?  e.g. "smart_files"
+        cwd = nil, ---@type string?
+        listfile = nil, ---@type string?  cumulative file list temp
+      }
+
+      -- Pickers that participate in the toggle.
+      local _files_keys = {
+        files = true,
+        smart_files = true,
+        buffers = true,
+        oldfiles = true,
+        args = true,
+        git_files = true,
+      }
+      local _grep_keys = {
+        grep = true,
+        live_grep = true,
+        live_grep_native = true,
+        grep_project = true,
       }
 
       local function shellescape(value)
@@ -235,14 +257,14 @@ return {
         local listfile = vim.fn.tempname()
         vim.fn.writefile(files, listfile)
 
-        if query ~= "" then
+        if query ~= "" and vim.fn.executable "fzf" == 1 then
           local filtered = vim.fn.tempname()
           local result = vim
             .system({
               "sh",
               "-c",
               string.format(
-                "fzf --filter %s < %s > %s",
+                "fzf --no-sort --filter %s < %s > %s",
                 shellescape(query),
                 shellescape(listfile),
                 shellescape(filtered)
@@ -251,7 +273,12 @@ return {
             :wait()
           vim.fn.delete(listfile)
           listfile = filtered
-          if result.code ~= 0 then
+          -- fzf --filter exit codes: 0 = matches, 1 = no matches,
+          -- >1 = real error. Treat "no matches" as a valid empty result so
+          -- the toggle still hands control to the next picker with an empty
+          -- search_paths instead of silently aborting (which would just close
+          -- the current picker, since the action has no `noclose` flag).
+          if result.code ~= 0 and result.code ~= 1 then
             vim.fn.delete(listfile)
             return nil
           end
@@ -269,8 +296,12 @@ return {
         cleanup_toggle_list()
 
         local listfile = vim.fn.tempname()
-        local filter = query ~= ""
-            and string.format(" | fzf --filter %s", shellescape(query))
+        local has_filter = query ~= "" and vim.fn.executable "fzf" == 1
+        local filter = has_filter
+            and string.format(
+              " | fzf --no-sort --filter %s",
+              shellescape(query)
+            )
           or ""
         local result = vim
           .system({
@@ -280,13 +311,81 @@ return {
           }, { cwd = cwd })
           :wait()
 
-        if result.code ~= 0 then
+        -- Exit code 1 with a filter means "no matches" — accept it as a
+        -- valid empty result. Without a filter, only 0 is acceptable.
+        local ok = result.code == 0 or (has_filter and result.code == 1)
+        if not ok then
           vim.fn.delete(listfile)
           return nil
         end
 
         _toggle_state.listfile = listfile
         return listfile
+      end
+
+      ---Reconstruct a shell command that lists the picker's files. We need a
+      ---usable command for the cumulative-filter path even when
+      ---`resume.opts.cmd` is nil (which happens for plain `fzf.files` calls
+      ---where fzf-lua builds the cmd internally from fd/rg/find opts).
+      ---@param opts table
+      ---@return string?
+      local function resolve_files_cmd(opts)
+        -- smart_files stores a tier-1 snapshot in opts.cmd (fast, recent-only)
+        -- and the complete project-wide command in __smart_full_cmd.  Always
+        -- use the full cmd for toggle/filter operations so ctrl-g greps over
+        -- the entire project, not just the recent-files snapshot.
+        if
+          type(opts.__smart_full_cmd) == "string"
+          and opts.__smart_full_cmd ~= ""
+        then
+          return opts.__smart_full_cmd
+        end
+        if type(opts.raw_cmd) == "string" and opts.raw_cmd ~= "" then
+          return opts.raw_cmd
+        end
+        if type(opts.cmd) == "string" and opts.cmd ~= "" then
+          return opts.cmd
+        end
+        if
+          opts.fd_opts
+          and (
+            vim.fn.executable "fd" == 1
+            or vim.fn.executable "fdfind" == 1
+          )
+        then
+          local fd = vim.fn.executable "fd" == 1 and "fd" or "fdfind"
+          return fd .. " " .. opts.fd_opts
+        end
+        if opts.rg_opts and vim.fn.executable "rg" == 1 then
+          return "rg " .. opts.rg_opts
+        end
+        if opts.find_opts then
+          return "find . " .. opts.find_opts
+        end
+        return nil
+      end
+
+      ---Detect the logical picker key from resume opts. Tolerates
+      ---`__resume_key` being a function reference (which happens for some
+      ---custom pickers) by falling back to other markers.
+      ---@param opts table
+      ---@return string?
+      local function detect_picker_key(opts)
+        if opts.__smart_files then
+          return "smart_files"
+        end
+        local k = opts.__resume_key
+        if type(k) == "string" and (_files_keys[k] or _grep_keys[k]) then
+          return k
+        end
+        -- Heuristic fallbacks for when __resume_key is a function ref.
+        if opts.search_paths or opts.__ACT_TO then
+          return "grep"
+        end
+        if opts.cmd or opts.fd_opts or opts.rg_opts or opts.find_opts then
+          return "files"
+        end
+        return nil
       end
 
       ---@param cwd string
@@ -343,83 +442,171 @@ return {
         return files
       end
 
-      ---Toggle between files and live_grep picker preserving queries
-      ---between modes for cumulative filtering
+      ---Toggle between a files-like picker and live_grep while preserving
+      ---the query on each side. Typing in files mode narrows the file list
+      ---that live_grep then searches in (cumulative filtering).
+      ---
+      ---Key correctness properties:
+      ---  * We NEVER pass fzf-lua's normalized resume opts back into a
+      ---    picker. We only carry forward `cwd`, queries and the saved
+      ---    `source_key`. Each toggle launches a FRESH picker with minimal
+      ---    opts so `config.normalize_opts` runs in full and re-merges the
+      ---    setup-level `actions` table (which is where `ctrl-g =
+      ---    toggle_files_grep` lives).
+      ---  * We never set `resume = true` on these toggle-launched pickers,
+      ---    so fzf-lua's resume cache is not consulted (otherwise the saved
+      ---    resume opts could clobber our minimal-opts payload).
+      ---  * If we reach an unknown state we notify rather than silently
+      ---    returning, because a silent return makes fzf close the picker
+      ---    (the action has no `noclose`/`reload` flag) — that's exactly the
+      ---    "selects an item and closes" symptom this rewrite fixes.
       ---@return nil
       function actions.toggle_files_grep()
-        local resume = fzf.config.__resume_data
+        local resume = fzf.config and fzf.config.__resume_data
         if not resume or not resume.opts then
+          vim.notify(
+            "[Fzf-lua] toggle: no active picker resume data",
+            vim.log.levels.WARN
+          )
           return
         end
-        local key = resume.opts.__smart_files and "smart_files"
-          or resume.opts.__resume_key
-        local query = resume.last_query or ""
-        local cwd = resume.opts.cwd or vim.fn.getcwd(0)
+        local opts = resume.opts
+        local query = resume.last_query or opts.last_query or ""
+        local cwd = (type(opts.cwd) == "string" and opts.cwd ~= "")
+            and opts.cwd
+          or vim.fn.getcwd(0)
+        local key = detect_picker_key(opts) or "files"
 
-        if key == "files" or key == "smart_files" then
+        ----------------------------------------------------------------
+        -- Branch A: file-like picker -> live_grep
+        ----------------------------------------------------------------
+        if _files_keys[key] then
+          local files
+          if key == "buffers" then
+            files = listed_buffer_files(cwd)
+          elseif key == "oldfiles" then
+            files = oldfile_entries(cwd)
+          elseif key == "args" then
+            files = argfiles()
+          else
+            -- files / smart_files / git_files: re-run the picker's cmd and
+            -- pipe through fzf --filter so only entries matching the
+            -- current files-mode query are passed to ripgrep.
+            local cmd = resolve_files_cmd(opts)
+            if not cmd then
+              vim.notify(
+                "[Fzf-lua] toggle: cannot resolve files command for picker '"
+                  .. tostring(key)
+                  .. "'",
+                vim.log.levels.WARN
+              )
+              return
+            end
+            local listfile =
+              write_filtered_file_list_from_cmd(cmd, query, cwd)
+            if not listfile then
+              vim.notify(
+                "[Fzf-lua] toggle: failed to gather file list",
+                vim.log.levels.WARN
+              )
+              return
+            end
+            files = vim.fn.readfile(listfile)
+          end
+
+          -- Static-list pickers: filter the in-memory list with fzf --filter
+          if key == "buffers" or key == "oldfiles" or key == "args" then
+            local listfile = write_filtered_file_list(files, query)
+            files = listfile and vim.fn.readfile(listfile) or {}
+          end
+
+          -- Commit state only after a successful gather, so a transient
+          -- failure doesn't leave us with a half-updated state machine.
           _toggle_state.files_query = query
           _toggle_state.source_key = key
-          _toggle_state.source_opts = vim.deepcopy(resume.opts)
+          _toggle_state.cwd = cwd
 
-          local listfile =
-            write_filtered_file_list_from_cmd(resume.opts.cmd, query, cwd)
-          if not listfile then
+          if not files or #files == 0 then
+            vim.notify(
+              "[Fzf-lua] toggle: no files match query '"
+                .. display_query(query)
+                .. "'",
+              vim.log.levels.INFO
+            )
+            cleanup_toggle_list()
             return
           end
 
           local grep_opts = with_toggle_header({
-            search_paths = vim.fn.readfile(listfile),
+            search_paths = files,
             query = _toggle_state.grep_query,
             cwd = cwd,
             rg_glob = false,
-          }, {
-            "files: " .. display_query(_toggle_state.files_query),
-            "grep: " .. display_query(_toggle_state.grep_query),
-          })
-          fzf.live_grep(grep_opts)
-        elseif key == "buffers" or key == "oldfiles" or key == "args" then
-          local files = key == "buffers" and listed_buffer_files(cwd)
-            or key == "oldfiles" and oldfile_entries(cwd)
-            or argfiles()
-          local listfile = write_filtered_file_list(files, query)
-          if not listfile then
-            return
-          end
-
-          _toggle_state.files_query = query
-          _toggle_state.source_key = key
-          _toggle_state.source_opts = vim.deepcopy(resume.opts)
-          fzf.live_grep(with_toggle_header({
-            search_paths = vim.fn.readfile(listfile),
-            query = _toggle_state.grep_query,
-            cwd = cwd,
-            rg_glob = false,
+            rg_opts = (config.setup_opts.grep.rg_opts or ""):gsub(
+              "%s%-e%s*$",
+              " --threads=1 -e"
+            ),
+            resume = false, -- always launch grep fresh
+            no_esc = false,
           }, {
             key .. ": " .. display_query(_toggle_state.files_query),
             "grep: " .. display_query(_toggle_state.grep_query),
-          }))
-        elseif key == "live_grep" or key == "grep" then
+          })
+          -- Signal that a toggle transition is in progress so on_close's
+          -- deferred and scheduled callbacks skip their cleanup (restoring
+          -- focus, clearing _fzf_win, reopening qf, calling focus.resize).
+          -- The new picker's on_create will clear this flag once the new
+          -- fzf window is live and ready.
+          vim.g._fzf_transitioning = true
+          vim.schedule(function()
+            fzf.live_grep(grep_opts)
+          end)
+          return
+        end
+
+        ----------------------------------------------------------------
+        -- Branch B: live_grep / grep -> source files-like picker
+        ----------------------------------------------------------------
+        if _grep_keys[key] then
           _toggle_state.grep_query = query
-          local source_key = _toggle_state.source_key or "files"
-          local source_opts = _toggle_state.source_opts or {}
           cleanup_toggle_list()
-          source_opts.query = _toggle_state.files_query
-          source_opts.resume = true
-          if source_key == "files" or source_key == "smart_files" then
-            source_opts.jump1 = false
-            source_opts.__call_opts = vim.tbl_deep_extend(
-              "force",
-              source_opts.__call_opts or {},
-              { jump1 = false }
-            )
-          end
-          source_opts = with_toggle_header(source_opts, {
-            source_key .. ": " .. display_query(_toggle_state.files_query),
+
+          local source_key = _toggle_state.source_key
+            or (opts.__smart_files and "smart_files" or "files")
+          local source_cwd = _toggle_state.cwd or cwd
+
+          local source_opts = with_toggle_header({
+            cwd = source_cwd,
+            query = _toggle_state.files_query,
+            resume = false, -- always launch source picker fresh
+          }, {
+            source_key
+              .. ": "
+              .. display_query(_toggle_state.files_query),
             "grep: " .. display_query(_toggle_state.grep_query),
           })
+
+          if source_key == "files" or source_key == "smart_files" then
+            source_opts.jump1 = false
+          end
+
           local source = fzf[source_key] or fzf.files
-          source(source_opts)
+          -- Signal transition (see Branch A for full explanation).
+          vim.g._fzf_transitioning = true
+          vim.schedule(function()
+            source(source_opts)
+          end)
+          return
         end
+
+        -- Unknown picker - be loud rather than silently closing the window
+        vim.notify(
+          string.format(
+            "[Fzf-lua] ctrl-g: no toggle binding for picker '%s'",
+            tostring(key)
+          ),
+          vim.log.levels.WARN
+        )
       end
 
       local function extension_query(query)
@@ -1335,6 +1522,11 @@ return {
             vim.g._fzf_active = true
             vim.g._fzf_win = args and args.winid
               or vim.api.nvim_get_current_win()
+            -- The new picker is now live; clear the transition flag so
+            -- any remaining deferred on_close cleanup from the OLD picker
+            -- is no longer suppressed (it will still bail via the
+            -- closing_win guard, but this unblocks unrelated deferred work).
+            vim.g._fzf_transitioning = nil
             vim.keymap.set(
               "t",
               "<F3>",
@@ -1382,9 +1574,32 @@ return {
             end
           end,
           on_close = function()
+            -- Snapshot the closing picker's window id. If a NEW fzf picker
+            -- (e.g. ctrl-g toggle) opens before our deferred / scheduled
+            -- cleanups run, we MUST NOT clobber `_fzf_active` / `_fzf_win`
+            -- nor steal focus back to the editor — otherwise focus.nvim
+            -- starts treating the new picker as a regular window, resizes
+            -- it, and the fzf terminal loses its key binds, leaving the
+            -- default accept action to fire on the next ctrl-g (which opens
+            -- the cursor item and closes the picker). This is the
+            -- post-several-toggles "selects file + closes" symptom.
+            local closing_win = vim.g._fzf_win
+
             vim.defer_fn(function()
-              vim.g._fzf_active = nil
-              vim.g._fzf_win = nil
+              -- A ctrl-g toggle is in flight: a new picker was already
+              -- scheduled and will clear this flag from its on_create.
+              -- Bail completely — the new picker owns all fzf globals.
+              if vim.g._fzf_transitioning then
+                return
+              end
+              -- A new fzf picker has taken over -- leave its state alone.
+              if vim.g._fzf_win and vim.g._fzf_win ~= closing_win then
+                return
+              end
+              if vim.g._fzf_win == closing_win then
+                vim.g._fzf_active = nil
+                vim.g._fzf_win = nil
+              end
               for _, win in ipairs(vim.api.nvim_list_wins()) do
                 if vim.api.nvim_win_is_valid(win) then
                   vim.w[win].focus_disable = false
@@ -1410,6 +1625,21 @@ return {
             -- - `lua/core/autocmds.lua` augroup `fix_winfixheight_with_winbar`
             -- -  https://github.com/neovim/neovim/issues/30955
             vim.schedule(function()
+              -- Toggle in progress: the new picker is opening; skip ALL
+              -- focus restoration, qf reopening, and leave_win cleanup here.
+              -- The new picker's own on_close will handle those when it
+              -- eventually closes. Without this guard the scheduled callback
+              -- from the OLD picker's on_close can run before on_create sets
+              -- _fzf_win for the float-layout picker, see the closing_win
+              -- race documented in the bug report.
+              if vim.g._fzf_transitioning then
+                return
+              end
+              -- Skip the focus-restoration dance if a new fzf picker has
+              -- already taken focus; otherwise we'd yank focus away from it.
+              if vim.g._fzf_win and vim.g._fzf_win ~= closing_win then
+                return
+              end
               local win = vim.api.nvim_get_current_win()
 
               if vim.g._fzf_qfclosed then
@@ -1834,6 +2064,96 @@ return {
         },
       }
 
+      ---Resume the last picker safely, stripping stale fzf-lua normalization
+      ---markers before reopening so setup-level action bindings (ctrl-g,
+      ---ctrl-e, enter) are always re-merged by config.normalize_opts.
+      ---
+      ---Problem: fzf.resume() passes __resume_data.opts back into the picker
+      ---unchanged. If opts._normalized == true (set by fzf-lua after the
+      ---first open), config.normalize_opts short-circuits and the entire
+      ---setup-level `actions` table — including `ctrl-g = toggle_files_grep`
+      ---— is silently dropped. After a toggle this produces a picker where
+      ---ctrl-g either does nothing or falls through to fzf's default accept,
+      ---opening the cursor item and closing the picker. On a subsequent
+      ---resume the same stale opts are reused, causing the fzf process to
+      ---exit immediately ([Process exited 0]).
+      ---
+      ---Fix: if the stored opts are normalized, strip the internal markers and
+      ---reopen the picker by key so normalization runs in full. For toggle-flow
+      ---live_grep pickers (has search_paths) we fall back to the source files
+      ---picker recorded in _toggle_state, since the search_paths list is
+      ---ephemeral and may be stale after an interrupted toggle.
+      ---@return nil
+      local function safe_resume()
+        local resume = fzf.config and fzf.config.__resume_data
+        if not resume or not resume.opts then
+          fzf.resume()
+          return
+        end
+
+        local opts = resume.opts
+
+        -- Fast path: opts are not yet normalized, plain resume is safe.
+        if not opts._normalized then
+          fzf.resume()
+          return
+        end
+
+        local key = type(opts.__resume_key) == "string" and opts.__resume_key
+          or nil
+        local last_query = (resume.last_query ~= "" and resume.last_query)
+          or opts.query
+          or ""
+
+        -- Special case: toggle-flow live_grep with search_paths.
+        -- The search_paths list is transient (built from a filtered fd/rg run
+        -- at toggle time) and may no longer reflect current state. Reopen the
+        -- source files picker from _toggle_state so the user lands in a clean,
+        -- fully-bound picker rather than a dead or misbound grep window.
+        if
+          key
+          and _grep_keys[key]
+          and opts.search_paths
+          and _toggle_state.source_key
+        then
+          local source_key = _toggle_state.source_key
+          local source = fzf[source_key] or fzf.files
+          local source_opts = with_toggle_header({
+            cwd = _toggle_state.cwd or opts.cwd or vim.fn.getcwd(0),
+            query = _toggle_state.files_query,
+            resume = false,
+          }, {
+            source_key .. ": " .. display_query(_toggle_state.files_query),
+            "grep: " .. display_query(_toggle_state.grep_query),
+          })
+          if source_key == "files" or source_key == "smart_files" then
+            source_opts.jump1 = false
+          end
+          source(source_opts)
+          return
+        end
+
+        -- General case: strip normalization markers so normalize_opts runs in
+        -- full, restore the last typed query, then reopen by picker key.
+        local fresh_opts = vim.deepcopy(opts)
+        fresh_opts._normalized = nil
+        fresh_opts.__call_opts = nil
+        fresh_opts.__call_fn = nil
+        fresh_opts.__resume_key = nil
+        fresh_opts.resume = false
+        if last_query ~= "" then
+          fresh_opts.query = last_query
+        end
+
+        local picker = key and fzf[key] or nil
+        if picker then
+          picker(fresh_opts)
+        else
+          -- Key unknown (custom picker, function ref, etc.): best-effort resume.
+          fzf.resume()
+        end
+      end
+
       -- stylua: ignore start
       vim.keymap.set('c', '<C-_>', fzf.complete_cmdline, { desc = 'Fuzzy complete command/search history' })
       vim.keymap.set('c', '<C-x><C-l>', fzf.complete_cmdline, { desc = 'Fuzzy complete command/search history' })
@@ -1890,6 +2210,24 @@ return {
 
       local smart_files_oldfiles_cache = {}
 
+      -- Temp files written per smart_files() call. All removed when Neovim
+      -- exits.
+      local _smart_files_tmpfiles = {}
+
+      local function smart_tmpfile_track(path)
+        table.insert(_smart_files_tmpfiles, path)
+        return path
+      end
+
+      vim.api.nvim_create_autocmd("VimLeavePre", {
+        callback = function()
+          for _, f in ipairs(_smart_files_tmpfiles) do
+            pcall(vim.fn.delete, f)
+          end
+        end,
+        desc = "Clean fzf-lua smart_files pagination temp files",
+      })
+
       local smart_files_image_exts =
         { "avif", "bmp", "gif", "jpeg", "jpg", "png", "svg", "webp" }
 
@@ -1914,7 +2252,7 @@ return {
         local oldfiles = vim.v.oldfiles or {}
         local other_oldfiles_limit = opts.smart_other_oldfiles_limit or 5
         local oldfiles_scan_limit = opts.smart_oldfiles_scan_limit or 1000
-        local cache_ttl_ms = opts.smart_oldfiles_cache_ttl_ms or 2000
+        local cache_ttl_ms = opts.smart_oldfiles_cache_ttl_ms or 10000
         local cache_key = smart_files_cache_key(
           real_cwd,
           oldfiles,
@@ -1979,39 +2317,59 @@ return {
         return vim.deepcopy(cwd_oldfiles), vim.deepcopy(other_oldfiles)
       end
 
-      local function printf_lines_cmd(lines)
-        if #lines == 0 then
-          return nil
-        end
-        return "printf '%s\\n' " .. table.concat(vim.tbl_map(shellescape, lines), " ")
-      end
-
-      ---Smart file search that prioritizes recent files in cwd
+      ---Smart file search that prioritizes recent files in cwd.
+      ---
+      ---Robustness notes:
+      ---  * Strips fzf-lua internal markers (`_normalized`, `__call_opts`,
+      ---    `__call_fn`, `__resume_key`) from incoming opts. If any of those
+      ---    leak in (e.g. from a caller that deep-copied a resumed opts
+      ---    blob), `config.normalize_opts` would short-circuit on
+      ---    `_normalized` and our setup-level action bindings — most
+      ---    importantly `ctrl-g = toggle_files_grep` — would be dropped.
+      ---  * Forces the smart-specific bindings (`ctrl-g`, `ctrl-e`, `enter`)
+      ---    to win after the deep_extend so a stale `actions` table passed
+      ---    in via opts can't replace them with a stale closure.
+      ---  * The expensive `smart_files_recent_entries` call is already cached
+      ---    by hrtime TTL, so re-launching the picker on every ctrl-g toggle
+      ---    is cheap.
       ---@param opts table?
       function fzf.smart_files(opts)
         opts = opts or {}
+
+        -- Defensive: strip fzf-lua-internal fields that should never come
+        -- from a public caller. If present, they cause normalize_opts to
+        -- bail and we lose our action bindings.
+        opts._normalized = nil
+        opts.__call_opts = nil
+        opts.__call_fn = nil
+        opts.__resume_key = nil
+
         local cwd = smart_files_cwd(opts)
         local real_cwd = vim.uv.fs_realpath(cwd) or cwd
-        local cwd_oldfiles, other_oldfiles = smart_files_recent_entries(real_cwd, opts)
+        local cwd_oldfiles, other_oldfiles =
+          smart_files_recent_entries(real_cwd, opts)
 
         local excludes = opts.smart_excludes
           or { ".git", ".venv", "node_modules", "dist", ".next" }
 
         -- Get file command
         local file_cmd
-        if vim.fn.executable('fd') == 1 then
-          file_cmd = { 'fd', '--type', 'f', '--hidden', '--follow' }
-        elseif vim.fn.executable('fdfind') == 1 then
-          file_cmd = { 'fdfind', '--type', 'f', '--hidden', '--follow' }
+        if vim.fn.executable "fd" == 1 then
+          file_cmd = { "fd", "--type", "f", "--hidden", "--follow" }
+        elseif vim.fn.executable "fdfind" == 1 then
+          file_cmd = { "fdfind", "--type", "f", "--hidden", "--follow" }
         else
-          file_cmd = { 'find', '.', '-type', 'f' }
+          file_cmd = { "find", ".", "-type", "f" }
         end
 
         for _, exclude in ipairs(excludes) do
-          if file_cmd[1] == 'fd' or file_cmd[1] == 'fdfind' then
-            vim.list_extend(file_cmd, { '--exclude', exclude })
+          if file_cmd[1] == "fd" or file_cmd[1] == "fdfind" then
+            vim.list_extend(file_cmd, { "--exclude", exclude })
           else
-            vim.list_extend(file_cmd, { '-not', '-path', '*/' .. exclude .. '/*' })
+            vim.list_extend(
+              file_cmd,
+              { "-not", "-path", "*/" .. exclude .. "/*" }
+            )
           end
         end
 
@@ -2023,32 +2381,55 @@ return {
           end
         end
 
-        -- Build combined command - cwd recent files first, then others, then all files
-        local parts = {}
-        local cwd_oldfiles_cmd = printf_lines_cmd(cwd_oldfiles)
-        if cwd_oldfiles_cmd then
-          table.insert(parts, cwd_oldfiles_cmd)
+        local cwd_oldfiles_path
+        if #cwd_oldfiles > 0 then
+          cwd_oldfiles_path = vim.fn.tempname()
+          vim.fn.writefile(cwd_oldfiles, cwd_oldfiles_path)
+          smart_tmpfile_track(cwd_oldfiles_path)
         end
-        local other_oldfiles_cmd = printf_lines_cmd(other_oldfiles)
-        if other_oldfiles_cmd then
-          table.insert(parts, other_oldfiles_cmd)
+
+        local other_oldfiles_path
+        if #other_oldfiles > 0 then
+          other_oldfiles_path = vim.fn.tempname()
+          vim.fn.writefile(other_oldfiles, other_oldfiles_path)
+          smart_tmpfile_track(other_oldfiles_path)
         end
-        table.insert(parts, table.concat(file_cmd, ' ') .. " | sed 's|^\\./||'")
 
-        -- Combine and deduplicate using awk
-        local cmd = "{ " .. table.concat(parts, "; ") .. "; } | awk '!a[$0]++'"
+        -- Source order is intentional:
+        --   1. cwd oldfiles in MRU order
+        --   2. every file under cwd
+        --   3. a small tail of oldfiles from outside cwd
+        -- `awk` dedupes while preserving first occurrence, so filtering with
+        -- fzf --no-sort behaves like a stack for recently visited cwd files.
+        local file_cmd_str = table.concat(file_cmd, " ")
+        local full_parts = {}
+        if cwd_oldfiles_path then
+          table.insert(full_parts, "cat " .. shellescape(cwd_oldfiles_path))
+        end
+        table.insert(full_parts, file_cmd_str .. " | sed 's|^\\./||'")
+        if other_oldfiles_path then
+          table.insert(full_parts, "cat " .. shellescape(other_oldfiles_path))
+        end
+        local full_cmd = "{ "
+          .. table.concat(full_parts, "; ")
+          .. "; } | awk '!a[$0]++'"
 
-        -- Use fzf.files with custom command and file icons
         local smart_actions = {
-          ['ctrl-e'] = actions.filter_extension,
-          ['ctrl-g'] = actions.toggle_files_grep,
-          ['enter'] = function(selected, o)
+          ["ctrl-e"] = actions.filter_extension,
+          ["ctrl-g"] = actions.toggle_files_grep,
+          ["enter"] = function(selected, o)
             if selected[1] then
               local entry = path.entry_to_file(selected[1], o, false)
-              local selected_path = entry.path or entry.bufname or selected[1]
-              local abs_path = path.is_absolute(selected_path) and selected_path
-                or vim.fs.normalize(o.cwd .. "/" .. selected_path)
-              local new_cwd = require("utils.fs").cwd_dir(abs_path)
+              local selected_path = entry.path
+                or entry.bufname
+                or selected[1]
+              local abs_path = path.is_absolute(selected_path)
+                  and selected_path
+                or vim.fs.normalize(
+                  (o and o.cwd or vim.fn.getcwd(0)) .. "/" .. selected_path
+                )
+              local fs_utils_ok, fs_utils = pcall(require, "utils.fs")
+              local new_cwd = fs_utils_ok and fs_utils.cwd_dir(abs_path)
                 or vim.fs.dirname(abs_path)
               if new_cwd then
                 local valid_cwd = valid_dir(new_cwd)
@@ -2061,20 +2442,53 @@ return {
           end,
         }
 
-        return fzf.files(vim.tbl_deep_extend('force', {
-          prompt = 'Smart Files> ',
+        local merged = vim.tbl_deep_extend("force", {
+          prompt = "Smart Files> ",
           cwd = cwd,
-          cmd = cmd,
+          -- Use raw_cmd so fzf-lua does not append hidden/follow/ignore toggle
+          -- flags to the end of our pipeline (where they would be passed to
+          -- awk instead of fd/find).
+          raw_cmd = full_cmd,
           __smart_files = true,
+          -- Carry the full project cmd separately so ctrl-g toggle always
+          -- greps over the whole project (resolve_files_cmd checks this).
+          __smart_full_cmd = full_cmd,
           formatter = "path.filename_first",
           header = preview_header "Smart Files: recent cwd files first",
           jump1 = false,
           fzf_opts = {
             ["+1"] = true,
             ["--header-first"] = true,
+            ["--no-sort"] = true,
           },
           actions = smart_actions,
-        }, opts))
+        }, opts)
+
+        -- Defense against stale closures in opts.actions: ensure our smart
+        -- bindings always win for the keys we care about. Without this, if
+        -- opts.actions came from somewhere with an outdated closure for
+        -- `ctrl-g`, the toggle would silently break after a few rounds.
+        merged.actions = merged.actions or {}
+        for k, v in pairs(smart_actions) do
+          merged.actions[k] = v
+        end
+
+        -- These smart_files-specific fields must always win; a stale cmd or
+        -- a caller-supplied opts blob must not override them.
+        merged.raw_cmd = full_cmd
+        merged.cmd = nil
+        merged.__smart_files = true
+        merged.__smart_full_cmd = full_cmd
+
+        -- Clear setup-level file-listing opts so fzf-lua's files provider
+        -- does not append fd_opts / rg_opts / find_opts to our custom cmd.
+        -- The tier1 and tier2 source commands are fully specified above and
+        -- have no need for these flags.
+        merged.fd_opts = nil
+        merged.rg_opts = nil
+        merged.find_opts = nil
+
+        return fzf.files(merged)
       end
 
       ---Browse image files without preview.
@@ -2250,7 +2664,7 @@ return {
 
       vim.keymap.set('n', '<Leader><space>', function() fzf.smart_files() end, { desc = 'Smart files (prioritize recent)' })
       vim.keymap.set('n', '<Leader>sp', function() fzf.projects() end, { desc = 'Find projects (fzf)' })
-      vim.keymap.set('n', "<Leader>'", fzf.resume, { desc = 'Resume last picker' })
+      vim.keymap.set('n', "<Leader>'", safe_resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', "<Leader>`", fzf.marks, { desc = 'Find marks' })
       vim.keymap.set('n', '<Leader>,', fzf.buffers, { desc = 'Find buffers' })
       vim.keymap.set('n', '<Leader>%', fzf.tabs, { desc = 'Find tabpages' })
@@ -2279,7 +2693,7 @@ return {
       vim.keymap.set('n', '<Leader>f/', fzf.live_grep, { desc = 'Grep' })
       vim.keymap.set('n', '<Leader>fH', fzf.highlights, { desc = 'Find highlights' })
       vim.keymap.set('n', '<Leader>fi', function() fzf.images() end, { desc = 'Find images' })
-      vim.keymap.set('n', "<Leader>f'", fzf.resume, { desc = 'Resume last picker' })
+      vim.keymap.set('n', "<Leader>f'", safe_resume, { desc = 'Resume last picker' })
       vim.keymap.set('n', '<Leader>fA', fzf.autocmds, { desc = 'Find autocommands' })
       vim.keymap.set('n', '<Leader>fb', fzf.buffers, { desc = 'Find buffers' })
       vim.keymap.set('n', '<Leader>bb', fzf.buffers, { desc = 'Find buffers' })
