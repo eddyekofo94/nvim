@@ -47,7 +47,7 @@ function M.get_node(opts)
     return {
       cursor[1] - 1,
       cursor[2]
-        - (cursor[2] >= 1 and vim.startswith(vim.fn.mode(), 'i') and 1 or 0),
+        - (cursor[2] >= 1 and vim.startswith(vim.fn.mode(), "i") and 1 or 0),
     }
   end)()
 
@@ -80,7 +80,7 @@ function M.find_node(types, opts)
         return types(nt)
       end
     or function(nt)
-      if type(types) == 'string' then
+      if type(types) == "string" then
         types = { types }
       end
       return vim.iter(types):any(function(t)
@@ -113,7 +113,7 @@ function M.find_node(types, opts)
   -- of whether it is valid or not, because re-parsing an edited region can
   -- introduce `ERROR` nodes, potentially preventing node lookup even if the
   -- cursor is within the node boundaries
-  local lnum = vim.fn.line('.')
+  local lnum = vim.fn.line(".")
   parser:parse({ lnum - 1, lnum })
   return reverse_traverse()
 end

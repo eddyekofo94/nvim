@@ -6,11 +6,11 @@ return {
     cmds = "Gitsigns",
     keys = { lhs = "<Leader>gH", opts = { desc = "Git list repo hunks" } },
     postload = function()
-      local icons = require "utils.static.icons"
-      local gs = require "gitsigns"
+      local icons = require("utils.static.icons")
+      local gs = require("gitsigns")
       local map = require("utils.key").map
 
-      gs.setup {
+      gs.setup({
         attach_to_untracked = true,
         sign_priority = 6,
         update_debounce = 100,
@@ -43,7 +43,7 @@ return {
             gitdir = vim.env.DOT_DIR,
           },
         },
-      }
+      })
 
       -- Setup keymaps
       -- Navigation
@@ -128,7 +128,7 @@ return {
               vim.bo[buf].ft == "fugitive"
               and require("utils.fs").contains(
                 vim.fn.fnamemodify(
-                  vim.api.nvim_buf_get_name(buf):match "fugitive://(.*)",
+                  vim.api.nvim_buf_get_name(buf):match("fugitive://(.*)"),
                   ":h:h"
                 ),
                 file

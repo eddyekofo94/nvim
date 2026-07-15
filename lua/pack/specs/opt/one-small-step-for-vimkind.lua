@@ -1,26 +1,26 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/jbyuki/one-small-step-for-vimkind',
+  src = "https://github.com/jbyuki/one-small-step-for-vimkind",
   data = {
-    deps = 'https://github.com/mfussenegger/nvim-dap',
-    cmds = 'DapOSVLaunchServer',
+    deps = "https://github.com/mfussenegger/nvim-dap",
+    cmds = "DapOSVLaunchServer",
     postload = function()
-      local utils = require('utils')
-      local osv = require('osv')
+      local utils = require("utils")
+      local osv = require("osv")
 
-      vim.api.nvim_create_user_command('DapOSVLaunchServer', function(args)
+      vim.api.nvim_create_user_command("DapOSVLaunchServer", function(args)
         local opts = utils.cmd.parse_cmdline_args(args.fargs)
         opts.port = opts.port or 8086
         osv.launch(opts)
       end, {
-        nargs = '*',
+        nargs = "*",
         complete = utils.cmd.complete({}, {
-          'host',
-          'port',
+          "host",
+          "port",
           config_file = function(arglead)
             return vim.fn.getcompletion(
-              (arglead:gsub('^%-%-[%w_]*=', '')),
-              'file'
+              (arglead:gsub("^%-%-[%w_]*=", "")),
+              "file"
             )
           end,
         }),

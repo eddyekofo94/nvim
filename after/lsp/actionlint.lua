@@ -5,23 +5,23 @@
 return {
   -- Only attach to GitHub action/workflow YAML files, see
   -- `after/ftplugin/yaml.lua`
-  filetypes = { 'yaml.gh' },
-  cmd = { 'efm-langserver' },
-  requires = { 'actionlint' },
-  name = 'actionlint',
+  filetypes = { "yaml.gh" },
+  cmd = { "efm-langserver" },
+  requires = { "actionlint" },
+  name = "actionlint",
   root_markers = {
-    'actionlint.yaml',
-    'actionlint.yml',
+    "actionlint.yaml",
+    "actionlint.yml",
   },
   settings = {
     languages = {
-      ['yaml.gh'] = {
+      ["yaml.gh"] = {
         {
-          lintSource = 'actionlint',
-          lintCommand = 'actionlint -oneline -',
+          lintSource = "actionlint",
+          lintCommand = "actionlint -oneline -",
           lintStdin = true,
           lintFormats = {
-            '<stdin>:%l:%c: %m',
+            "<stdin>:%l:%c: %m",
           },
         },
       },

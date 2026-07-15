@@ -12,16 +12,22 @@ Verified in an isolated real TTY on 2026-07-15:
   and accepted the expected buffer completion.
 - Mason, Fugitive, and table-mode commands opened or toggled successfully.
 - Colors, statusline, winbar, folds, and window layout rendered correctly.
+- Copilot stayed unloaded before Insert mode, then reported `Online` and
+  `attached`, rendered an inline Lua suggestion, and installed its `<C-j>`
+  accept mapping.
+- Sidekick loaded on `User VeryLazy`; `<leader>as` opened its live 18-entry CLI
+  selector and its toggle/select/opencode mappings remained callable without
+  eagerly loading Copilot.
+- Exiting each real-TTY Copilot session left zero orphaned Copilot language
+  servers.
 
 Still worth confirming during normal service- and language-dependent use:
 
 - Blink documentation and snippet-specific completion retain their expected key
   behavior during normal language-project use.
-- Copilot suggestions appear and `<C-j>` accepts a suggestion.
 - Fzf-lua register insertion retains the customized behavior.
 - LSP attach, diagnostics, statusline, formatting, and hover work in a project.
 - DAP and Molten operate against configured debuggers and kernels.
-- Copilot, terminals, and the complete interaction set feel unchanged in normal
-  use.
+- Terminals and the complete interaction set feel unchanged in normal use.
 
 Record any failure in `bugs_fixes/ENGINEERING_LOG.md` before another repair loop.

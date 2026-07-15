@@ -1,7 +1,7 @@
-local hlgroups = require('plugin.winbar.hlgroups')
-local bar = require('plugin.winbar.bar')
-local configs = require('plugin.winbar.configs')
-local utils = require('plugin.winbar.utils')
+local hlgroups = require("plugin.winbar.hlgroups")
+local bar = require("plugin.winbar.bar")
+local configs = require("plugin.winbar.configs")
+local utils = require("plugin.winbar.utils")
 
 _G._winbar = setmetatable({}, {
   ---Get winbar string for current window
@@ -64,7 +64,7 @@ local function setup(opts)
     utils.bar.attach(vim.api.nvim_win_get_buf(win), win)
   end
 
-  local groupid = vim.api.nvim_create_augroup('winbar', {})
+  local groupid = vim.api.nvim_create_augroup("winbar", {})
   if not vim.tbl_isempty(configs.opts.bar.attach_events) then
     vim.api.nvim_create_autocmd(configs.opts.bar.attach_events, {
       group = groupid,
@@ -80,7 +80,7 @@ local function setup(opts)
           utils.bar.attach(args.buf, win)
         end
       end,
-      desc = 'Attach winbar',
+      desc = "Attach winbar",
     })
   end
 
@@ -92,18 +92,18 @@ local function setup(opts)
         if vim.g.loaded_fzf then
           return
         end
-        if args.event == 'WinResized' then
+        if args.event == "WinResized" then
           for _, win in ipairs(vim.v.event.windows or {}) do
-            utils.bar.exec('update', { win = win })
+            utils.bar.exec("update", { win = win })
           end
         else
-          utils.bar.exec('update', {
-            win = args.event == 'WinScrolled' and tonumber(args.match)
+          utils.bar.exec("update", {
+            win = args.event == "WinScrolled" and tonumber(args.match)
               or vim.api.nvim_get_current_win(),
           })
         end
       end,
-      desc = 'Update a single winbar.',
+      desc = "Update a single winbar.",
     })
   end
 
@@ -114,9 +114,9 @@ local function setup(opts)
         if vim.g.loaded_fzf then
           return
         end
-        utils.bar.exec('update', { buf = args.buf })
+        utils.bar.exec("update", { buf = args.buf })
       end,
-      desc = 'Update all winbars associated with buf.',
+      desc = "Update all winbars associated with buf.",
     })
   end
 
@@ -127,20 +127,20 @@ local function setup(opts)
         if vim.g.loaded_fzf then
           return
         end
-        utils.bar.exec('update')
+        utils.bar.exec("update")
       end,
-      desc = 'Update all winbars.',
+      desc = "Update all winbars.",
     })
   end
 
   if configs.opts.bar.hover then
     vim.on_key(function(key)
-      if key == vim.keycode('<MouseMove>') then
+      if key == vim.keycode("<MouseMove>") then
         utils.bar.update_hover_hl(vim.fn.getmousepos())
       end
     end)
 
-    vim.api.nvim_create_autocmd('FocusLost', {
+    vim.api.nvim_create_autocmd("FocusLost", {
       group = groupid,
       callback = function()
         if vim.g.loaded_fzf then
@@ -148,10 +148,10 @@ local function setup(opts)
         end
         utils.bar.update_hover_hl({})
       end,
-      desc = 'Remove hover highlight on focus lost.',
+      desc = "Remove hover highlight on focus lost.",
     })
 
-    vim.api.nvim_create_autocmd('FocusGained', {
+    vim.api.nvim_create_autocmd("FocusGained", {
       group = groupid,
       callback = function()
         if vim.g.loaded_fzf then
@@ -159,25 +159,25 @@ local function setup(opts)
         end
         utils.bar.update_hover_hl(vim.fn.getmousepos())
       end,
-      desc = 'Update hover highlight on focus gained.',
+      desc = "Update hover highlight on focus gained.",
     })
   end
 
   -- Garbage collection
-  vim.api.nvim_create_autocmd('BufDelete', {
+  vim.api.nvim_create_autocmd("BufDelete", {
     group = groupid,
     callback = function(args)
-      utils.bar.exec('del', { buf = args.buf })
+      utils.bar.exec("del", { buf = args.buf })
     end,
-    desc = 'Remove winbar from cache on buffer delete.',
+    desc = "Remove winbar from cache on buffer delete.",
   })
 
-  vim.api.nvim_create_autocmd('WinClosed', {
+  vim.api.nvim_create_autocmd("WinClosed", {
     group = groupid,
     callback = function(args)
-      utils.bar.exec('del', { win = tonumber(args.match) })
+      utils.bar.exec("del", { win = tonumber(args.match) })
     end,
-    desc = 'Remove winbar from cache on window closed.',
+    desc = "Remove winbar from cache on window closed.",
   })
 
   local gc_timer = vim.uv.new_timer()
@@ -188,12 +188,12 @@ local function setup(opts)
       vim.schedule_wrap(function()
         for buf, _ in pairs(_G._winbar.bars) do
           if not vim.api.nvim_buf_is_valid(buf) then
-            utils.bar.exec('del', { buf = buf })
+            utils.bar.exec("del", { buf = buf })
             goto continue
           end
           for win, _ in pairs(_G._winbar.bars[buf]) do
             if not vim.api.nvim_win_is_valid(win) then
-              utils.bar.exec('del', { win = win })
+              utils.bar.exec("del", { win = win })
             end
           end
           ::continue::

@@ -1,4 +1,9 @@
 *~
+*.bak
+*.py[cod]
+.DS_Store
+.ruff_cache/
+__pycache__/
 !.git/
 !.gitignore
 !.editorconfig

@@ -1,44 +1,44 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/mfussenegger/nvim-dap',
+  src = "https://github.com/mfussenegger/nvim-dap",
   data = {
     exts = {
-      src = 'https://github.com/rcarriga/nvim-dap-ui',
+      src = "https://github.com/rcarriga/nvim-dap-ui",
       data = { optional = true },
     },
     cmds = {
-      'DapContinue',
-      'DapLoadLaunchJSON',
-      'DapRestartFrame',
-      'DapSetLogLevel',
-      'DapShowLog',
-      'DapToggleBreakPoint',
+      "DapContinue",
+      "DapLoadLaunchJSON",
+      "DapRestartFrame",
+      "DapSetLogLevel",
+      "DapShowLog",
+      "DapToggleBreakPoint",
     },
     keys = {
-      { lhs = '<F5>', opts = { desc = 'Continue program execution' } },
-      { lhs = '<F8>', opts = { desc = 'Open debug REPL' } },
-      { lhs = '<F9>', opts = { desc = 'Toggle breakpoint' } },
-      { lhs = '<F21>', opts = { desc = 'Set conditional breakpoint' } },
-      { lhs = '<F45>', opts = { desc = 'Set logpoint' } },
-      { lhs = '<Leader>Gc', opts = { desc = 'Continue program execution' } },
-      { lhs = '<Leader>Gg', opts = { desc = 'Continue program execution' } },
-      { lhs = '<Leader>GG', opts = { desc = 'Continue program execution' } },
-      { lhs = '<Leader>Ge', opts = { desc = 'Open debug REPL' } },
-      { lhs = '<Leader>Gb', opts = { desc = 'Toggle breakpoint' } },
-      { lhs = '<Leader>GB', opts = { desc = 'Set conditional breakpoint' } },
-      { lhs = '<Leader>Gl', opts = { desc = 'Set logpoint' } },
+      { lhs = "<F5>", opts = { desc = "Continue program execution" } },
+      { lhs = "<F8>", opts = { desc = "Open debug REPL" } },
+      { lhs = "<F9>", opts = { desc = "Toggle breakpoint" } },
+      { lhs = "<F21>", opts = { desc = "Set conditional breakpoint" } },
+      { lhs = "<F45>", opts = { desc = "Set logpoint" } },
+      { lhs = "<Leader>Gc", opts = { desc = "Continue program execution" } },
+      { lhs = "<Leader>Gg", opts = { desc = "Continue program execution" } },
+      { lhs = "<Leader>GG", opts = { desc = "Continue program execution" } },
+      { lhs = "<Leader>Ge", opts = { desc = "Open debug REPL" } },
+      { lhs = "<Leader>Gb", opts = { desc = "Toggle breakpoint" } },
+      { lhs = "<Leader>GB", opts = { desc = "Set conditional breakpoint" } },
+      { lhs = "<Leader>Gl", opts = { desc = "Set logpoint" } },
     },
     postload = function()
-      local dap = require('dap')
-      local key = require('utils.key')
-      local icons = require('utils.static.icons')
+      local dap = require("dap")
+      local key = require("utils.key")
+      local icons = require("utils.static.icons")
 
       local function set_cond_breakpoint()
-        dap.set_breakpoint(nil, vim.fn.input('Breakpoint condition: '))
+        dap.set_breakpoint(nil, vim.fn.input("Breakpoint condition: "))
       end
 
       local function set_logpoint()
-        dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))
+        dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
       end
 
       local last_dap_fn = function() end
@@ -127,8 +127,8 @@ return {
           return
         end
 
-        if src.path and src.path ~= '' then
-          local is_uri = src.path:match('://')
+        if src.path and src.path ~= "" then
+          local is_uri = src.path:match("://")
           local pc_buf = is_uri and vim.uri_to_bufnr(src.path)
             or vim.fn.bufadd(src.path)
           local pc_in_buf = pc_buf == buf
@@ -138,7 +138,7 @@ return {
 
         -- Not all debugger provide src.path, so use `session:source()` to check
         -- if debug PC is in given buffer
-        require('dap.async').run(function()
+        require("dap.async").run(function()
           s:source(src, function(_, b)
             if not vim.api.nvim_buf_is_valid(buf) then
               cb(false, nil)
@@ -155,7 +155,7 @@ return {
               vim.fn.sign_getplaced(b, { group = s.sign_group })[1]
             if placed and placed.signs then
               for _, sign in ipairs(placed.signs) do
-                if sign.name == 'DapStopped' then
+                if sign.name == "DapStopped" then
                   cb(true, sign.lnum)
                   return
                 end
@@ -167,7 +167,7 @@ return {
       end
 
       -- If debug PC is in current buffer, use `<CR>` to repeat the last dap function
-      key.amend('n', '<CR>', function(fallback)
+      key.amend("n", "<CR>", function(fallback)
         dap_pc_in_buf_async(nil, function(pc_in_buf)
           if not pc_in_buf then
             fallback()
@@ -177,8 +177,8 @@ return {
         end)
       end)
 
-      vim.api.nvim_create_user_command('DapClear', dap.clear_breakpoints, {
-        desc = 'Clear all breakpoints',
+      vim.api.nvim_create_user_command("DapClear", dap.clear_breakpoints, {
+        desc = "Clear all breakpoints",
       })
 
       -- stylua: ignore start
@@ -192,8 +192,8 @@ return {
       dap.adapters = {}
       dap.configurations = {}
 
-      require('utils.load').ft_auto_load_once(
-        'pack.res.nvim-dap.dap',
+      require("utils.load").ft_auto_load_once(
+        "pack.res.nvim-dap.dap",
         function(ft, spec)
           if not spec then
             return

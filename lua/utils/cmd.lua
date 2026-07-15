@@ -9,12 +9,12 @@ function M.parse_cmdline_args(fargs)
   local parsed = {}
   -- First pass: parse arguments into a plain table
   for _, arg in ipairs(fargs) do
-    local key, val = arg:match('^%-%-(%S+)=(.*)$')
+    local key, val = arg:match("^%-%-(%S+)=(.*)$")
     if not key then
-      key = arg:match('^%-%-(%S+)$')
+      key = arg:match("^%-%-(%S+)$")
     end
     local val_expanded = vim.fn.expand(val)
-    if type(val) == 'string' and vim.uv.fs_stat(val_expanded) then
+    if type(val) == "string" and vim.uv.fs_stat(val_expanded) then
       val = val_expanded
     end
     if key and val then -- '--key=value'
@@ -28,12 +28,12 @@ function M.parse_cmdline_args(fargs)
   end
   -- Second pass: build nested tables from dot-separated keys
   for key, val in pairs(parsed) do
-    if type(key) == 'string' then
-      local key_parts = vim.split(key, '%.')
+    if type(key) == "string" then
+      local key_parts = vim.split(key, "%.")
       parsed = vim.tbl_deep_extend(
-        'force',
+        "force",
         parsed,
-        require('utils.lua').nest(key_parts, val)
+        require("utils.lua").nest(key_parts, val)
       )
       if #key_parts > 1 then
         parsed[key] = nil -- Remove the original dot-separated key
@@ -54,9 +54,9 @@ end
 function M.optkeys(opts)
   local optkeys = {}
   for key, val in pairs(opts) do
-    if type(key) == 'number' then
+    if type(key) == "number" then
       table.insert(optkeys, val)
-    elseif type(key) == 'string' then
+    elseif type(key) == "string" then
       table.insert(optkeys, key)
     end
   end
@@ -76,19 +76,19 @@ function M.complete_opts(opts)
     if not opts or vim.tbl_isempty(opts) then
       return {}
     end
-    local optkey, eq, optval = arglead:match('^%-%-([^%s=]+)(=?)([^%s=]*)$')
+    local optkey, eq, optval = arglead:match("^%-%-([^%s=]+)(=?)([^%s=]*)$")
     -- Complete option values
-    if optkey and eq == '=' then
+    if optkey and eq == "=" then
       local candidate_vals = vim.tbl_map(
         tostring,
-        type(opts[optkey]) == 'function'
+        type(opts[optkey]) == "function"
             and opts[optkey](arglead, cmdline, cursorpos)
           or opts[optkey]
       )
       return candidate_vals
           and vim.tbl_map(
             function(val)
-              return '--' .. optkey .. '=' .. val
+              return "--" .. optkey .. "=" .. val
             end,
             vim.tbl_filter(function(val)
               return val:find(optval, 1, true) == 1
@@ -102,7 +102,7 @@ function M.complete_opts(opts)
         return compl:find(arglead, 1, true) == 1
       end,
       vim.tbl_map(function(k)
-        return '--' .. k
+        return "--" .. k
       end, M.optkeys(opts))
     )
   end
@@ -141,7 +141,7 @@ end
 function M.split(str, notify)
   ---Wrapper of vimscript function `utils#cmd#split()`, as lua does not have
   ---an interface to pass local variables to python
-  return vim.fn['my#utils#cmd#split'](str, notify)
+  return vim.fn["my#utils#cmd#split"](str, notify)
 end
 
 return M

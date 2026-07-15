@@ -4,20 +4,20 @@
 
 ---@type lsp.config
 return {
-  filetypes = { 'proto' },
-  cmd = { 'efm-langserver' },
-  requires = { 'buf' },
-  name = 'buf-linter',
-  root_markers = { 'buf.yaml' },
+  filetypes = { "proto" },
+  cmd = { "efm-langserver" },
+  requires = { "buf" },
+  name = "buf-linter",
+  root_markers = { "buf.yaml" },
   settings = {
     languages = {
       proto = {
         {
-          lintSource = 'buf-linter',
-          lintCommand = 'buf lint',
+          lintSource = "buf-linter",
+          lintCommand = "buf lint",
           lintFormats = {
-            '%E%f:%l:%c:syntax error: %m',
-            '%f:%l:%c:%m',
+            "%E%f:%l:%c:syntax error: %m",
+            "%f:%l:%c:%m",
           },
           lintAfterOpen = true,
           lintStdin = false,

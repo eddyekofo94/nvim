@@ -1,17 +1,17 @@
 ---@type lsp.config
 return {
   filetypes = {
-    'json',
-    'jsonc',
-    'javascript',
-    'typescript',
+    "json",
+    "jsonc",
+    "javascript",
+    "typescript",
   },
   cmd = {
-    'biome',
-    'lsp-proxy',
+    "biome",
+    "lsp-proxy",
   },
   root_markers = {
-    'biome.json',
-    'biome.jsonc',
+    "biome.json",
+    "biome.jsonc",
   },
 }

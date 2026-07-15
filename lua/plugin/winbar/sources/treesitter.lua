@@ -1,6 +1,6 @@
-local configs = require('plugin.winbar.configs')
-local bar = require('plugin.winbar.bar')
-local utils = require('plugin.winbar.utils')
+local configs = require("plugin.winbar.configs")
+local bar = require("plugin.winbar.bar")
+local utils = require("plugin.winbar.utils")
 
 ---Get short name of treesitter symbols in buffer buf
 ---@param node TSNode
@@ -11,11 +11,11 @@ local function get_node_short_name(node, buf)
     vim
       .trim(
         vim.fn.matchstr(
-          vim.treesitter.get_node_text(node, buf):gsub('\n', ' '),
+          vim.treesitter.get_node_text(node, buf):gsub("\n", " "),
           configs.opts.sources.treesitter.name_regex
         )
       )
-      :gsub('%s+', ' ')
+      :gsub("%s+", " ")
   )
 end
 
@@ -29,7 +29,7 @@ local function get_node_short_type(node)
       return type
     end
   end
-  return ''
+  return ""
 end
 
 ---Check if treesitter node is valid
@@ -37,8 +37,8 @@ end
 ---@param buf integer buffer handler
 ---@return boolean
 local function valid_node(node, buf)
-  return get_node_short_type(node) ~= ''
-    and get_node_short_name(node, buf) ~= ''
+  return get_node_short_type(node) ~= ""
+    and get_node_short_name(node, buf) ~= ""
 end
 
 ---Get treesitter node children
@@ -105,13 +105,13 @@ local function convert(ts_node, buf, win)
     win = win,
     name = get_node_short_name(ts_node, buf),
     icon = configs.opts.icons.kinds.symbols[kind],
-    icon_hl = 'WinBarIconKind' .. kind,
+    icon_hl = "WinBarIconKind" .. kind,
     range = {
       start = {
         line = range[1],
         character = range[2],
       },
-      ['end'] = {
+      ["end"] = {
         line = range[3],
         character = range[4],
       },
@@ -120,14 +120,14 @@ local function convert(ts_node, buf, win)
     ---@param self winbar.symbol
     ---@param k string|number
     __index = function(self, k)
-      if k == 'children' then
+      if k == "children" then
         self.children = vim.tbl_map(function(child)
           return convert(child, buf, win)
         end, get_node_children(ts_node, buf))
         return self.children
       end
 
-      if k == 'siblings' or k == 'sibling_idx' then
+      if k == "siblings" or k == "sibling_idx" then
         local siblings, idx = get_node_siblings(ts_node, buf)
         self.siblings = vim.tbl_map(function(sibling)
           return convert(sibling, buf, win)
@@ -165,7 +165,7 @@ local function get_symbols(buf, win, cursor)
     pos = {
       cursor[1] - 1,
       cursor[2]
-        - (cursor[2] >= 1 and vim.startswith(vim.fn.mode(), 'i') and 1 or 0),
+        - (cursor[2] >= 1 and vim.startswith(vim.fn.mode(), "i") and 1 or 0),
     },
   })
 

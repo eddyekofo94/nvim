@@ -1,4 +1,4 @@
-local utils = require('utils')
+local utils = require("utils")
 
 _G._tabline = {}
 
@@ -8,7 +8,7 @@ _G._tabline = {}
 ---@return string
 local function tabgetname(tabnr, tabid)
   if not vim.api.nvim_tabpage_is_valid(tabid) then
-    return ''
+    return ""
   end
   return vim.t[tabid]._tabname
     or vim.fs.basename(
@@ -29,7 +29,7 @@ setmetatable(_G._tabline, {
     if not vim.g._tabline_name_restored then
       for tabnr, tabid in ipairs(tabids) do
         local tabname_id = vim.t[tabid]._tabname
-        local tabname_nr = vim.g['Tabname' .. tabnr]
+        local tabname_nr = vim.g["Tabname" .. tabnr]
         if not tabname_id and tabname_nr then
           vim.t[tabid]._tabname = tabname_nr
         end
@@ -42,23 +42,23 @@ setmetatable(_G._tabline, {
     -- because tab ids are not preserved across sessions
     for tabnr, tabid in ipairs(tabids) do
       if vim.g._tabline_name_restored then
-        vim.g['Tabname' .. tabnr] = vim.t[tabid]._tabname
+        vim.g["Tabname" .. tabnr] = vim.t[tabid]._tabname
       end
     end
 
-    local leftpad, rightpad = ' ', ' '
+    local leftpad, rightpad = " ", " "
 
     for tabnr, tabid in ipairs(tabids) do
       table.insert(
         tabnames,
-        string.format('%s%s%s', leftpad, tabgetname(tabnr, tabid), rightpad)
+        string.format("%s%s%s", leftpad, tabgetname(tabnr, tabid), rightpad)
       )
     end
 
     -- Shrink tabnames if tabline cannot fit into screen
     if vim.fn.strdisplaywidth(table.concat(tabnames)) > vim.go.columns then
       local ellipsis = vim.trim(utils.static.icons.Ellipsis)
-      local tabwidth = math.floor(vim.go.columns / vim.fn.tabpagenr('$'))
+      local tabwidth = math.floor(vim.go.columns / vim.fn.tabpagenr("$"))
       local tabnameshrinkwidth = math.max(
         1,
         tabwidth - vim.fn.strdisplaywidth(ellipsis .. leftpad .. rightpad)
@@ -66,7 +66,7 @@ setmetatable(_G._tabline, {
       for i, tabname in ipairs(tabnames) do
         if vim.fn.strdisplaywidth(tabname) > tabwidth then
           tabnames[i] = string.format(
-            '%s%s%s%s',
+            "%s%s%s%s",
             leftpad,
             vim.fn.strcharpart(vim.trim(tabname), 0, tabnameshrinkwidth),
             ellipsis,
@@ -79,8 +79,8 @@ setmetatable(_G._tabline, {
     -- Colorize and add click response
     for tabnr, tabname in ipairs(tabnames) do
       tabnames[tabnr] = utils.stl.hl(
-        string.format('%%%dT%s%%X', tabnr, tabname),
-        tabnr == tabnrcur and 'TabLineSel' or 'TabLine'
+        string.format("%%%dT%s%%X", tabnr, tabname),
+        tabnr == tabnrcur and "TabLineSel" or "TabLine"
       )
     end
 
@@ -102,17 +102,17 @@ end
 -- `:[count]TabRename [name]`
 -- 1. `[count]` works like `:[count]tabnew`
 -- 2. When `[name]` is omitted, fallback to default name (cwd)
-vim.api.nvim_create_user_command('TabRename', function(opts)
+vim.api.nvim_create_user_command("TabRename", function(opts)
   _G._tabline.rename(
     opts.count == -1 and vim.api.nvim_get_current_tabpage()
       or vim.api.nvim_list_tabpages()[opts.count],
     opts.fargs[1]
   )
 end, {
-  nargs = '?',
+  nargs = "?",
   count = -1,
-  addr = 'tabs',
-  desc = 'Rename the current tab.',
+  addr = "tabs",
+  desc = "Rename the current tab.",
   complete = function()
     local tabnrcur = vim.fn.tabpagenr()
     local tabidcur = vim.api.nvim_get_current_tabpage()
@@ -136,12 +136,12 @@ end, {
 })
 
 -- Preserve tab names across sessions
-vim.opt.sessionoptions:append('globals')
+vim.opt.sessionoptions:append("globals")
 
-local groupid = vim.api.nvim_create_augroup('tabline.name', {})
+local groupid = vim.api.nvim_create_augroup("tabline.name", {})
 
-vim.api.nvim_create_autocmd({ 'UIEnter', 'SessionLoadPost' }, {
-  desc = 'Set flag to enable tab name psersistence across sessions.',
+vim.api.nvim_create_autocmd({ "UIEnter", "SessionLoadPost" }, {
+  desc = "Set flag to enable tab name psersistence across sessions.",
   group = groupid,
   once = true,
   callback = function()
@@ -149,11 +149,11 @@ vim.api.nvim_create_autocmd({ 'UIEnter', 'SessionLoadPost' }, {
   end,
 })
 
-vim.api.nvim_create_autocmd('TabClosed', {
-  desc = 'Clear global tab name variable for closed tabs.',
+vim.api.nvim_create_autocmd("TabClosed", {
+  desc = "Clear global tab name variable for closed tabs.",
   group = groupid,
   callback = function(args)
-    vim.g['Tabname' .. args.file] = nil
+    vim.g["Tabname" .. args.file] = nil
   end,
 })
 

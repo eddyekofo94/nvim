@@ -103,9 +103,9 @@ end
 ---@param win integer
 ---@return nil
 function M.attach(buf, win)
-  local configs = require('plugin.winbar.configs')
+  local configs = require("plugin.winbar.configs")
   if configs.eval(configs.opts.bar.enable, buf, win) then
-    vim.wo[win][0].winbar = '%{%v:lua._winbar()%}'
+    vim.wo[win][0].winbar = "%{%v:lua._winbar()%}"
   end
 end
 

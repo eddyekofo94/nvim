@@ -2,7 +2,7 @@
 -- Description:  Generated from palette
 -- Last Updated: Thu 19 Mar 2026 12:21 p.m.
 
-vim.cmd.hi "clear"
+vim.cmd.hi("clear")
 vim.g.colors_name = "tundra"
 
 -- stylua: ignore start

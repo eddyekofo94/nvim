@@ -1,5 +1,5 @@
 local M = {}
-local utils = require('plugin.winbar.utils')
+local utils = require("plugin.winbar.utils")
 
 ---Get the winbar
 ---@param opts {win: integer?, buf: integer?}?

@@ -31,4 +31,3 @@ return {
   folder_bg = "#768b9b",
   beige = "#ab9382",
 }
-

@@ -1,11 +1,11 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/shushtain/nvim-treesitter-incremental-selection',
+  src = "https://github.com/shushtain/nvim-treesitter-incremental-selection",
   data = {
-    events = 'FileType',
+    events = "FileType",
     postload = function()
-      local key = require('utils.key')
-      local tsis = require('nvim-treesitter-incremental-selection')
+      local key = require("utils.key")
+      local tsis = require("nvim-treesitter-incremental-selection")
 
       tsis.setup()
 
@@ -19,7 +19,7 @@ return {
           if
             not vim.tbl_isempty(vim.lsp.get_clients({
               bufnr = 0,
-              method = 'textDocument/selectionRange',
+              method = "textDocument/selectionRange",
             }))
           then
             fallback()
@@ -29,10 +29,10 @@ return {
         end
       end
 
-      key.amend('x', 'in', lsp_range_sel_wrap(tsis.decrement_node))
+      key.amend("x", "in", lsp_range_sel_wrap(tsis.decrement_node))
       key.amend(
-        'x',
-        'an',
+        "x",
+        "an",
         lsp_range_sel_wrap(function()
           if not vim.b._ts_incr_sel_initialized then
             vim.b._ts_incr_sel_initialized = true
@@ -42,13 +42,13 @@ return {
         end)
       )
 
-      vim.api.nvim_create_autocmd('ModeChanged', {
-        desc = 'Clear treesitter selection range after exiting visual mode.',
+      vim.api.nvim_create_autocmd("ModeChanged", {
+        desc = "Clear treesitter selection range after exiting visual mode.",
         group = vim.api.nvim_create_augroup(
-          'nvim-treesitter-incremental-selection.clear_selection',
+          "nvim-treesitter-incremental-selection.clear_selection",
           {}
         ),
-        pattern = '[vV\x16]:*',
+        pattern = "[vV\x16]:*",
         callback = function(args)
           vim.b[args.buf]._ts_incr_sel_initialized = nil
         end,

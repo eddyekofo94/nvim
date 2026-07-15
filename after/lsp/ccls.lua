@@ -1,15 +1,15 @@
 ---@type lsp.config
 return {
   filetypes = {
-    'c',
-    'cpp',
-    'objc',
-    'objcpp',
-    'cuda',
+    "c",
+    "cpp",
+    "objc",
+    "objcpp",
+    "cuda",
   },
-  cmd = { 'ccls' },
+  cmd = { "ccls" },
   root_markers = {
-    { '.ccls' },
-    { 'compile_commands.json' },
+    { ".ccls" },
+    { "compile_commands.json" },
   },
 }

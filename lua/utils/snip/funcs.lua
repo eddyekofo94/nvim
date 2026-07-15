@@ -5,8 +5,8 @@ local M = {}
 ---@param attr table
 function M.snip_set_attr(snip, attr)
   for attr_key, attr_val in pairs(attr) do
-    if type(snip[attr_key]) == 'table' and type(attr_val) == 'table' then
-      snip[attr_key] = vim.tbl_deep_extend('keep', snip[attr_key], attr_val)
+    if type(snip[attr_key]) == "table" and type(attr_val) == "table" then
+      snip[attr_key] = vim.tbl_deep_extend("keep", snip[attr_key], attr_val)
     else
       snip[attr_key] = attr_val
     end
@@ -38,8 +38,8 @@ function M.get_indent_depth(indent)
   if not indent then
     return 0
   end
-  if type(indent) == 'string' then
-    indent = #indent:match('^%s*'):gsub('\t', string.rep(' ', vim.bo.ts))
+  if type(indent) == "string" then
+    indent = #indent:match("^%s*"):gsub("\t", string.rep(" ", vim.bo.ts))
   end
   if indent <= 0 then
     return 0
@@ -60,18 +60,18 @@ end
 ---@vararg any same as arguments passed to function/dynamic node, e.g. argnode_texts, parent/snip, [old_state, user_args]
 ---@return string
 function M.get_indent_str(depth, ...)
-  if type(depth) == 'function' then
+  if type(depth) == "function" then
     depth = depth(...)
   end
 
   if depth <= 0 then
-    return ''
+    return ""
   end
 
   local sw = vim.fn.shiftwidth()
-  return vim.bo.expandtab and string.rep(' ', sw * depth)
-    or string.rep('\t', math.floor(sw * depth / vim.bo.ts))
-      .. string.rep(' ', sw * depth % vim.bo.ts)
+  return vim.bo.expandtab and string.rep(" ", sw * depth)
+    or string.rep("\t", math.floor(sw * depth / vim.bo.ts))
+      .. string.rep(" ", sw * depth % vim.bo.ts)
 end
 
 ---Returns the character after the cursor
@@ -102,8 +102,8 @@ function M.get_quotation_type(buf, default)
   local num_double_quotes = 0
   local num_single_quotes = 0
   for _, line in ipairs(vim.api.nvim_buf_get_lines(buf, 0, -1, false)) do
-    num_double_quotes = num_double_quotes + line:gsub('[^"]', ''):len()
-    num_single_quotes = num_single_quotes + line:gsub("[^']", ''):len()
+    num_double_quotes = num_double_quotes + line:gsub('[^"]', ""):len()
+    num_single_quotes = num_single_quotes + line:gsub("[^']", ""):len()
   end
 
   local quote = num_double_quotes > num_single_quotes and '"'

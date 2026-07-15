@@ -1,11 +1,11 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/lervag/vimtex',
+  src = "https://github.com/lervag/vimtex",
   data = {
-    cmds = 'VimtexInverseSearch',
+    cmds = "VimtexInverseSearch",
     events = {
-      event = 'FileType',
-      pattern = 'tex',
+      event = "FileType",
+      pattern = "tex",
     },
     preload = function()
       -- Enable vim's legacy regex-based syntax highlighting alongside treesitter
@@ -17,54 +17,54 @@ return {
         return function(bufnr, lang, ...)
           bufnr = vim._resolve_bufnr(bufnr)
           cb(bufnr, lang, ...)
-          if vim.bo[bufnr].ft ~= 'tex' and lang ~= 'latex' then
+          if vim.bo[bufnr].ft ~= "tex" and lang ~= "latex" then
             return
           end
           -- Re-enable regex syntax highlighting after starting treesitter
-          vim.bo[bufnr].syntax = 'on'
+          vim.bo[bufnr].syntax = "on"
         end
       end)(vim.treesitter.start)
     end,
     postload = function()
-      if vim.env.TERM == 'linux' then
+      if vim.env.TERM == "linux" then
         vim.g.vimtex_syntax_conceal_disable = true
       end
 
       vim.g.vimtex_quickfix_mode = 0
       vim.g.vimtex_format_enabled = 1
       vim.g.vimtex_imaps_enabled = 0
-      vim.g.vimtex_mappings_prefix = '<LocalLeader>l'
+      vim.g.vimtex_mappings_prefix = "<LocalLeader>l"
 
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = 'tex',
-        group = vim.api.nvim_create_augroup('vimtex.settings', {}),
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "tex",
+        group = vim.api.nvim_create_augroup("vimtex.settings", {}),
         callback = function(args)
           -- Make surrounding delimiters large
-          vim.keymap.set('n', 'css', vim.fn['vimtex#delim#add_modifiers'], {
+          vim.keymap.set("n", "css", vim.fn["vimtex#delim#add_modifiers"], {
             buffer = args.buf,
-            desc = 'Surround with large delimiters',
+            desc = "Surround with large delimiters",
           })
           -- Remove default `]]` mapping in insert mode as it causes lagging
           -- when typing `]`
-          pcall(vim.keymap.del, 'i', ']]', {
+          pcall(vim.keymap.del, "i", "]]", {
             buffer = args.buf,
           })
         end,
       })
 
       -- Explicitly set view method for forward and inverse search
-      if vim.fn.executable('xdg-mime') == 1 then
+      if vim.fn.executable("xdg-mime") == 1 then
         vim.system(
-          { 'xdg-mime', 'query', 'default', 'application/pdf' },
+          { "xdg-mime", "query", "default", "application/pdf" },
           {},
           function(o)
-            if o.stdout:find('zathura') then
-              vim.g.vimtex_view_method = 'zathura'
+            if o.stdout:find("zathura") then
+              vim.g.vimtex_view_method = "zathura"
               vim.g.vimtex_auto_sync_view_debounce = 0
-            elseif o.stdout:find('okular') then
-              vim.g.vimtex_view_general_viewer = 'okular'
+            elseif o.stdout:find("okular") then
+              vim.g.vimtex_view_general_viewer = "okular"
               vim.g.vimtex_view_general_options =
-                '--unique file:@pdf#src:@line@tex'
+                "--unique file:@pdf#src:@line@tex"
             end
           end
         )

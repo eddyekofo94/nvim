@@ -1,16 +1,16 @@
 local M = {}
 
-local ls = require('luasnip')
+local ls = require("luasnip")
 local f = ls.function_node
 local sn = ls.snippet_node
 local t = ls.text_node
 local i = ls.insert_node
 local d = ls.dynamic_node
 
-local fmt = require('luasnip.extras.fmt').fmt
-local fmta = require('luasnip.extras.fmt').fmta
+local fmt = require("luasnip.extras.fmt").fmt
+local fmta = require("luasnip.extras.fmt").fmta
 
-local uf = require('utils.snip.funcs')
+local uf = require("utils.snip.funcs")
 
 ---Returns a function node that returns a string for indentation at the given
 ---depth
@@ -55,7 +55,7 @@ end
 ---@return table node
 function M.qt(default)
   return f(function()
-    return require('utils.snip.funcs').get_quotation_type(nil, default)
+    return require("utils.snip.funcs").get_quotation_type(nil, default)
   end)
 end
 
@@ -67,7 +67,7 @@ end
 function M.sdn(jump_index, opening, closing)
   return d(jump_index or 1, function(_, snip)
     local symbol = snip.captures[1]
-    if symbol == nil or not symbol:match('%S') then
+    if symbol == nil or not symbol:match("%S") then
       return sn(nil, { t(opening), i(1), t(closing) })
     end
     return sn(nil, { t(opening), t(symbol), t(closing) })
@@ -88,12 +88,12 @@ function M.body(jump_index, indent_depth, default_text)
   return d(jump_index, function(argnode_texts, parent, ...)
     -- The dynamicNode receives the parent of the dynamicNode, which is not
     -- necessarily the snippet, and only the snippet has `env`
-    local selected = type(parent.snippet.env.LS_SELECT_DEDENT) == 'table'
+    local selected = type(parent.snippet.env.LS_SELECT_DEDENT) == "table"
         and parent.snippet.env.LS_SELECT_DEDENT
       or {}
     for idx = 2, #selected do
-      if selected[idx]:match('%S') then
-        selected[idx] = require('utils.snip.funcs').get_indent_str(
+      if selected[idx]:match("%S") then
+        selected[idx] = require("utils.snip.funcs").get_indent_str(
           indent_depth,
           argnode_texts,
           parent,

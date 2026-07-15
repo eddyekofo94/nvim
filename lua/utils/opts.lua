@@ -52,9 +52,9 @@ function M.qftf(args)
     local bufnr = item.bufnr
     local module = item.module
     local filename = item.filename
-    return module and module ~= '' and module
-      or filename and filename ~= '' and filename
-      or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':~:.')
+    return module and module ~= "" and module
+      or filename and filename ~= "" and filename
+      or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
   end
 
   ---@param item table
@@ -63,7 +63,7 @@ function M.qftf(args)
     if item.lnum == item.end_lnum or item.end_lnum == 0 then
       return item.lnum
     end
-    return string.format('%s-%s', item.lnum, item.end_lnum)
+    return string.format("%s-%s", item.lnum, item.end_lnum)
   end
 
   ---@param item table
@@ -72,14 +72,14 @@ function M.qftf(args)
     if item.col == item.end_col or item.end_col == 0 then
       return item.col
     end
-    return string.format('%s-%s', item.col, item.end_col)
+    return string.format("%s-%s", item.col, item.end_col)
   end
 
   local type_sign_map = {
-    E = 'ERROR',
-    W = 'WARN',
-    I = 'INFO',
-    N = 'HINT',
+    E = "ERROR",
+    W = "WARN",
+    I = "INFO",
+    N = "HINT",
   }
 
   ---@param item table
@@ -87,14 +87,14 @@ function M.qftf(args)
   local function _type_trans(item)
     -- Sometimes `item.type` will contain unprintable characters,
     -- e.g. items in the qflist of `:helpg vim`
-    local type = (type_sign_map[item.type] or item.type):gsub('[^%g]', '')
-    return type == '' and '' or ' ' .. type
+    local type = (type_sign_map[item.type] or item.type):gsub("[^%g]", "")
+    return type == "" and "" or " " .. type
   end
 
   ---@param item table
   ---@return string
   local function _nr_trans(item)
-    return item.nr <= 0 and '' or ' ' .. item.nr
+    return item.nr <= 0 and "" or " " .. item.nr
   end
 
   -- stylua: ignore start
@@ -107,14 +107,14 @@ function M.qftf(args)
   -- stylua: ignore end
 
   local lines = {} ---@type string[]
-  local format_str = vim.go.termguicolors and '%s %s:%s%s%s %s'
-    or '%s│%s:%s%s%s│ %s'
+  local format_str = vim.go.termguicolors and "%s %s:%s%s%s %s"
+    or "%s│%s:%s%s%s│ %s"
 
   local function _fill_item(idx, item)
     local fname = fname_str_cache[idx]
     local fname_cur_width = fname_width_cache[idx]
 
-    if item.lnum == 0 and item.col == 0 and item.text == '' then
+    if item.lnum == 0 and item.col == 0 and item.text == "" then
       table.insert(lines, fname)
       return
     end
@@ -136,11 +136,11 @@ function M.qftf(args)
         -- Do not use `string.format()` here because it only allows
         -- at most 99 characters for alignment and alignment is
         -- based on byte length instead of display length
-        fname .. string.rep(' ', fname_width - fname_cur_width),
-        string.rep(' ', lnum_width - lnum_cur_width) .. lnum,
-        col .. string.rep(' ', col_width - col_cur_width),
-        type .. string.rep(' ', type_width - type_cur_width),
-        nr .. string.rep(' ', nr_width - nr_cur_width),
+        fname .. string.rep(" ", fname_width - fname_cur_width),
+        string.rep(" ", lnum_width - lnum_cur_width) .. lnum,
+        col .. string.rep(" ", col_width - col_cur_width),
+        type .. string.rep(" ", type_width - type_cur_width),
+        nr .. string.rep(" ", nr_width - nr_cur_width),
         item.text
       )
     )

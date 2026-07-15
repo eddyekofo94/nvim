@@ -1,9 +1,9 @@
-local configs = require('plugin.winbar.configs')
-local bar = require('plugin.winbar.bar')
-local utils = require('plugin.winbar.utils')
+local configs = require("plugin.winbar.configs")
+local bar = require("plugin.winbar.bar")
+local utils = require("plugin.winbar.utils")
 
 local initialized = false
-local groupid = vim.api.nvim_create_augroup('winbar.sources.markdown', {})
+local groupid = vim.api.nvim_create_augroup("winbar.sources.markdown", {})
 
 ---@class winbar.sources.markdown.symbol
 ---@field name string
@@ -22,8 +22,8 @@ markdown_heading_symbol_t.__index = markdown_heading_symbol_t
 ---@return winbar.sources.markdown.symbol
 function markdown_heading_symbol_t:new(opts)
   return setmetatable(
-    vim.tbl_deep_extend('force', {
-      name = '',
+    vim.tbl_deep_extend("force", {
+      name = "",
       level = 0,
       lnum = 0,
     }, opts or {}),
@@ -42,8 +42,8 @@ markdown_heading_symbols_parsed_list_t.__index =
 ---@param opts winbar.sources.markdown.symbol_parsed_list?
 function markdown_heading_symbols_parsed_list_t:new(opts)
   return setmetatable(
-    vim.tbl_deep_extend('force', {
-      ['end'] = { lnum = 0, in_codeblock = false },
+    vim.tbl_deep_extend("force", {
+      ["end"] = { lnum = 0, in_codeblock = false },
       symbols = {},
     }, opts or {}),
     self
@@ -72,29 +72,29 @@ local function parse_buf(buf, lnum_end, incremental)
     return
   end
 
-  lnum_end = lnum_end or vim.fn.line('.')
+  lnum_end = lnum_end or vim.fn.line(".")
   if not vim.api.nvim_buf_is_valid(buf) then
     markdown_heading_buf_symbols[buf] = nil
     return
   end
 
   local symbols_parsed = markdown_heading_buf_symbols[buf]
-  local lnum_start = symbols_parsed['end'].lnum
+  local lnum_start = symbols_parsed["end"].lnum
   if not incremental then
     lnum_start = 0
     symbols_parsed.symbols = {}
-    symbols_parsed['end'] = { lnum = 0, in_codeblock = false }
+    symbols_parsed["end"] = { lnum = 0, in_codeblock = false }
   end
   local lines = vim.api.nvim_buf_get_lines(buf, lnum_start, lnum_end, false)
-  symbols_parsed['end'].lnum = lnum_start + #lines + 1
+  symbols_parsed["end"].lnum = lnum_start + #lines + 1
 
   for idx, line in ipairs(lines) do
-    if line:match('^```') then
-      symbols_parsed['end'].in_codeblock =
-        not symbols_parsed['end'].in_codeblock
+    if line:match("^```") then
+      symbols_parsed["end"].in_codeblock =
+        not symbols_parsed["end"].in_codeblock
     end
-    if not symbols_parsed['end'].in_codeblock then
-      local _, _, heading_notation, heading_str = line:find('^(#+)%s+(.*)')
+    if not symbols_parsed["end"].in_codeblock then
+      local _, _, heading_notation, heading_str = line:find("^(#+)%s+(.*)")
       local level = heading_notation and #heading_notation or 0
       if level >= 1 and level <= 6 then
         table.insert(
@@ -118,13 +118,13 @@ end
 ---@param win integer window handler
 ---@return winbar.symbol
 local function convert(symbol, symbols, list_idx, buf, win)
-  local kind = 'MarkdownH' .. symbol.level
+  local kind = "MarkdownH" .. symbol.level
   return bar.winbar_symbol:new(setmetatable({
     buf = buf,
     win = win,
     name = symbol.name,
     icon = configs.opts.icons.kinds.symbols[kind],
-    icon_hl = 'WinBarIconKind' .. kind,
+    icon_hl = "WinBarIconKind" .. kind,
     data = {
       heading_symbol = symbol,
     },
@@ -132,7 +132,7 @@ local function convert(symbol, symbols, list_idx, buf, win)
     ---@param self winbar.symbol
     __index = function(self, k)
       parse_buf(buf, -1, true) -- Parse whole buffer before opening menu
-      if k == 'children' then
+      if k == "children" then
         self.children = {}
         local lev = symbol.level
         for i, heading in vim.iter(symbols):enumerate():skip(list_idx) do
@@ -148,7 +148,7 @@ local function convert(symbol, symbols, list_idx, buf, win)
         end
         return self.children
       end
-      if k == 'siblings' or k == 'idx' then
+      if k == "siblings" or k == "idx" then
         self.siblings = { convert(symbol, symbols, list_idx, buf, win) }
         for i = list_idx - 1, 1, -1 do
           if symbols[i].level < symbol.level then
@@ -188,20 +188,20 @@ local function convert(symbol, symbols, list_idx, buf, win)
         end
         return self[k]
       end
-      if k == 'range' then
+      if k == "range" then
         self.range = {
           start = {
             line = symbol.lnum - 1,
             character = 0,
           },
-          ['end'] = {
+          ["end"] = {
             line = vim.api.nvim_buf_line_count(buf),
             character = 0,
           },
         }
         for heading in vim.iter(symbols):skip(list_idx) do
           if heading.level <= symbol.level then
-            self.range['end'] = {
+            self.range["end"] = {
               line = heading.lnum - 2,
               character = 0,
             }
@@ -220,7 +220,7 @@ end
 local function attach(buf)
   if
     not vim.api.nvim_buf_is_valid(buf)
-    or vim.bo[buf].ft ~= 'markdown'
+    or vim.bo[buf].ft ~= "markdown"
     or vim.b[buf].winbar_markdown_heading_parser_attached
   then
     return
@@ -228,7 +228,7 @@ local function attach(buf)
 
   vim.b[buf].winbar_markdown_heading_parser_attached =
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.buf, {
-      desc = 'Update markdown heading symbols on buffer change.',
+      desc = "Update markdown heading symbols on buffer change.",
       group = groupid,
       buffer = buf,
       callback = function(args)
@@ -259,26 +259,26 @@ local function init()
   end
   initialized = true
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.bo[buf].filetype == 'markdown' then
+    if vim.bo[buf].filetype == "markdown" then
       attach(buf)
     end
   end
-  vim.api.nvim_create_autocmd({ 'FileType' }, {
-    desc = 'Attach markdown heading parser to markdown buffers.',
+  vim.api.nvim_create_autocmd({ "FileType" }, {
+    desc = "Attach markdown heading parser to markdown buffers.",
     group = groupid,
     callback = function(args)
-      if args.match == 'markdown' then
+      if args.match == "markdown" then
         attach(args.buf)
       else
         detach(args.buf)
       end
     end,
   })
-  vim.api.nvim_create_autocmd({ 'BufDelete', 'BufUnload', 'BufWipeOut' }, {
-    desc = 'Detach markdown heading parser from buffer on buffer delete/unload/wipeout.',
+  vim.api.nvim_create_autocmd({ "BufDelete", "BufUnload", "BufWipeOut" }, {
+    desc = "Detach markdown heading parser from buffer on buffer delete/unload/wipeout.",
     group = groupid,
     callback = function(args)
-      if vim.bo[args.buf].filetype == 'markdown' then
+      if vim.bo[args.buf].filetype == "markdown" then
         detach(args.buf)
       end
     end,
@@ -298,7 +298,7 @@ local function get_symbols(buf, win, cursor)
     return {}
   end
 
-  if vim.bo[buf].filetype ~= 'markdown' then
+  if vim.bo[buf].filetype ~= "markdown" then
     return {}
   end
 
@@ -307,7 +307,7 @@ local function get_symbols(buf, win, cursor)
   end
 
   local buf_symbols = markdown_heading_buf_symbols[buf]
-  if buf_symbols['end'].lnum < cursor[1] then
+  if buf_symbols["end"].lnum < cursor[1] then
     parse_buf(
       buf,
       cursor[1] + configs.opts.sources.markdown.parse.look_ahead,

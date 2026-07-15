@@ -5,11 +5,11 @@
 
 ---@type lsp.config
 return {
-  filetypes = { 'go' },
-  cmd = { 'efm-langserver' },
-  requires = { 'goimports' },
-  name = 'goimports',
-  root_markers = { '.goimportsignore', 'go.work', 'go.mod' },
+  filetypes = { "go" },
+  cmd = { "efm-langserver" },
+  requires = { "goimports" },
+  name = "goimports",
+  root_markers = { ".goimportsignore", "go.work", "go.mod" },
   init_options = {
     documentFormatting = true,
   },
@@ -18,7 +18,7 @@ return {
       go = {
         {
           formatStdin = true,
-          formatCommand = 'goimports',
+          formatCommand = "goimports",
         },
       },
     },

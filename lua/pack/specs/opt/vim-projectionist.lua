@@ -1,15 +1,15 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/tpope/vim-projectionist',
+  src = "https://github.com/tpope/vim-projectionist",
   data = {
-    events = 'BufReadPre',
+    events = "BufReadPre",
     postload = function()
       -- Keymaps
       vim.keymap.set(
-        'n',
-        '<C-_>',
-        '<Cmd>A<CR>',
-        { desc = 'Edit alternate file' }
+        "n",
+        "<C-_>",
+        "<Cmd>A<CR>",
+        { desc = "Edit alternate file" }
       )
 
       -- Extra transformers
@@ -40,14 +40,14 @@ return {
       ]=])
 
       -- Lazy load projections for each filetype
-      require('utils.load').ft_auto_load_once(
-        'pack.res.vim-projectionist.projections',
+      require("utils.load").ft_auto_load_once(
+        "pack.res.vim-projectionist.projections",
         function(_, projections)
           if not projections then
             return
           end
           vim.g.projectionist_heuristics = vim.tbl_deep_extend(
-            'force',
+            "force",
             vim.g.projectionist_heuristics or {},
             projections
           )

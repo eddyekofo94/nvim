@@ -1,14 +1,14 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/karb94/neoscroll.nvim',
+  src = "https://github.com/karb94/neoscroll.nvim",
   data = {
-    events = { event = 'FileType' },
+    events = { event = "FileType" },
     enabled = true,
     postload = function()
-      require('neoscroll').setup({
-        easing_function = 'quadratic',
-        cursor_scroll_expr = '',
-        mappings = { '<C-u>', '<C-d>', 'zt', 'zz', 'zb' },
+      require("neoscroll").setup({
+        easing_function = "quadratic",
+        cursor_scroll_expr = "",
+        mappings = { "<C-u>", "<C-d>", "zt", "zz", "zb" },
         pre_hook = function()
           vim.wo.cursorline = vim.wo.cursorline
         end,

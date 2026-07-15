@@ -4,7 +4,7 @@ local M = {}
 ---@return boolean
 function M.is_active(buf)
   buf = vim._resolve_bufnr(buf)
-  return vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].syntax ~= ''
+  return vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].syntax ~= ""
 end
 
 ---@class syn.get_group.opts
@@ -27,7 +27,7 @@ function M.find_group(names, opts)
   ---@type fun(name: string): boolean?
   local check_name_match = vim.is_callable(names) and names --[[@as function]]
     or function(name)
-      if type(names) == 'string' then
+      if type(names) == "string" then
         names = { names }
       end
       return vim.iter(names):any(function(n)
@@ -39,14 +39,14 @@ function M.find_group(names, opts)
     return vim
       .iter(
         vim.fn.synstack(
-          vim.fn.line('.'),
-          vim.fn.col('.') - (vim.startswith(vim.fn.mode(), 'i') and 1 or 0)
+          vim.fn.line("."),
+          vim.fn.col(".") - (vim.startswith(vim.fn.mode(), "i") and 1 or 0)
         )
       )
       :rev()
       :take(opts.depth)
       :find(function(id)
-        return check_name_match(vim.fn.synIDattr(id, 'name')) and id
+        return check_name_match(vim.fn.synIDattr(id, "name")) and id
       end)
   end)
 end

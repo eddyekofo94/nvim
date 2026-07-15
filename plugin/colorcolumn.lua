@@ -1,17 +1,17 @@
-local hl = require('utils.hl')
+local hl = require("utils.hl")
 
 ---Resolve the colorcolumn value
 ---@param cc string|nil
 ---@return integer|nil cc_number smallest integer >= 0 or nil
 local function cc_resolve(cc)
-  if not cc or cc == '' then
+  if not cc or cc == "" then
     return nil
   end
-  local cc_tbl = vim.split(cc, ',')
+  local cc_tbl = vim.split(cc, ",")
   local cc_min = nil
   for _, cc_str in ipairs(cc_tbl) do
     local cc_number = tonumber(cc_str)
-    if vim.startswith(cc_str, '+') or vim.startswith(cc_str, '-') then
+    if vim.startswith(cc_str, "+") or vim.startswith(cc_str, "-") then
       cc_number = vim.bo.tw > 0 and vim.bo.tw + cc_number or nil
     end
     if cc_number and cc_number > 0 and (not cc_min or cc_number < cc_min) then
@@ -25,26 +25,26 @@ end
 ---@class cc.opts
 local opts = {
   scope = function()
-    return vim.fn.strdisplaywidth(vim.fn.getline('.'))
+    return vim.fn.strdisplaywidth(vim.fn.getline("."))
   end,
   ---@type string[]|boolean|fun(mode: string): boolean
   modes = function(mode)
-    return mode:find('^[iRss\x13]') ~= nil
+    return mode:find("^[iRss\x13]") ~= nil
   end,
   warning_modes = function() ---@type string[]|boolean|fun(mode: string): boolean
     -- Show warning colors only in insert/replace/selection mode
-    return vim.fn.mode():find('^[iRss\x13]')
+    return vim.fn.mode():find("^[iRss\x13]")
   end,
   blending = {
     threshold = 0.5,
-    colorcode = '#000000',
-    hlgroup = { 'Normal', 'bg' },
+    colorcode = "#000000",
+    hlgroup = { "Normal", "bg" },
   },
   warning = {
     alpha = 0.4,
     offset = 0,
-    colorcode = '#FF0000',
-    hlgroup = { 'Error', 'fg' },
+    colorcode = "#FF0000",
+    hlgroup = { "Error", "fg" },
   },
 }
 
@@ -56,7 +56,7 @@ local C_NORMAL, C_CC, C_ERROR
 ---@param fallback string|nil fallback color in hex, default to '#000000' if &bg is 'dark' and '#FFFFFF' if &bg is 'light'
 ---@return string hex color
 local function get_hl_hex(hlgroup_name, field, fallback)
-  fallback = fallback or vim.opt.bg == 'dark' and '#000000' or '#FFFFFF'
+  fallback = fallback or vim.opt.bg == "dark" and "#000000" or "#FFFFFF"
   if not vim.fn.hlexists(hlgroup_name) then
     return fallback
   end
@@ -85,15 +85,15 @@ local function update_hl_hex()
     opts.warning.hlgroup[2],
     opts.warning.colorcode
   )
-  C_CC = get_hl_hex('ColorColumn', 'bg')
+  C_CC = get_hl_hex("ColorColumn", "bg")
 end
 
 ---Hide colorcolumn
 ---@param winid integer? window handler
 local function cc_conceal(winid)
   vim.api.nvim_win_call(winid or 0, function()
-    if vim.opt_local.winhl:get().ColorColumn ~= '' then ---@diagnostic disable-line: undefined-field
-      vim.opt_local.winhl:append({ ColorColumn = '' }) ---@diagnostic disable-line: undefined-field
+    if vim.opt_local.winhl:get().ColorColumn ~= "" then ---@diagnostic disable-line: undefined-field
+      vim.opt_local.winhl:append({ ColorColumn = "" }) ---@diagnostic disable-line: undefined-field
     end
   end)
 end
@@ -102,8 +102,8 @@ end
 ---@param winid integer? window handler
 local function cc_show(winid)
   vim.api.nvim_win_call(winid or 0, function()
-    if vim.opt_local.winhl:get().ColorColumn ~= '_ColorColumn' then ---@diagnostic disable-line: undefined-field
-      vim.opt_local.winhl:append({ ColorColumn = '_ColorColumn' }) ---@diagnostic disable-line: undefined-field
+    if vim.opt_local.winhl:get().ColorColumn ~= "_ColorColumn" then ---@diagnostic disable-line: undefined-field
+      vim.opt_local.winhl:append({ ColorColumn = "_ColorColumn" }) ---@diagnostic disable-line: undefined-field
     end
   end)
 end
@@ -113,20 +113,20 @@ end
 local function check_mode_fn(opt_name)
   return function()
     local opt = opts[opt_name] ---@type string[]|boolean|fun(mode: string): boolean
-    if type(opt) == 'boolean' then
+    if type(opt) == "boolean" then
       return opt ---@type boolean
     end
-    if type(opt) == 'function' then
+    if type(opt) == "function" then
       return opt(vim.fn.mode())
     end
-    return type(opt) == 'table'
+    return type(opt) == "table"
         and vim.tbl_contains(opt --[=[@as string[]]=], vim.fn.mode())
       or false
   end
 end
 
-local check_mode = check_mode_fn('modes')
-local check_warning_mode = check_mode_fn('warning_modes')
+local check_mode = check_mode_fn("modes")
+local check_warning_mode = check_mode_fn("warning_modes")
 
 local cc_bg = nil
 local cc_link = nil
@@ -171,13 +171,13 @@ local function cc_update(winid)
       ).dec
     if new_cc_color ~= cc_bg then
       cc_bg = new_cc_color
-      vim.api.nvim_set_hl(0, '_ColorColumn', { bg = cc_bg })
+      vim.api.nvim_set_hl(0, "_ColorColumn", { bg = cc_bg })
     end
   else
-    local link = show_warning and opts.warning.hlgroup[1] or 'ColorColumn'
+    local link = show_warning and opts.warning.hlgroup[1] or "ColorColumn"
     if cc_link ~= link then
       cc_link = link
-      vim.api.nvim_set_hl(0, '_ColorColumn', { link = cc_link })
+      vim.api.nvim_set_hl(0, "_ColorColumn", { link = cc_link })
     end
   end
   cc_show(winid)
@@ -192,11 +192,11 @@ local function setup(o)
   vim.g.loaded_colorcolumn = true
 
   if o then
-    opts = vim.tbl_deep_extend('force', opts, o)
+    opts = vim.tbl_deep_extend("force", opts, o)
   end
 
   ---Create autocmds for concealing / showing colorcolumn
-  local id = vim.api.nvim_create_augroup('colorcolumn', {})
+  local id = vim.api.nvim_create_augroup("colorcolumn", {})
 
   ---Conceal colorcolumn in each window
   local function init_wins()
@@ -212,8 +212,8 @@ local function setup(o)
   if vim.v.vim_did_enter == 1 then
     init_wins()
   else
-    vim.api.nvim_create_autocmd('UIEnter', {
-      desc = 'Intialize colorcolumn winhl in each window.',
+    vim.api.nvim_create_autocmd("UIEnter", {
+      desc = "Intialize colorcolumn winhl in each window.",
       group = id,
       callback = function()
         init_wins()
@@ -221,47 +221,47 @@ local function setup(o)
     })
   end
 
-  vim.api.nvim_create_autocmd('WinLeave', {
-    desc = 'Conceal colorcolumn in other windows.',
+  vim.api.nvim_create_autocmd("WinLeave", {
+    desc = "Conceal colorcolumn in other windows.",
     group = id,
     callback = function()
       cc_conceal()
     end,
   })
 
-  vim.api.nvim_create_autocmd('ColorScheme', {
-    desc = 'Update base colors.',
+  vim.api.nvim_create_autocmd("ColorScheme", {
+    desc = "Update base colors.",
     group = id,
     callback = update_hl_hex,
   })
-  vim.api.nvim_create_autocmd('OptionSet', {
-    desc = 'Update base colors.',
+  vim.api.nvim_create_autocmd("OptionSet", {
+    desc = "Update base colors.",
     group = id,
-    pattern = 'background',
+    pattern = "background",
     callback = update_hl_hex,
   })
 
   vim.api.nvim_create_autocmd({
-    'BufEnter',
-    'ColorScheme',
-    'CursorMoved',
-    'CursorMovedI',
-    'ModeChanged',
-    'TextChanged',
-    'TextChangedI',
-    'WinEnter',
-    'WinScrolled',
+    "BufEnter",
+    "ColorScheme",
+    "CursorMoved",
+    "CursorMovedI",
+    "ModeChanged",
+    "TextChanged",
+    "TextChangedI",
+    "WinEnter",
+    "WinScrolled",
   }, {
-    desc = 'Update colorcolumn color.',
+    desc = "Update colorcolumn color.",
     group = id,
     callback = function()
       cc_update()
     end,
   })
 
-  vim.api.nvim_create_autocmd('OptionSet', {
-    desc = 'Update colorcolumn color.',
-    pattern = { 'colorcolumn', 'textwidth' },
+  vim.api.nvim_create_autocmd("OptionSet", {
+    desc = "Update colorcolumn color.",
+    pattern = { "colorcolumn", "textwidth" },
     group = id,
     callback = function()
       cc_update()

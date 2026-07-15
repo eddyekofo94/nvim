@@ -7,7 +7,7 @@ return {
     local function is_otter_client(client)
       return client
         and type(client.name) == "string"
-        and client.name:match "^otter%-ls"
+        and client.name:match("^otter%-ls")
     end
 
     local function disable_otter_symbols(client)
@@ -22,10 +22,10 @@ return {
 
     local function has_document_symbol_client(buf)
       for _, client in
-        ipairs(vim.lsp.get_clients {
+        ipairs(vim.lsp.get_clients({
           bufnr = buf,
           method = "textDocument/documentSymbol",
-        })
+        }))
       do
         if not is_otter_client(client) then
           return true
@@ -52,7 +52,7 @@ return {
       end,
     })
 
-    require("dropbar").setup {
+    require("dropbar").setup({
       bar = {
         enable = function(buf, win, _)
           buf = vim._resolve_bufnr(buf)
@@ -90,7 +90,7 @@ return {
             or has_document_symbol_client(buf)
         end,
       },
-    }
+    })
     vim.keymap.set(
       "n",
       "<leader>ls",
@@ -108,6 +108,5 @@ return {
         end)
       end,
     })
-
   end,
 }

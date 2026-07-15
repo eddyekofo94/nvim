@@ -2,16 +2,16 @@
 
 ---@type lsp.config
 return {
-  filetypes = { 'proto' },
-  cmd = { 'efm-langserver' },
-  requires = { 'api-linter', 'sed' },
-  name = 'api-linter',
-  root_markers = { 'apilint.yaml' },
+  filetypes = { "proto" },
+  cmd = { "efm-langserver" },
+  requires = { "api-linter", "sed" },
+  name = "api-linter",
+  root_markers = { "apilint.yaml" },
   settings = {
     languages = {
       proto = {
         {
-          lintSource = 'api-linter',
+          lintSource = "api-linter",
           lintCommand = [[
             if [ -f apilint.yaml ]; then
               config=--config apilint.yaml
@@ -21,8 +21,8 @@ return {
               sed -E 's/ +/ /g';
           ]],
           lintFormats = {
-            '::error file=%f,endLine=%\\d\\+,col=%c,line=%l,title=%m',
-            '::error file=%f,title=%m',
+            "::error file=%f,endLine=%\\d\\+,col=%c,line=%l,title=%m",
+            "::error file=%f,title=%m",
           },
           -- Github format uses 0-based line and column numbers, use offset to
           -- convert them to 1-based for efm to mark error regions correctly

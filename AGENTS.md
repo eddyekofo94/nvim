@@ -4,7 +4,11 @@ This file contains guidelines for agents working on this Neovim configuration co
 
 ## Overview
 
-This is a highly personalized Neovim configuration using a custom plugin manager built on `vim.pack`. Plugins are defined in `lua/pack/specs/start/` (loaded on startup) and `lua/pack/specs/opt/` (lazy-loaded).
+This is a highly personalized Neovim configuration using a custom plugin
+manager built on `vim.pack`. Plugins are defined in `lua/pack/specs/start/`
+(loaded on startup) and `lua/pack/specs/opt/` (registered after startup and
+lazy-loaded when they declare triggers). Opt specs without triggers
+intentionally load when the opt set is registered.
 
 ## Build/Lint/Test Commands
 
@@ -59,29 +63,31 @@ NVIM_APPNAME=nvim nvim
 ### Imports
 ```lua
 -- Use local require for module imports
-local utils = require('utils')
-local hl = require('utils.hl')
-local key = require('utils.key')
+local utils = require("utils")
+local hl = require("utils.hl")
+local key = require("utils.key")
 
 -- Lazy-load heavy modules inside functions when possible
 local function some_function()
-  local lazy_module = require('heavy.module')
+  local lazy_module = require("heavy.module")
 end
 ```
 
 ### Formatting
 - Use **StyLua** for formatting (enforced via Makefile)
 - 2-space indentation
+- Prefer double quotes
+- Always include call parentheses
 - Trailing commas in tables
 ```lua
 -- Good
 local opts = {
-  key = 'value',
-  another = 'thing',
+  key = "value",
+  another = "thing",
 }
 
 -- Avoid
-local opts = { key = 'value', another = 'thing' }
+local opts = { key = "value", another = "thing" }
 ```
 
 ### Types
@@ -95,14 +101,14 @@ end
 
 ---@type pack.spec
 return {
-  name = 'plugin-name',
-  src = 'https://github.com/user/repo',
+  name = "plugin-name",
+  src = "https://github.com/user/repo",
 }
 ```
 
 ### Naming Conventions
 - **Variables/functions**: `snake_case` (e.g., `local function setup_opts()`)
-- **Modules**: `snake_case` (e.g., `require('utils.key')`)
+- **Modules**: `snake_case` (e.g., `require("utils.key")`)
 - **File names**: `snake_case.lua`
 - **Auto commands/augroups**: lowercase with descriptive names
 - **Keymaps**: Use `<leader>` prefix for user keymaps
@@ -110,9 +116,9 @@ return {
 ### Error Handling
 - Use `pcall` for unsafe operations:
 ```lua
-local ok, module = pcall(require, 'module')
+local ok, module = pcall(require, "module")
 if not ok then
-  vim.notify('Module failed to load: ' .. module, vim.log.levels.ERROR)
+  vim.notify("Module failed to load: " .. module, vim.log.levels.ERROR)
   return
 end
 ```
@@ -126,18 +132,17 @@ end
 ```lua
 ---@type pack.spec
 return {
-  name = 'plugin-name',        -- Optional: helps with debugging
-  src = 'https://github.com/user/repo',
+  name = "plugin-name",        -- Optional: helps with debugging
+  src = "https://github.com/user/repo",
   data = {
-    event = { event = 'BufReadPre' },  -- Lazy-load on event
-    cmd = { 'SomeCommand' },           -- Lazy-load on command
+    event = { event = "BufReadPre" },  -- Lazy-load on event
+    cmd = { "SomeCommand" },           -- Lazy-load on command
     keys = {                           -- Lazy-load on keypress
-      { '<leader>x', '<cmd>SomeCommand<cr>', desc = 'Do something' },
+      { "<leader>x", "<cmd>SomeCommand<cr>", desc = "Do something" },
     },
-    ft = { 'python', 'lua' },         -- Lazy-load on filetype
-    deps = { 'dependency-plugin' },   -- Load before this plugin
+    deps = { "dependency-plugin" },   -- Load before this plugin
     postload = function()              -- Setup after loading
-      require('plugin').setup({})
+      require("plugin").setup({})
     end,
   },
 }
@@ -146,31 +151,31 @@ return {
 #### Keymaps
 Use utility functions from `utils.key`:
 ```lua
-local nmap = require('utils.key').nmap
-local xmap = require('utils.key').xmap
-local imap = require('utils.key').imap
+local nmap = require("utils.key").nmap
+local xmap = require("utils.key").xmap
+local imap = require("utils.key").imap
 
 nmap({
-  { '<leader>ff', '<cmd>Telescope find_files<cr>', desc = 'Find files' },
+  { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find files" },
 })
 ```
 
 #### Autocommands
 ```lua
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'python',
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
   callback = function(args)
     vim.b[args.buf].some_setting = true
   end,
-  desc = 'Description of what this does',
+  desc = "Description of what this does",
 })
 ```
 
 #### Highlights
 ```lua
-local hl = require('utils.hl')
-hl.set(0, 'GroupName', { fg = '#ffffff', bg = '#000000' })
-hl.link('AnotherGroup', 'ExistingGroup')
+local hl = require("utils.hl")
+hl.set(0, "GroupName", { fg = "#ffffff", bg = "#000000" })
+hl.link("AnotherGroup", "ExistingGroup")
 ```
 
 ### Common Pitfalls
@@ -188,7 +193,7 @@ nvim/
 │   ├── core/          -- Core configuration (options, keymaps, pack)
 │   ├── pack/specs/
 │   │   ├── start/     -- Startup plugins
-│   │   └── opt/       -- Optional/lazy-loaded plugins
+│   │   └── opt/       -- Deferred plugins; trigger-bearing specs lazy-load
 │   ├── plugin/        -- Plugin configurations
 │   └── utils/         -- Utility modules
 ├── after/             -- ftplugin overrides

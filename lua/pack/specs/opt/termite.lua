@@ -6,10 +6,10 @@ return {
     optional = true,
     cmd = { "Termite" },
     postload = function()
-      local termite = require "termite"
-      termite.setup {
+      local termite = require("termite")
+      termite.setup({
         position = "down",
-      }
+      })
 
       vim.keymap.set("n", "<A-i>", function()
         termite.toggle()
@@ -45,7 +45,7 @@ return {
       end, { nargs = "?", desc = "Open terminal fullscreen" })
 
       vim.api.nvim_create_user_command("LazyGit", function()
-        termite.create "lazygit"
+        termite.create("lazygit")
       end, { desc = "Open LazyGit fullscreen" })
     end,
   },

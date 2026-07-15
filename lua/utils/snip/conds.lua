@@ -1,5 +1,5 @@
-local lsconds = require('luasnip.extras.conditions')
-local utils = require('utils')
+local lsconds = require("luasnip.extras.conditions")
+local utils = require("utils")
 
 ---@class snip.cond
 ---@operator call: boolean
@@ -55,18 +55,18 @@ function M.in_mathzone()
   if utils.ts.is_active() then
     -- Requires latex treesitter parser
     return utils.ts.find_node(
-      { 'formula', 'equation', 'math' },
+      { "formula", "equation", "math" },
       { ignore_injections = false }
     ) ~= nil and utils.ts.find_node(
-      { 'text_mode' },
+      { "text_mode" },
       { ignore_injections = false }
     ) == nil
   end
 
   -- Fall back to vim legacy regex syntax
   if vim.b.current_syntax then
-    return utils.syn.find_group({ 'texMathZone' }) ~= nil
-      and utils.syn.find_group({ 'texMathText' }) == nil
+    return utils.syn.find_group({ "texMathZone" }) ~= nil
+      and utils.syn.find_group({ "texMathText" }) == nil
   end
 
   return false
@@ -76,11 +76,11 @@ end
 ---@return boolean
 function M.in_codeblock()
   if utils.ts.is_active() then
-    return utils.ts.find_node({ 'fence' }) ~= nil
+    return utils.ts.find_node({ "fence" }) ~= nil
   end
 
   if vim.b.current_syntax then
-    return utils.syn.find_group({ 'CodeBlock' }) ~= nil
+    return utils.syn.find_group({ "CodeBlock" }) ~= nil
   end
 
   return false
@@ -110,7 +110,7 @@ end
 ---@param ft string|string[]
 ---@return fun(): boolean
 function M.in_ft(ft)
-  if type(ft) ~= 'table' then
+  if type(ft) ~= "table" then
     ft = { ft }
   end
   return function()
@@ -125,17 +125,17 @@ end
 function M.in_normalzone()
   if utils.ts.is_active() then
     return utils.ts.find_node(
-      { 'comment', 'string', 'fence', 'formula', 'equation', 'math' },
+      { "comment", "string", "fence", "formula", "equation", "math" },
       { ignore_injections = false }
     ) == nil
   end
 
   if vim.b.current_syntax then
     return utils.syn.find_group({
-      'Comment',
-      'String',
-      'Code',
-      'MathZone',
+      "Comment",
+      "String",
+      "Code",
+      "MathZone",
     }) == nil
   end
 
@@ -149,8 +149,8 @@ function M.before_pattern(pattern)
   return function()
     return vim.api
       .nvim_get_current_line()
-      :sub(vim.fn.col('.'))
-      :match('^' .. pattern) ~= nil
+      :sub(vim.fn.col("."))
+      :match("^" .. pattern) ~= nil
   end
 end
 
@@ -165,9 +165,9 @@ function M.after_pattern(pattern)
     end
     return vim.api
       .nvim_get_current_line()
-      :sub(1, vim.fn.col('.') - 1)
-      :gsub(vim.pesc(matched_trigger) .. '$', '', 1)
-      :match(pattern .. '$') ~= nil
+      :sub(1, vim.fn.col(".") - 1)
+      :gsub(vim.pesc(matched_trigger) .. "$", "", 1)
+      :match(pattern .. "$") ~= nil
   end
 end
 
@@ -177,8 +177,8 @@ end
 function M.at_line_start(_, trig)
   return vim.api
     .nvim_get_current_line()
-    :sub(1, vim.fn.col('.') - 1)
-    :gsub(trig or '%S*', '') == ''
+    :sub(1, vim.fn.col(".") - 1)
+    :gsub(trig or "%S*", "") == ""
 end
 
 ---Returns whether the cursor is at the start of a line after removing
@@ -189,15 +189,15 @@ function M.at_line_start_with_indent(_, trig)
   return vim.trim(
     vim.api
       .nvim_get_current_line()
-      :sub(1, vim.fn.col('.') - 1)
-      :gsub(trig or '%S*', '')
-  ) == ''
+      :sub(1, vim.fn.col(".") - 1)
+      :gsub(trig or "%S*", "")
+  ) == ""
 end
 
 ---Returns whether the cursor is at the end of a line
 ---@return boolean
 function M.at_line_end()
-  return vim.fn.col('.') - 1 == #vim.api.nvim_get_current_line()
+  return vim.fn.col(".") - 1 == #vim.api.nvim_get_current_line()
 end
 
 ---Returns whether the previous line matches a pattern
@@ -205,7 +205,7 @@ end
 ---@return fun(): boolean
 function M.prev_line_matches(pattern)
   return function()
-    local lnum = vim.fn.line('.')
+    local lnum = vim.fn.line(".")
     if lnum <= 1 then
       return false
     end
@@ -218,7 +218,7 @@ end
 ---@return fun(): boolean
 function M.next_line_matches(pattern)
   return function()
-    local lnum = vim.fn.line('.')
+    local lnum = vim.fn.line(".")
     if lnum >= vim.api.nvim_buf_line_count(0) then
       return false
     end

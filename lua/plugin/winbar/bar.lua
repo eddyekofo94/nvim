@@ -1,5 +1,5 @@
-local configs = require('plugin.winbar.configs')
-local utils = require('plugin.winbar.utils')
+local configs = require("plugin.winbar.configs")
+local utils = require("plugin.winbar.utils")
 
 ---Sanitize string by removing the newline character and all that follows
 ---Symbols with newline in their name can cause error when creating menu
@@ -8,7 +8,7 @@ local utils = require('plugin.winbar.utils')
 ---@param str string?
 ---@return string?
 local function str_sanitize(str)
-  return str and vim.gsplit(str, '\n')()
+  return str and vim.gsplit(str, "\n")()
 end
 
 ---@class winbar.symbol.range
@@ -48,15 +48,15 @@ function winbar_symbol:__index(k)
 end
 
 function winbar_symbol:__newindex(k, v)
-  if type(v) == 'string' then
+  if type(v) == "string" then
     v = str_sanitize(v)
   end
-  if k == 'name' or k == 'icon' then
+  if k == "name" or k == "icon" then
     self.cache.decorated_str = nil
     self.cache.plain_str = nil
     self.cache.displaywidth = nil
     self.cache.bytewidth = nil
-  elseif k == 'name_hl' or k == 'icon_hl' then
+  elseif k == "name_hl" or k == "icon_hl" then
     self.cache.decorated_str = nil
   end
   self._[k] = v
@@ -68,7 +68,7 @@ end
 function winbar_symbol:merge(opts)
   return winbar_symbol:new(
     setmetatable(
-      vim.tbl_deep_extend('force', self._, opts),
+      vim.tbl_deep_extend("force", self._, opts),
       getmetatable(self._)
     ) --[[@as winbar.symbol.opts]]
   )
@@ -103,7 +103,7 @@ end
 function winbar_symbol:new(opts)
   if opts then
     for k, v in pairs(opts) do
-      if type(v) == 'string' then
+      if type(v) == "string" then
         opts[k] = str_sanitize(v)
       end
     end
@@ -112,9 +112,9 @@ function winbar_symbol:new(opts)
   end
   return setmetatable({
     _ = setmetatable(
-      vim.tbl_deep_extend('force', {
-        name = '',
-        icon = '',
+      vim.tbl_deep_extend("force", {
+        name = "",
+        icon = "",
         cache = {},
         opts = opts,
         on_click = opts and configs.opts.symbol.on_click,
@@ -146,8 +146,8 @@ function winbar_symbol:cat(plain)
     return self.cache.plain_str
   end
   -- Escape `%` characters to prevent unintended statusline evaluation
-  local icon_escaped = self.icon:gsub('%%', '%%%%')
-  local name_escaped = self.name:gsub('%%', '%%%%')
+  local icon_escaped = self.icon:gsub("%%", "%%%%")
+  local name_escaped = self.name:gsub("%%", "%%%%")
   local icon_highlighted = utils.stl.hl(icon_escaped, self.icon_hl)
   local name_highlighted = utils.stl.hl(name_escaped, self.name_hl)
   self.cache.decorated_str = self.on_click
@@ -155,7 +155,7 @@ function winbar_symbol:cat(plain)
       and utils.stl.make_clickable(
         icon_highlighted .. name_highlighted,
         string.format(
-          'v:lua._winbar.callbacks.buf%s.win%s.fn%s',
+          "v:lua._winbar.callbacks.buf%s.win%s.fn%s",
           self.bar.buf,
           self.bar.win,
           self.callback_idx
@@ -212,7 +212,7 @@ function winbar_symbol:preview(orig_view)
     return
   end
   self.view = orig_view or vim.api.nvim_win_call(self.win, vim.fn.winsaveview)
-  utils.hl.range_single(self.buf, 'WinBarPreview', self.range)
+  utils.hl.range_single(self.buf, "WinBarPreview", self.range)
   vim.api.nvim_win_set_cursor(self.win, {
     self.range.start.line + 1,
     self.range.start.character,
@@ -226,7 +226,7 @@ end
 ---@return nil
 function winbar_symbol:preview_restore_hl()
   if self.buf then
-    utils.hl.range_single(self.buf, 'WinBarPreview')
+    utils.hl.range_single(self.buf, "WinBarPreview")
   end
 end
 
@@ -295,15 +295,15 @@ winbar.__index = winbar
 ---@return winbar.bar
 function winbar:new(opts)
   local bar = setmetatable(
-    vim.tbl_deep_extend('force', {
+    vim.tbl_deep_extend("force", {
       buf = vim.api.nvim_get_current_buf(),
       win = vim.api.nvim_get_current_win(),
       components = {},
-      string_cache = '',
+      string_cache = "",
       sources = {},
       separator = winbar_symbol:new({
         icon = configs.opts.icons.ui.bar.separator,
-        icon_hl = 'WinBarIconUISeparator',
+        icon_hl = "WinBarIconUISeparator",
       }),
       extends = winbar_symbol:new({
         icon = configs.opts.icons.ui.bar.extends,
@@ -324,8 +324,8 @@ function winbar:del()
   local buf = self.buf
   local win = self.win
 
-  local cb_buf_idx = 'buf' .. buf -- index to get buf callbacks in global table
-  local cb_win_idx = 'win' .. win -- index to get win callbacks in global table
+  local cb_buf_idx = "buf" .. buf -- index to get buf callbacks in global table
+  local cb_win_idx = "win" .. win -- index to get win callbacks in global table
 
   local bars = _G._winbar.bars
   local callbacks = _G._winbar.callbacks
@@ -390,7 +390,7 @@ function winbar:truncate()
   -- Consider replacing symbols at the start of the winbar with an extends sign
   local sym_extends = winbar_symbol:new({
     icon = configs.opts.icons.ui.bar.extends,
-    icon_hl = 'WinBarIconUIExtends',
+    icon_hl = "WinBarIconUIExtends",
     on_click = false,
     bar = self,
   })
@@ -426,7 +426,7 @@ end
 ---@return string
 function winbar:cat(plain)
   if vim.tbl_isempty(self.components) then
-    return ''
+    return ""
   end
   local result = nil
   for _, component in ipairs(self.components) do
@@ -435,9 +435,9 @@ function winbar:cat(plain)
       or component:cat(plain)
   end
   -- Must add highlights to padding, else nvim will automatically truncate it
-  local padding_left = string.rep(' ', self.padding.left)
-  local padding_right = string.rep(' ', self.padding.right)
-  return result and padding_left .. result .. padding_right or ''
+  local padding_left = string.rep(" ", self.padding.left)
+  local padding_right = string.rep(" ", self.padding.right)
+  return result and padding_left .. result .. padding_right or ""
 end
 
 ---Reevaluate winbar string from components and redraw winbar
@@ -475,7 +475,7 @@ function winbar:_update()
   end
 
   -- Cancel current update if is inside pick mode or is executing a macro
-  if self.in_pick_mode or vim.fn.reg_executing() ~= '' then
+  if self.in_pick_mode or vim.fn.reg_executing() ~= "" then
     return
   end
 
@@ -485,7 +485,7 @@ function winbar:_update()
   end
 
   self.components = {}
-  _G._winbar.callbacks['buf' .. self.buf]['win' .. self.win] = {}
+  _G._winbar.callbacks["buf" .. self.buf]["win" .. self.win] = {}
   for _, source in ipairs(self.sources) do
     local symbols = source.get_symbols(self.buf, self.win, cursor)
     for _, symbol in ipairs(symbols) do
@@ -500,7 +500,7 @@ function winbar:_update()
         ---@param button string mouse button used
         ---@param modifiers string modifiers used
         ---@return nil
-        _G._winbar.callbacks['buf' .. self.buf]['win' .. self.win]['fn' .. symbol.callback_idx] = function(
+        _G._winbar.callbacks["buf" .. self.buf]["win" .. self.win]["fn" .. symbol.callback_idx] = function(
           min_width,
           n_clicks,
           button,
@@ -590,7 +590,7 @@ function winbar:pick(idx)
       for i = 1, n_clickables do
         local new_char =
           pivots[math.floor((i - 1) / n_pivots ^ exp) % n_pivots + 1]
-        shortcuts[i] = new_char .. (shortcuts[i] or '')
+        shortcuts[i] = new_char .. (shortcuts[i] or "")
       end
     end
     -- Display the chars on each component
@@ -598,16 +598,16 @@ function winbar:pick(idx)
       local shortcut = shortcuts[i]
       local icon_width = vim.fn.strdisplaywidth(component.icon)
       component:swap_field(
-        'icon',
+        "icon",
         -- Add at least 1 space after winbar shortcut pivots, see
         -- https://github.com/Bekaboo/dropbar.nvim/pull/218
-        shortcut .. string.rep(' ', math.max(1, icon_width - #shortcut))
+        shortcut .. string.rep(" ", math.max(1, icon_width - #shortcut))
       )
-      component:swap_field('icon_hl', 'WinBarIconUIPickPivot')
+      component:swap_field("icon_hl", "WinBarIconUIPickPivot")
     end
     self:redraw()
     -- Read the input from user
-    local shortcut_read = ''
+    local shortcut_read = ""
     for _ = 1, n_chars do
       shortcut_read = shortcut_read
         .. vim.fn.nr2char(vim.fn.getchar() --[[@as integer]])
@@ -648,7 +648,7 @@ function winbar:get_component_at(col, look_ahead)
       return component,
         {
           start = col_offset,
-          ['end'] = col_offset + component_len,
+          ["end"] = col_offset + component_len,
         }
     end
     col_offset = col_offset + component_len + self.separator:displaywidth()
@@ -668,21 +668,21 @@ function winbar:update_current_context_hl(bar_idx)
     self:redraw()
     return
   end
-  local hl_currentcontext_icon = '_WinBarIconCurrentContext'
-  local hl_currentcontext_name = '_WinBarCurrentContext'
+  local hl_currentcontext_icon = "_WinBarIconCurrentContext"
+  local hl_currentcontext_name = "_WinBarCurrentContext"
   symbol:restore()
   vim.api.nvim_set_hl(
     0,
     hl_currentcontext_icon,
-    utils.hl.merge('WinBarNC', symbol.icon_hl, 'WinBarCurrentContext')
+    utils.hl.merge("WinBarNC", symbol.icon_hl, "WinBarCurrentContext")
   )
   vim.api.nvim_set_hl(
     0,
     hl_currentcontext_name,
-    utils.hl.merge('WinBarNC', symbol.name_hl, 'WinBarCurrentContext')
+    utils.hl.merge("WinBarNC", symbol.name_hl, "WinBarCurrentContext")
   )
-  symbol:swap_field('icon_hl', hl_currentcontext_icon)
-  symbol:swap_field('name_hl', hl_currentcontext_name)
+  symbol:swap_field("icon_hl", hl_currentcontext_icon)
+  symbol:swap_field("name_hl", hl_currentcontext_name)
   self:redraw()
 end
 
@@ -702,22 +702,22 @@ function winbar:update_hover_hl(col)
   if not symbol.on_click or symbol == self.symbol_on_hover then
     return
   end
-  local hl_hover_icon = '_WinBarIconHover'
-  local hl_hover_name = '_WinBarHover'
-  local hl_winbar = vim.api.nvim_get_current_win() == self.win and 'WinBar'
-    or 'WinbarNC'
+  local hl_hover_icon = "_WinBarIconHover"
+  local hl_hover_name = "_WinBarHover"
+  local hl_winbar = vim.api.nvim_get_current_win() == self.win and "WinBar"
+    or "WinbarNC"
   vim.api.nvim_set_hl(
     0,
     hl_hover_icon,
-    utils.hl.merge(hl_winbar, symbol.icon_hl, 'WinBarHover')
+    utils.hl.merge(hl_winbar, symbol.icon_hl, "WinBarHover")
   )
   vim.api.nvim_set_hl(
     0,
     hl_hover_name,
-    utils.hl.merge(hl_winbar, symbol.name_hl, 'WinBarHover')
+    utils.hl.merge(hl_winbar, symbol.name_hl, "WinBarHover")
   )
-  symbol:swap_field('icon_hl', hl_hover_icon)
-  symbol:swap_field('name_hl', hl_hover_name)
+  symbol:swap_field("icon_hl", hl_hover_icon)
+  symbol:swap_field("name_hl", hl_hover_name)
   if self.symbol_on_hover then
     self.symbol_on_hover:restore()
   end

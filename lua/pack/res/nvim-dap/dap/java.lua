@@ -20,7 +20,7 @@ local function wait_jdtls_client(buf)
 
   vim.wait(JDTLS_ATTACH_TIMEOUT, function()
     client = unpack(vim.lsp.get_clients({
-      name = 'jdtls',
+      name = "jdtls",
       bufnr = vim._resolve_bufnr(buf),
     }))
     return client ~= nil
@@ -33,31 +33,31 @@ M.adapter = function(cb)
   local client = wait_jdtls_client()
   if not client then
     vim.notify(
-      '[dap-java] no jdtls client attached to current buffer',
+      "[dap-java] no jdtls client attached to current buffer",
       vim.log.levels.ERROR
     )
     return
   end
 
   client:request(
-    'workspace/executeCommand',
-    { command = 'vscode.java.startDebugSession', arguments = {} },
+    "workspace/executeCommand",
+    { command = "vscode.java.startDebugSession", arguments = {} },
     function(err, response)
       if err then
         vim.notify(
-          '[dap-java] error starting debug session: ' .. vim.inspect(err),
+          "[dap-java] error starting debug session: " .. vim.inspect(err),
           vim.log.levels.ERROR
         )
         return
       end
 
       local response_type = type(response)
-      local port = response_type == 'number' and response
-        or response_type == 'table'
+      local port = response_type == "number" and response
+        or response_type == "table"
           and (response.port or response.debugServer or response.serverPort or response[1])
       if not port then
         vim.notify(
-          '[dap-java] could not determine debug server port from response: '
+          "[dap-java] could not determine debug server port from response: "
             .. vim.inspect(response),
           vim.log.levels.ERROR
         )
@@ -65,8 +65,8 @@ M.adapter = function(cb)
       end
 
       cb({
-        type = 'server',
-        host = '127.0.0.1',
+        type = "server",
+        host = "127.0.0.1",
         port = port,
       })
     end,
@@ -80,7 +80,7 @@ M.config = (function()
   local client = wait_jdtls_client()
   if not client then
     vim.notify(
-      '[dap-java] no jdtls client attached to current buffer',
+      "[dap-java] no jdtls client attached to current buffer",
       vim.log.levels.ERROR
     )
     return {}
@@ -90,12 +90,12 @@ M.config = (function()
   local done = false
 
   client:request(
-    'workspace/executeCommand',
-    { command = 'vscode.java.resolveMainClass' },
+    "workspace/executeCommand",
+    { command = "vscode.java.resolveMainClass" },
     function(err, classes)
       if err then
         vim.notify(
-          '[dap-java] error resolving main class: ' .. vim.inspect(err),
+          "[dap-java] error resolving main class: " .. vim.inspect(err),
           vim.log.levels.ERROR
         )
         done = true
@@ -110,21 +110,21 @@ M.config = (function()
         return
       end
 
-      local java_exec_path = vim.fn.exepath('java')
+      local java_exec_path = vim.fn.exepath("java")
 
       for _, c in ipairs(classes) do
-        client:request('workspace/executeCommand', {
-          command = 'vscode.java.resolveClasspath',
+        client:request("workspace/executeCommand", {
+          command = "vscode.java.resolveClasspath",
           arguments = { c.mainClass, c.projectName },
         }, function(_, paths)
           if paths then
             table.insert(configs, {
               cwd = client.config.root_dir,
-              type = 'java',
-              request = 'launch',
-              console = 'integratedTerminal',
+              type = "java",
+              request = "launch",
+              console = "integratedTerminal",
               name = string.format(
-                'Launch %s: %s',
+                "Launch %s: %s",
                 c.projectName,
                 c.mainClass
               ),

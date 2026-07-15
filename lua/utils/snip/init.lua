@@ -7,6 +7,6 @@ return setmetatable({
   snips = nil, ---@module 'utils.snip.snips'
 }, {
   __index = function(_, key)
-    return require('utils.snip.' .. key)
+    return require("utils.snip." .. key)
   end,
 })

@@ -13,10 +13,10 @@
 -- - pyperclip
 -- - pyqt6
 return {
-  src = 'https://github.com/benlubas/molten-nvim',
+  src = "https://github.com/benlubas/molten-nvim",
   data = {
     build = function()
-      vim.cmd.packadd('molten-nvim')
+      vim.cmd.packadd("molten-nvim")
       vim.cmd.UpdateRemotePlugins()
     end,
     -- No need to lazy load on molten's builtin commands (e.g. `:MoltenInit`)
@@ -24,39 +24,39 @@ return {
     -- see `:h $NVIM_RPLUGIN_MANIFEST`
     -- Below are extra commands defined in `lua/configs/molten.lua`
     cmds = {
-      'MoltenNotebookRunLine',
-      'MoltenNotebookRunCellAbove',
-      'MoltenNotebookRunCellBelow',
-      'MoltenNotebookRunCellCurrent',
-      'MoltenNotebookRunVisual',
-      'MoltenNotebookRunOperator',
+      "MoltenNotebookRunLine",
+      "MoltenNotebookRunCellAbove",
+      "MoltenNotebookRunCellBelow",
+      "MoltenNotebookRunCellCurrent",
+      "MoltenNotebookRunVisual",
+      "MoltenNotebookRunOperator",
     },
     init = function(spec, path)
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = { 'python', 'markdown' },
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "python", "markdown" },
         callback = function(args)
           if
-            vim.bo[args.buf].ft ~= 'python'
-            and vim.fn.fnamemodify(vim.api.nvim_buf_get_name(args.buf), ':e')
-              ~= 'ipynb'
+            vim.bo[args.buf].ft ~= "python"
+            and vim.fn.fnamemodify(vim.api.nvim_buf_get_name(args.buf), ":e")
+              ~= "ipynb"
           then
             return
           end
 
-          local utils = require('utils')
+          local utils = require("utils")
 
           utils.load.on_keys(
             {
-              mode = 'x',
-              lhs = '<CR>',
-              opts = { buffer = args.buf, desc = 'Run selected code' },
+              mode = "x",
+              lhs = "<CR>",
+              opts = { buffer = args.buf, desc = "Run selected code" },
             },
-            'molten',
+            "molten",
             function()
               utils.pack.load(spec, path)
             end
           )
-          if vim.bo[args.buf].ft == 'markdown' then
+          if vim.bo[args.buf].ft == "markdown" then
             utils.load.on_keys(
               {
                 -- stylua: ignore start
@@ -66,7 +66,7 @@ return {
                 { lhs = '<LocalLeader><CR>', opts = { buffer = args.buf, desc = 'Run current cell by operator' } },
                 -- stylua: ignore end
               },
-              'molten',
+              "molten",
               function()
                 utils.pack.load(spec, path)
               end
@@ -77,16 +77,16 @@ return {
       })
     end,
     postload = function()
-      if pcall(require, 'image') then
-        vim.g.molten_image_provider = 'image.nvim'
+      if pcall(require, "image") then
+        vim.g.molten_image_provider = "image.nvim"
       end
 
-      vim.g.molten_auto_init_behavior = 'init'
-      vim.g.molten_enter_output_behavior = 'open_and_enter'
+      vim.g.molten_auto_init_behavior = "init"
+      vim.g.molten_enter_output_behavior = "open_and_enter"
       vim.g.molten_output_win_max_height = 16
       vim.g.molten_output_win_cover_gutter = false
-      vim.g.molten_output_win_border = 'single'
-      vim.g.molten_output_win_style = 'minimal'
+      vim.g.molten_output_win_border = "single"
+      vim.g.molten_output_win_style = "minimal"
       vim.g.molten_auto_open_output = false
       vim.g.molten_output_show_more = true
       vim.g.molten_virt_text_max_lines = 16
@@ -98,52 +98,52 @@ return {
       ---@param opts table|nil Optional parameters. Unused by default.
       ---@return nil
       local function molten_warn(msg, level, opts)
-        vim.notify('[Molten] ' .. msg, level or vim.log.levels.WARN, opts)
+        vim.notify("[Molten] " .. msg, level or vim.log.levels.WARN, opts)
         vim.cmd.redraw()
       end
 
-      local groupid = vim.api.nvim_create_augroup('molten', {})
-      vim.api.nvim_create_autocmd('BufEnter', {
-        desc = 'Change the configuration when editing a python file.',
-        pattern = '*.py',
+      local groupid = vim.api.nvim_create_augroup("molten", {})
+      vim.api.nvim_create_autocmd("BufEnter", {
+        desc = "Change the configuration when editing a python file.",
+        pattern = "*.py",
         group = groupid,
         callback = function(args)
           if args.buf ~= vim.api.nvim_get_current_buf() then
             return
           end
-          local ok, status = pcall(require('molten.status').initialized)
-          if ok and status == 'Molten' then -- this is kinda a hack...
-            vim.fn.MoltenUpdateOption('output_win_border', 'single')
-            vim.fn.MoltenUpdateOption('virt_lines_off_by_1', nil)
-            vim.fn.MoltenUpdateOption('virt_text_output', nil)
+          local ok, status = pcall(require("molten.status").initialized)
+          if ok and status == "Molten" then -- this is kinda a hack...
+            vim.fn.MoltenUpdateOption("output_win_border", "single")
+            vim.fn.MoltenUpdateOption("virt_lines_off_by_1", nil)
+            vim.fn.MoltenUpdateOption("virt_text_output", nil)
           else
-            vim.g.molten_output_win_border = 'single'
+            vim.g.molten_output_win_border = "single"
             vim.g.molten_virt_lines_off_by_1 = nil
             vim.g.molten_virt_text_output = nil
           end
         end,
       })
 
-      vim.api.nvim_create_autocmd('BufEnter', {
-        desc = 'Undo config changes when we go back to a markdown or quarto file.',
-        pattern = { '*.ipynb' },
+      vim.api.nvim_create_autocmd("BufEnter", {
+        desc = "Undo config changes when we go back to a markdown or quarto file.",
+        pattern = { "*.ipynb" },
         group = groupid,
         callback = function(args)
           if args.buf ~= vim.api.nvim_get_current_buf() then
             return
           end
-          local ok, status = pcall(require('molten.status').initialized)
-          if ok and status == 'Molten' then
-            vim.fn.MoltenUpdateOption('output_win_border', { '', '', '', '' })
-            vim.fn.MoltenUpdateOption('virt_lines_off_by_1', true)
-            vim.fn.MoltenUpdateOption('virt_text_output', true)
+          local ok, status = pcall(require("molten.status").initialized)
+          if ok and status == "Molten" then
+            vim.fn.MoltenUpdateOption("output_win_border", { "", "", "", "" })
+            vim.fn.MoltenUpdateOption("virt_lines_off_by_1", true)
+            vim.fn.MoltenUpdateOption("virt_text_output", true)
           else
-            vim.g.molten_output_win_border = { '', '', '', '' }
+            vim.g.molten_output_win_border = { "", "", "", "" }
             vim.g.molten_virt_lines_off_by_1 = true
             vim.g.molten_virt_text_output = true
           end
           -- Do not show molten cell background in ipynb files
-          vim.opt_local.winhl:append('MoltenCell:')
+          vim.opt_local.winhl:append("MoltenCell:")
         end,
       })
 
@@ -215,7 +215,7 @@ return {
                 end
                 table.insert(
                   chunks,
-                  vim.tbl_extend('force', chunk, {
+                  vim.tbl_extend("force", chunk, {
                     text = text,
                     range = overlap,
                   })
@@ -234,7 +234,7 @@ return {
         return chunks
       end
 
-      local otk = vim.F.npcall(require, 'otter.keeper')
+      local otk = vim.F.npcall(require, "otter.keeper")
 
       ---@type table<string, true>
       local not_runnable = {
@@ -247,7 +247,7 @@ return {
       ---@return string?
       local function get_valid_repl_lang()
         if not otk then
-          molten_warn('otter.nvim not found')
+          molten_warn("otter.nvim not found")
           return
         end
 
@@ -266,23 +266,23 @@ return {
       ---@return nil
       local function run_cell(range)
         if not otk then
-          molten_warn('otter.nvim not found')
+          molten_warn("otter.nvim not found")
           return
         end
 
         local buf = vim.api.nvim_get_current_buf()
-        local lang = get_valid_repl_lang() or 'python'
+        local lang = get_valid_repl_lang() or "python"
 
         otk.sync_raft(buf)
         local otk_buf_info = otk.rafts[buf]
         if not otk_buf_info then
-          molten_warn('otter.nvim not initialized for buffer ' .. buf)
+          molten_warn("otter.nvim not initialized for buffer " .. buf)
           return
         end
 
         local filtered = extract_cells(lang, otk_buf_info.code_chunks, range)
         if #filtered == 0 then
-          molten_warn('no code found for ' .. lang)
+          molten_warn("no code found for " .. lang)
           return
         end
         for _, chunk in ipairs(filtered) do
@@ -345,24 +345,24 @@ return {
       ---@return nil
       local function run_range(range)
         if not otk then
-          molten_warn('otter.nvim not found')
+          molten_warn("otter.nvim not found")
           return
         end
 
         local buf = vim.api.nvim_get_current_buf()
-        local lang = get_valid_repl_lang() or 'python'
+        local lang = get_valid_repl_lang() or "python"
 
         otk.sync_raft(buf)
         local otk_buf_info = otk.rafts[buf]
         if not otk_buf_info then
-          molten_warn('otter.nvim not initialized for buffer ' .. buf)
+          molten_warn("otter.nvim not initialized for buffer " .. buf)
           return
         end
 
         local filtered =
           extract_cells(lang, otk_buf_info.code_chunks, range, true)
         if #filtered == 0 then
-          molten_warn('no code found for ' .. lang)
+          molten_warn("no code found for " .. lang)
           return
         end
 
@@ -385,8 +385,8 @@ return {
       ---Run code covered by operator
       ---@return nil
       local function run_operator()
-        vim.opt.opfunc = 'v:lua._molten_nb_run_opfunc'
-        vim.api.nvim_feedkeys('g@', 'n', false)
+        vim.opt.opfunc = "v:lua._molten_nb_run_opfunc"
+        vim.api.nvim_feedkeys("g@", "n", false)
       end
 
       ---@param _ 'line'|'char'|'block' operator type, ignored
@@ -410,45 +410,45 @@ return {
         end
 
         local ft = vim.bo[buf].ft
-        if ft ~= 'markdown' and ft ~= 'python' then
+        if ft ~= "markdown" and ft ~= "python" then
           return
         end
 
         -- Skip non-notebook markdown files
         if
-          ft == 'markdown'
-          and vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ':e')
-            ~= 'ipynb'
+          ft == "markdown"
+          and vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":e")
+            ~= "ipynb"
         then
           return
         end
 
-        vim.keymap.set('n', '<C-c>', vim.cmd.MoltenInterrupt, {
+        vim.keymap.set("n", "<C-c>", vim.cmd.MoltenInterrupt, {
           buffer = buf,
-          desc = 'Interrupt kernel',
+          desc = "Interrupt kernel",
         })
 
         ---Enter cell output
         local function enter_cell_output()
           vim.cmd.MoltenEnterOutput({ mods = { noautocmd = true } })
-          if vim.bo.ft ~= 'molten_output' then
+          if vim.bo.ft ~= "molten_output" then
             return
           end
 
-          if vim.fn.exists('*matchup#loader#bufwinenter') == 1 then
-            vim.fn['matchup#loader#bufwinenter']()
+          if vim.fn.exists("*matchup#loader#bufwinenter") == 1 then
+            vim.fn["matchup#loader#bufwinenter"]()
           end
 
-          local opts = { buffer = true, desc = 'Exit cell output' }
-          vim.keymap.set('n', '<C-k>', '<C-w>c', opts)
-          vim.keymap.set('n', '<C-Up>', '<C-w>c', opts)
+          local opts = { buffer = true, desc = "Exit cell output" }
+          vim.keymap.set("n", "<C-k>", "<C-w>c", opts)
+          vim.keymap.set("n", "<C-Up>", "<C-w>c", opts)
 
-          local src_win = vim.fn.win_getid(vim.fn.winnr('#'))
+          local src_win = vim.fn.win_getid(vim.fn.winnr("#"))
           local output_win = vim.api.nvim_get_current_win()
-          vim.api.nvim_create_autocmd('WinScrolled', {
-            desc = 'Close molten output win when src win is scrolled.',
+          vim.api.nvim_create_autocmd("WinScrolled", {
+            desc = "Close molten output win when src win is scrolled.",
             group = vim.api.nvim_create_augroup(
-              'molten.close_output_win.buf.' .. buf,
+              "molten.close_output_win.buf." .. buf,
               {}
             ),
             buffer = buf,
@@ -464,14 +464,14 @@ return {
           })
         end
 
-        local opts = { buffer = buf, desc = 'Enter cell output' }
-        vim.keymap.set('n', '<C-j>', enter_cell_output, opts)
-        vim.keymap.set('n', '<C-Down>', enter_cell_output, opts)
+        local opts = { buffer = buf, desc = "Enter cell output" }
+        vim.keymap.set("n", "<C-j>", enter_cell_output, opts)
+        vim.keymap.set("n", "<C-Down>", enter_cell_output, opts)
 
         -- Use otter to recognized codeblocks in markdown files,
         -- so we can run current codeblock directly without selection
         -- using `<CR>`, and other good stuffs
-        if ft == 'markdown' and otk then
+        if ft == "markdown" and otk then
           -- stylua: ignore start
           vim.api.nvim_buf_create_user_command(buf, 'MoltenNotebookRunLine', run_line, {})
           vim.api.nvim_buf_create_user_command(buf, 'MoltenNotebookRunCellAbove', run_cell_above, {})
@@ -500,20 +500,20 @@ return {
         setup_buf_keymaps_and_commands(buf)
       end
 
-      vim.api.nvim_create_autocmd('FileType', {
-        desc = 'Set buffer-local keymaps and commands for molten.',
-        pattern = { 'python', 'markdown' },
+      vim.api.nvim_create_autocmd("FileType", {
+        desc = "Set buffer-local keymaps and commands for molten.",
+        pattern = { "python", "markdown" },
         group = groupid,
         callback = function(args)
           setup_buf_keymaps_and_commands(args.buf)
         end,
       })
 
-      require('utils.hl').persist(function()
-        vim.api.nvim_set_hl(0, 'MoltenCell', { link = 'CursorLine' })
-        vim.api.nvim_set_hl(0, 'MoltenOutputWin', { link = 'NonText' })
-        vim.api.nvim_set_hl(0, 'MoltenOutputWinNC', { link = 'NonText' })
-        vim.api.nvim_set_hl(0, 'MoltenVirtualText', { link = 'NonText' })
+      require("utils.hl").persist(function()
+        vim.api.nvim_set_hl(0, "MoltenCell", { link = "CursorLine" })
+        vim.api.nvim_set_hl(0, "MoltenOutputWin", { link = "NonText" })
+        vim.api.nvim_set_hl(0, "MoltenOutputWinNC", { link = "NonText" })
+        vim.api.nvim_set_hl(0, "MoltenVirtualText", { link = "NonText" })
       end)
     end,
   },

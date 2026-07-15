@@ -3,10 +3,10 @@
 -- https://developer.hashicorp.com/terraform/cli
 
 return {
-  filetypes = { 'terraform', 'terraform-vars', 'hcl' },
-  cmd = { 'efm-langserver' },
-  requires = { 'terraform' },
-  name = 'terraform',
+  filetypes = { "terraform", "terraform-vars", "hcl" },
+  cmd = { "efm-langserver" },
+  requires = { "terraform" },
+  name = "terraform",
   init_options = {
     documentFormatting = true,
   },
@@ -14,15 +14,15 @@ return {
     languages = {
       terraform = {
         {
-          formatCommand = 'terraform fmt -',
+          formatCommand = "terraform fmt -",
           formatStdin = true,
         },
         {
-          lintSource = 'terraform',
+          lintSource = "terraform",
           lintCommand = [[terraform validate -json | jq -r '.diagnostics[] | "\(.severity) \(.range.filename):\(.range.start.line):\(.range.start.column): \(.summary). \(.detail)"']],
           lintFormats = {
-            '%trror %f:%l:%c: %m',
-            '%tarning %f:%l:%c: %m',
+            "%trror %f:%l:%c: %m",
+            "%tarning %f:%l:%c: %m",
           },
           lintAfterOpen = true,
           lintStdin = false,

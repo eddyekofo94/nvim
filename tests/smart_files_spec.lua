@@ -1,8 +1,8 @@
-local actions = require "fzf-lua.actions"
-local config = require "fzf-lua.config"
-local fzf = require "fzf-lua"
-local libuv = require "fzf-lua.libuv"
-local make_entry = require "fzf-lua.make_entry"
+local actions = require("fzf-lua.actions")
+local config = require("fzf-lua.config")
+local fzf = require("fzf-lua")
+local libuv = require("fzf-lua.libuv")
+local make_entry = require("fzf-lua.make_entry")
 
 local temp_dirs = {}
 
@@ -83,19 +83,19 @@ describe("Smart Files performance hardening", function()
     end
 
     for _, dir in ipairs(dirs) do
-      fzf.smart_files {
+      fzf.smart_files({
         cwd = dir,
         smart_oldfiles_cache_limit = 2,
         smart_oldfiles_cache_ttl_ms = 60000,
-      }
+      })
     end
 
     vim.fn.delete(files[1])
-    fzf.smart_files {
+    fzf.smart_files({
       cwd = dirs[1],
       smart_oldfiles_cache_limit = 2,
       smart_oldfiles_cache_ttl_ms = 60000,
-    }
+    })
 
     assert.is_nil(output:find("recent 1.lua", 1, true))
   end)
@@ -195,7 +195,7 @@ describe("Smart Files performance hardening", function()
       return captured ~= nil
     end))
 
-    local listfile = captured.cmd:match "if %[%s+-s%s+'([^']+)'%s+%]"
+    local listfile = captured.cmd:match("if %[%s+-s%s+'([^']+)'%s+%]")
     assert.is_truthy(listfile)
     assert.are.equal(1, vim.fn.filereadable(listfile))
 
@@ -205,7 +205,7 @@ describe("Smart Files performance hardening", function()
     assert.is_true(vim.wait(1000, function()
       return captured ~= nil
     end))
-    local replacement = captured.cmd:match "if %[%s+-s%s+'([^']+)'%s+%]"
+    local replacement = captured.cmd:match("if %[%s+-s%s+'([^']+)'%s+%]")
 
     assert.is_truthy(replacement)
     assert.are_not.equal(listfile, replacement)
@@ -223,7 +223,7 @@ describe("Smart Files performance hardening", function()
       local writer = assert(io.open(source_list, "w"))
       local relative_target = vim.fs.basename(target)
       local arg_max =
-        tonumber(vim.trim(vim.fn.system { "getconf", "ARG_MAX" }))
+        tonumber(vim.trim(vim.fn.system({ "getconf", "ARG_MAX" })))
       local repetitions = math.ceil((arg_max * 2) / (#relative_target + 1))
       local captured
 
@@ -259,7 +259,7 @@ describe("Smart Files performance hardening", function()
 
       local command = captured.cmd
         .. " "
-        .. vim.fn.shellescape "unique smart files needle"
+        .. vim.fn.shellescape("unique smart files needle")
       local result = vim
         .system({ "sh", "-c", command }, { cwd = cwd, text = true })
         :wait()

@@ -1,15 +1,15 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/HakonHarnes/img-clip.nvim',
+  src = "https://github.com/HakonHarnes/img-clip.nvim",
   data = {
     load = function(spec, path)
-      local load = require('utils.load')
+      local load = require("utils.load")
 
       local function load_img_clip()
         if spec.data and spec.data.preload then
           spec.data.preload(spec, path)
         end
-        load.load('img-clip.nvim')
+        load.load("img-clip.nvim")
         if spec.data and spec.data.postload then
           spec.data.postload(spec, path)
         end
@@ -18,12 +18,12 @@ return {
       if vim.v.vim_did_enter then
         vim.schedule(load_img_clip)
       else
-        load.on_events('UIEnter', 'img-clip', vim.schedule_wrap(load_img_clip))
+        load.on_events("UIEnter", "img-clip", vim.schedule_wrap(load_img_clip))
       end
     end,
     postload = function()
-      local img_clip = require('img-clip')
-      local utils = require('utils')
+      local img_clip = require("img-clip")
+      local utils = require("utils")
 
       ---Get indentation string
       ---@return string
@@ -39,16 +39,16 @@ return {
             local bufname = vim.api.nvim_buf_get_name(0)
             local img_dir = (
               unpack(vim.fs.find({
-                'img',
-                'imgs',
-                'image',
-                'images',
-                'pic',
-                'pics',
-                'picture',
-                'pictures',
-                'asset',
-                'assets',
+                "img",
+                "imgs",
+                "image",
+                "images",
+                "pic",
+                "pics",
+                "picture",
+                "pictures",
+                "asset",
+                "assets",
               }, {
                 path = vim.fs.dirname(bufname),
                 upward = true,
@@ -59,18 +59,18 @@ return {
             if
               not img_dir or utils.fs.is_home_dir(vim.fs.dirname(img_dir))
             then
-              img_dir = vim.fs.joinpath(vim.fs.dirname(bufname), 'img')
+              img_dir = vim.fs.joinpath(vim.fs.dirname(bufname), "img")
             end
 
             return vim.fn.fnamemodify(
-              vim.fs.joinpath(img_dir, vim.fn.fnamemodify(bufname, ':t:r')),
-              ':.'
+              vim.fs.joinpath(img_dir, vim.fn.fnamemodify(bufname, ":t:r")),
+              ":."
             )
           end,
         },
         filetypes = {
-          markdown = { template = '![$LABEL$CURSOR]($FILE_PATH)' },
-          vimwiki = { template = '![$LABEL$CURSOR]($FILE_PATH)' },
+          markdown = { template = "![$LABEL$CURSOR]($FILE_PATH)" },
+          vimwiki = { template = "![$LABEL$CURSOR]($FILE_PATH)" },
           html = { template = '<img src="$FILE_PATH" alt="$LABEL$CURSOR">' },
           asciidoc = {
             template = 'image::$FILE_PATH[width=80%, alt="$LABEL$CURSOR"]',
@@ -84,7 +84,7 @@ $INDENT\includegraphics[width=1.0\textwidth]{$FILE_PATH}
 \label{fig:$LABEL}
 \caption{$CURSOR}
 \end{figure}
-]]):gsub('$INDENT', indent())
+]]):gsub("$INDENT", indent())
             end,
           },
           typst = {
@@ -94,7 +94,7 @@ $INDENT\includegraphics[width=1.0\textwidth]{$FILE_PATH}
 $INDENTimage("$FILE_PATH", width: 80%),
 $INDENTcaption: [$LABEL$CURSOR],
 ) <fig-$LABEL>
-]]):gsub('$INDENT', indent())
+]]):gsub("$INDENT", indent())
             end,
           },
           rst = {
@@ -117,7 +117,7 @@ $INDENTcaption: [$LABEL$CURSOR],
       })
 
       ---@type table<string, any>
-      local filetypes = require('img-clip.config').opts.filetypes
+      local filetypes = require("img-clip.config").opts.filetypes
 
       ---Setup keymaps for img-clip
       ---@param buf integer?
@@ -125,9 +125,9 @@ $INDENTcaption: [$LABEL$CURSOR],
       local function setup_keymaps(buf)
         buf = vim._resolve_bufnr(buf)
         if filetypes[vim.bo[buf].ft] then
-          vim.keymap.set('n', '<Leader>p', img_clip.paste_image, {
+          vim.keymap.set("n", "<Leader>p", img_clip.paste_image, {
             buffer = buf,
-            desc = 'Paste image',
+            desc = "Paste image",
           })
         end
       end
@@ -136,9 +136,9 @@ $INDENTcaption: [$LABEL$CURSOR],
         setup_keymaps(buf)
       end
 
-      vim.api.nvim_create_autocmd('FileType', {
-        desc = 'Buffer-local settings for img-clip.',
-        group = vim.api.nvim_create_augroup('img-clip', {}),
+      vim.api.nvim_create_autocmd("FileType", {
+        desc = "Buffer-local settings for img-clip.",
+        group = vim.api.nvim_create_augroup("img-clip", {}),
         pattern = vim.tbl_keys(filetypes),
         callback = function(args)
           setup_keymaps(args.buf)

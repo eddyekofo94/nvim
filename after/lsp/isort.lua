@@ -1,31 +1,31 @@
 ---@type lsp.config
 return {
-  filetypes = { 'python' },
-  cmd = { 'efm-langserver' },
-  requires = { 'isort' },
+  filetypes = { "python" },
+  cmd = { "efm-langserver" },
+  requires = { "isort" },
   root_markers = {
-    { '.isort.cfg' },
+    { ".isort.cfg" },
     {
-      'pyproject.toml',
-      'setup.cfg',
-      'tox.ini',
+      "pyproject.toml",
+      "setup.cfg",
+      "tox.ini",
     },
-    { '.editorconfig' },
+    { ".editorconfig" },
     {
-      'Pipfile',
-      'requirements.txt',
-      'setup.py',
+      "Pipfile",
+      "requirements.txt",
+      "setup.py",
     },
-    { 'venv', 'env', '.venv', '.env' },
-    { '.python-version' },
+    { "venv", "env", ".venv", ".env" },
+    { ".python-version" },
   },
-  name = 'isort',
+  name = "isort",
   init_options = { documentFormatting = true },
   settings = {
     languages = {
       python = {
         {
-          formatCommand = 'isort --quiet -',
+          formatCommand = "isort --quiet -",
           formatStdin = true,
         },
       },

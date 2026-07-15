@@ -13,7 +13,7 @@ vim.g[loaded_flag] = true
 local ns_name = string.format("ft.%s.codeblock", ft)
 local ns = vim.api.nvim_create_namespace(ns_name)
 
-local has_quantified_captures = vim.fn.has "nvim-0.11.0" == 1
+local has_quantified_captures = vim.fn.has("nvim-0.11.0") == 1
 
 local dash_string = "-"
 
@@ -95,7 +95,7 @@ local function refresh(buf)
 
           local start_line =
             vim.api.nvim_buf_get_lines(buf, start_row, start_row + 1, false)[1]
-          local _, padding = start_line:find "^ +"
+          local _, padding = start_line:find("^ +")
           local codeblock_padding = math.max((padding or 0), 0)
 
           if codeblock_padding > 0 then
@@ -140,7 +140,7 @@ vim.api.nvim_create_autocmd("Syntax", {
   end,
 })
 
-local hl = require "utils.hl"
+local hl = require("utils.hl")
 
 hl.persist(function()
   hl.set(0, "CodeBlock", { link = "CursorLine", default = true })

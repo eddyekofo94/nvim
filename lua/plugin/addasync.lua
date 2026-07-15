@@ -16,14 +16,14 @@ local fts = {
 local function add_async()
   if
     not vim.endswith(
-      vim.api.nvim_get_current_line():sub(1, vim.fn.col('.') - 1),
-      'await'
+      vim.api.nvim_get_current_line():sub(1, vim.fn.col(".") - 1),
+      "await"
     )
   then
     return
   end
 
-  local ts = require('utils.ts')
+  local ts = require("utils.ts")
   local lang = ts.lang()
   if not lang or not fts[lang] then
     return
@@ -32,14 +32,14 @@ local function add_async()
   -- `ignore_injections = false` makes this snippet work in filetypes where JS
   -- is injected into other languages
   local func_node = ts.find_node(
-    { 'function', 'method' },
+    { "function", "method" },
     { ignore_injections = false }
   )
   if not func_node then
     return
   end
 
-  if vim.startswith(vim.treesitter.get_node_text(func_node, 0), 'async') then
+  if vim.startswith(vim.treesitter.get_node_text(func_node, 0), "async") then
     return
   end
 
@@ -50,7 +50,7 @@ local function add_async()
     start_col,
     start_row,
     start_col,
-    { 'async ' }
+    { "async " }
   )
 end
 
@@ -61,8 +61,8 @@ local function setup()
   end
   vim.g.loaded_addasync = true
 
-  vim.api.nvim_create_autocmd('TextChangedI', {
-    group = vim.api.nvim_create_augroup('addasync', {}),
+  vim.api.nvim_create_autocmd("TextChangedI", {
+    group = vim.api.nvim_create_augroup("addasync", {}),
     callback = add_async,
   })
 end

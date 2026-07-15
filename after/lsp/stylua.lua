@@ -1,10 +1,10 @@
 ---@type lsp.config
 return {
-  filetypes = { 'lua' },
-  cmd = { 'efm-langserver' },
-  requires = { 'stylua', 'cat', 'head' },
-  name = 'stylua',
-  root_markers = { 'stylua.toml', '.stylua.toml' },
+  filetypes = { "lua" },
+  cmd = { "efm-langserver" },
+  requires = { "stylua", "cat", "head" },
+  name = "stylua",
+  root_markers = { "stylua.toml", ".stylua.toml" },
   init_options = {
     documentFormatting = true,
     documentRangeFormatting = true,

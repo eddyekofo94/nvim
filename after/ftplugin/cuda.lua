@@ -1,4 +1,4 @@
 vim.cmd.runtime({
-  'ftplugin/cpp.vim',
+  "ftplugin/cpp.vim",
   bang = true,
 })

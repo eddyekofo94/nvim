@@ -1,5 +1,5 @@
 local M = {}
-local fs = require('utils.fs')
+local fs = require("utils.fs")
 
 ---Check if a buffer is "valid"
 ---@param buf integer
@@ -10,22 +10,22 @@ local function buf_valid(buf)
   end
 
   local bt = vim.bo[buf].bt
-  if bt == 'help' or bt == 'quickfix' or bt == 'prompt' then
+  if bt == "help" or bt == "quickfix" or bt == "prompt" then
     return false
   end
 
   local ft = vim.bo[buf].ft
-  if ft == 'gitcommit' or ft == 'gitrebase' then
+  if ft == "gitcommit" or ft == "gitrebase" then
     return false
   end
 
   -- Fzf-lua temp window
-  if bt == 'terminal' and ft == 'fzf' then
+  if bt == "terminal" and ft == "fzf" then
     return false
   end
 
   local bufname = vim.api.nvim_buf_get_name(buf)
-  if bufname == '' or vim.startswith(bufname, '/tmp/') then
+  if bufname == "" or vim.startswith(bufname, "/tmp/") then
     return false
   end
 
@@ -40,32 +40,32 @@ end
 
 ---@class session.opts
 M.opts = {
-  dir = vim.fs.joinpath(vim.fn.stdpath('data') --[[@as string]], 'session'),
+  dir = vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "session"),
   ---Given path, return project root, used to determine the name of the session
   ---file to be autosaved
   ---@param path string
   ---@return string?
   root = function(path)
-    return require('utils.fs').root(path)
+    return require("utils.fs").root(path)
       or vim.fn.isdirectory(path) == 1 and path
       or vim.fs.dirname(path)
   end,
   autoload = {
     enabled = true,
-    events = { 'UIEnter' },
+    events = { "UIEnter" },
   },
   autosave = {
     enabled = true,
     events = {
-      'BufNew',
-      'BufNewFile',
-      'BufDelete',
-      'TermOpen',
-      'TermClose',
-      'WinNew',
-      'WinClosed',
-      'DirChanged',
-      'FileChangedShellPost',
+      "BufNew",
+      "BufNewFile",
+      "BufDelete",
+      "TermOpen",
+      "TermClose",
+      "WinNew",
+      "WinClosed",
+      "DirChanged",
+      "FileChangedShellPost",
     },
     ---Condition to automatically save sessions
     ---@type fun(): boolean
@@ -73,7 +73,7 @@ M.opts = {
   },
   autoremove = {
     enabled = true,
-    events = { 'BufDelete' },
+    events = { "BufDelete" },
     ---@type fun(): boolean
     cond = function()
       return not has_valid_buf()
@@ -86,7 +86,7 @@ M.opts = {
 ---@param session_name string
 ---@return string dir
 function M.session2dir(session_name)
-  return (session_name:gsub('%%', '/'):gsub('//', '%'))
+  return (session_name:gsub("%%", "/"):gsub("//", "%"))
 end
 
 ---Convert directory to corresponding session name, e.g.
@@ -94,7 +94,7 @@ end
 ---@param dir string
 ---@return string session_name
 function M.dir2session(dir)
-  return (vim.fs.normalize(dir):gsub('%%', '%%%%'):gsub('/', '%%'))
+  return (vim.fs.normalize(dir):gsub("%%", "%%%%"):gsub("/", "%%"))
 end
 
 ---Get session file path for given path
@@ -109,11 +109,11 @@ function M.get(path)
       path = vim.fs.dirname(path)
     end
   end
-  path = vim.fn.fnamemodify(path, ':p')
+  path = vim.fn.fnamemodify(path, ":p")
 
   local session_dir = M.opts.dir
   if vim.fn.isdirectory(session_dir) == 0 then
-    vim.fn.mkdir(session_dir, 'p')
+    vim.fn.mkdir(session_dir, "p")
   end
 
   -- Walk up the directory tree to find an existing session file at a parent level
@@ -146,8 +146,8 @@ function M.save(session, notify)
 
   if notify then
     vim.notify(
-      '[plugin.session] saved current session to '
-        .. string.format("'%s'", vim.fn.fnamemodify(session, ':~:.'))
+      "[plugin.session] saved current session to "
+        .. string.format("'%s'", vim.fn.fnamemodify(session, ":~:."))
     )
   end
 end
@@ -181,7 +181,7 @@ function M.load(session, notify)
 
   -- Avoid intro message flickering before loading session,
   -- see `plugin/intro.lua` and `:h :intro`
-  vim.opt.shortmess:append('I')
+  vim.opt.shortmess:append("I")
   vim.opt.more = false
 
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -206,11 +206,14 @@ function M.load(session, notify)
     end)
 
     if not ok then
-      vim.notify('[plugin.session] Failed to load session: ' .. tostring(err), vim.log.levels.ERROR)
+      vim.notify(
+        "[plugin.session] Failed to load session: " .. tostring(err),
+        vim.log.levels.ERROR
+      )
     end
 
     vim.g._session_loaded = session
-    vim.api.nvim_exec_autocmds('SessionLoadPost', {})
+    vim.api.nvim_exec_autocmds("SessionLoadPost", {})
 
     -- Keep options disabled after session load
     vim.opt.more = false
@@ -224,7 +227,7 @@ function M.list()
   return vim
     .iter(vim.fs.dir(M.opts.dir))
     :filter(function(_, type)
-      return type == 'file'
+      return type == "file"
     end)
     :map(function(session)
       return vim.fs.joinpath(M.opts.dir, session)
@@ -238,7 +241,7 @@ end
 ---@param cb fun(finish: function): any?
 function M.no_auto(cb)
   local eventignore = vim.go.eventignore
-  for _, auto in ipairs({ 'autoload', 'autosave', 'autoremove' }) do
+  for _, auto in ipairs({ "autoload", "autosave", "autoremove" }) do
     for _, event in ipairs(M.opts[auto].events) do
       vim.opt.eventignore:append(event)
     end
@@ -254,9 +257,9 @@ end
 function M.select(notify)
   M.no_auto(function(finish)
     vim.ui.select(M.list(), {
-      prompt = 'Load session: ',
+      prompt = "Load session: ",
       format_item = function(session)
-        return M.session2dir(vim.fn.fnamemodify(session, ':t'))
+        return M.session2dir(vim.fn.fnamemodify(session, ":t"))
       end,
     }, function(choice)
       if choice then
@@ -274,7 +277,7 @@ local function cmp(arglead)
   return vim
     .iter(M.list())
     :map(function(session)
-      return M.session2dir(vim.fn.fnamemodify(session, ':t'))
+      return M.session2dir(vim.fn.fnamemodify(session, ":t"))
     end)
     :filter(function(dir)
       return string.find(dir, arglead, nil, true) ~= nil
@@ -287,7 +290,7 @@ end
 ---@return function
 local function cmd(cb)
   return function(args)
-    if args.args == '' then
+    if args.args == "" then
       cb()
       return
     end
@@ -295,7 +298,7 @@ local function cmd(cb)
     cb(
       vim.fs.joinpath(
         M.opts.dir,
-        M.dir2session(vim.fn.fnamemodify(vim.fn.expand(args.args), ':p'))
+        M.dir2session(vim.fn.fnamemodify(vim.fn.expand(args.args), ":p"))
       )
     )
   end
@@ -309,8 +312,8 @@ end
 
 ---@param opts? session.opts
 function M.setup(opts)
-  M.opts = vim.tbl_deep_extend('force', M.opts, opts or {})
-  M.opts.dir = vim.fn.fnamemodify(M.opts.dir, ':p')
+  M.opts = vim.tbl_deep_extend("force", M.opts, opts or {})
+  M.opts.dir = vim.fn.fnamemodify(M.opts.dir, ":p")
 
   if vim.g.loaded_session ~= nil then
     return
@@ -328,8 +331,8 @@ function M.setup(opts)
     end)
 
     vim.api.nvim_create_autocmd(M.opts.autosave.events, {
-      group = vim.api.nvim_create_augroup('session.auto_save', {}),
-      desc = 'Automatically save session.',
+      group = vim.api.nvim_create_augroup("session.auto_save", {}),
+      desc = "Automatically save session.",
       -- `BufDelete` event triggers just before the buffers is actually deleted from
       -- the buffer list, delay to ensure that the buffer is deleted before checking
       -- for named buffers
@@ -342,10 +345,10 @@ function M.setup(opts)
   end
 
   if check_enabled(M.opts.autoload) then
-    local groupid = vim.api.nvim_create_augroup('session.auto_load', {})
+    local groupid = vim.api.nvim_create_augroup("session.auto_load", {})
 
-    vim.api.nvim_create_autocmd({ 'StdinReadPre', 'SessionLoadPost' }, {
-      desc = 'Detect stdin or manual session loading to disable automatic session loading.',
+    vim.api.nvim_create_autocmd({ "StdinReadPre", "SessionLoadPost" }, {
+      desc = "Detect stdin or manual session loading to disable automatic session loading.",
       group = groupid,
       once = true,
       callback = function()
@@ -355,7 +358,7 @@ function M.setup(opts)
     })
 
     vim.api.nvim_create_autocmd(M.opts.autoload.events, {
-      desc = 'Load nvim session automatically on UI attachment.',
+      desc = "Load nvim session automatically on UI attachment.",
       group = groupid,
       once = true,
       callback = function()
@@ -372,7 +375,7 @@ function M.setup(opts)
         end
 
         -- Check if we're in a project root (git repo)
-        local project_root = require('utils.fs').root(vim.fn.getcwd(0))
+        local project_root = require("utils.fs").root(vim.fn.getcwd(0))
         if not project_root then
           vim.g._session_disabled = true
           return
@@ -396,8 +399,8 @@ function M.setup(opts)
 
   if check_enabled(M.opts.autoremove) then
     vim.api.nvim_create_autocmd(M.opts.autoremove.events, {
-      group = vim.api.nvim_create_augroup('session.auto_remove', {}),
-      desc = 'Automatically remove sessions.',
+      group = vim.api.nvim_create_augroup("session.auto_remove", {}),
+      desc = "Automatically remove sessions.",
       callback = vim.schedule_wrap(function()
         if M.opts.autoremove.cond() then
           M.remove()
@@ -408,51 +411,51 @@ function M.setup(opts)
 
   -- Create user commands
   vim.api.nvim_create_user_command(
-    'SessionLoad',
+    "SessionLoad",
     cmd(function(path)
       M.load(path, true)
     end),
     {
-      desc = 'Load session.',
-      nargs = '?',
+      desc = "Load session.",
+      nargs = "?",
       complete = cmp,
     }
   )
 
   vim.api.nvim_create_user_command(
-    'SessionSave',
+    "SessionSave",
     cmd(function(path)
       M.save(path, true)
     end),
     {
-      desc = 'Save current state to given session.',
-      nargs = '?',
+      desc = "Save current state to given session.",
+      nargs = "?",
       complete = cmp,
     }
   )
 
   vim.api.nvim_create_user_command(
-    'Mksession',
+    "Mksession",
     cmd(function(path)
       M.save(path, true)
     end),
     {
-      desc = 'Save current state to given session.',
-      nargs = '?',
+      desc = "Save current state to given session.",
+      nargs = "?",
       complete = cmp,
     }
   )
 
-  vim.api.nvim_create_user_command('SessionRemove', cmd(M.remove), {
-    desc = 'Remove session.',
-    nargs = '?',
+  vim.api.nvim_create_user_command("SessionRemove", cmd(M.remove), {
+    desc = "Remove session.",
+    nargs = "?",
     complete = cmp,
   })
 
-  vim.api.nvim_create_user_command('SessionSelect', function()
+  vim.api.nvim_create_user_command("SessionSelect", function()
     M.select(true)
   end, {
-    desc = 'Interactively select and load session.',
+    desc = "Interactively select and load session.",
   })
 end
 

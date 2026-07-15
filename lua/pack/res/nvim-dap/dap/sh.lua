@@ -1,46 +1,46 @@
 local M = {}
 
-local utils = require('utils')
+local utils = require("utils")
 
 ---@type dap.cacheche
 local cache = utils.dap.new_cache()
 
 M.adapter = {
-  name = 'bashdb',
-  type = 'executable',
-  command = 'node',
+  name = "bashdb",
+  type = "executable",
+  command = "node",
   args = {
     vim.fs.joinpath(
-      vim.fn.stdpath('data') --[[@as string]],
-      'vscode-bash-debug/extension/out/bashDebug.js'
+      vim.fn.stdpath("data") --[[@as string]],
+      "vscode-bash-debug/extension/out/bashDebug.js"
     ),
   },
 }
 
 M.config = {
   {
-    type = 'bashdb',
-    request = 'launch',
-    name = 'Launch file',
+    type = "bashdb",
+    request = "launch",
+    name = "Launch file",
     showDebugOutput = true,
     pathBashdb = vim.fs.joinpath(
-      vim.fn.stdpath('data') --[[@as string]],
-      'vscode-bash-debug/extension/bashdb_dir/bashdb'
+      vim.fn.stdpath("data") --[[@as string]],
+      "vscode-bash-debug/extension/bashdb_dir/bashdb"
     ),
     pathBashdbLib = vim.fs.joinpath(
-      vim.fn.stdpath('data') --[[@as string]],
-      '/vscode-bash-debug/extension/bashdb_dir/'
+      vim.fn.stdpath("data") --[[@as string]],
+      "/vscode-bash-debug/extension/bashdb_dir/"
     ),
     trace = true,
-    file = '${file}',
-    program = '${file}',
-    cwd = '${workspaceFolder}',
-    pathCat = 'cat',
-    pathBash = '/bin/bash',
-    pathMkfifo = 'mkfifo',
-    pathPkill = 'pkill',
+    file = "${file}",
+    program = "${file}",
+    cwd = "${workspaceFolder}",
+    pathCat = "cat",
+    pathBash = "/bin/bash",
+    pathMkfifo = "mkfifo",
+    pathPkill = "pkill",
     env = {},
-    terminalKind = 'integrated',
+    terminalKind = "integrated",
     args = utils.dap.get_args(cache),
   },
 }

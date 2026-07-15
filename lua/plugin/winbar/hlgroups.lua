@@ -174,10 +174,10 @@ end
 ---Check if `hl-WinBarNC` and `hl-WinBar` are equal
 ---@return boolean
 local function winbar_hl_nc_equal()
-  local hl = require('utils.hl')
+  local hl = require("utils.hl")
   return vim.deep_equal(
-    hl.get(0, { name = 'WinBar', link = false }),
-    hl.get(0, { name = 'WinBarNC', link = false })
+    hl.get(0, { name = "WinBar", link = false }),
+    hl.get(0, { name = "WinBarNC", link = false })
   )
 end
 
@@ -192,8 +192,8 @@ local function dim(win, do_dim)
 
   local hl_map = {}
   for hl_name, _ in pairs(hlgroups) do
-    if vim.endswith(hl_name, 'NC') then
-      hl_map[hl_name:gsub('NC$', '')] = hl_name
+    if vim.endswith(hl_name, "NC") then
+      hl_map[hl_name:gsub("NC$", "")] = hl_name
     end
   end
 
@@ -225,22 +225,22 @@ end
 
 ---Initialize highlight groups for winbar
 local function init()
-  local groupid = vim.api.nvim_create_augroup('winbar.hl', {})
+  local groupid = vim.api.nvim_create_augroup("winbar.hl", {})
 
   set_hlgroups()
-  vim.api.nvim_create_autocmd('ColorScheme', {
+  vim.api.nvim_create_autocmd("ColorScheme", {
     group = groupid,
     callback = set_hlgroups,
   })
 
   -- Dim winbar highlights in non-current windows
   dim_nc_wins()
-  vim.api.nvim_create_autocmd('ColorScheme', {
+  vim.api.nvim_create_autocmd("ColorScheme", {
     group = groupid,
     callback = dim_nc_wins,
   })
 
-  vim.api.nvim_create_autocmd({ 'BufWinEnter', 'WinEnter' }, {
+  vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
     group = groupid,
     callback = function()
       -- Only dim icon if current window's winbar color is the same as
@@ -248,16 +248,16 @@ local function init()
       -- Also, don't dim for windows that does not have a winbar, this avoids
       -- extra overhead and most importantly, avoid dimming icons in drop-down
       -- menus
-      if not winbar_hl_nc_equal() and vim.wo.winbar ~= '' then
+      if not winbar_hl_nc_equal() and vim.wo.winbar ~= "" then
         dim(0, false)
       end
     end,
   })
 
-  vim.api.nvim_create_autocmd('WinLeave', {
+  vim.api.nvim_create_autocmd("WinLeave", {
     group = groupid,
     callback = function()
-      if not winbar_hl_nc_equal() and vim.wo.winbar ~= '' then
+      if not winbar_hl_nc_equal() and vim.wo.winbar ~= "" then
         dim()
       end
     end,

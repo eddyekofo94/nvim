@@ -1,15 +1,15 @@
 ---@type lsp.config
 return {
-  filetypes = { 'fish' },
-  cmd = { 'efm-langserver' },
-  requires = { 'fish_indent' },
-  name = 'fish_indent',
+  filetypes = { "fish" },
+  cmd = { "efm-langserver" },
+  requires = { "fish_indent" },
+  name = "fish_indent",
   init_options = { documentFormatting = true },
   settings = {
     languages = {
       fish = {
         {
-          formatCommand = 'fish_indent',
+          formatCommand = "fish_indent",
           formatStdin = true,
         },
       },

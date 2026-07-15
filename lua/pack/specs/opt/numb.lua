@@ -1,9 +1,9 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/nacro90/numb.nvim',
+  src = "https://github.com/nacro90/numb.nvim",
   data = {
     postload = function()
-      require('numb').setup({
+      require("numb").setup({
         show_numbers = true,
         show_cursorline = true,
         hide_relativenumbers = true,

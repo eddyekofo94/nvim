@@ -3,10 +3,10 @@
 
 ---@type lsp.config
 return {
-  filetypes = { 'yaml', 'yaml.gh' },
+  filetypes = { "yaml", "yaml.gh" },
   cmd = {
-    'yaml-language-server',
-    '--stdio',
+    "yaml-language-server",
+    "--stdio",
   },
   settings = {
     -- Don't send telemetry to redhat

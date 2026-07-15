@@ -1,4 +1,4 @@
-local ts = require('utils.ts')
+local ts = require("utils.ts")
 
 -- Fix treesitter bug: when `vim.treesitter.start/stop` is called with a
 -- different `buf` from current buffer, it can affect current buffer's
@@ -26,15 +26,15 @@ local function enable_ts_hl(buf)
   -- to `vim.treesitter.start()` and improve startup time
   -- Don't re-enable in the same buffer, else buffers loaded from session can
   -- have blank highlighting
-  if vim.b[buf].ft == '' or ts.is_active(buf) then
+  if vim.b[buf].ft == "" or ts.is_active(buf) then
     return
   end
   pcall(vim.treesitter.start, buf)
 end
 
-vim.api.nvim_create_autocmd('FileType', {
-  group = vim.api.nvim_create_augroup('ts.auto_start', {}),
-  desc = 'Automatically start treesitter highlighting for buffers.',
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("ts.auto_start", {}),
+  desc = "Automatically start treesitter highlighting for buffers.",
   callback = function(args)
     enable_ts_hl(args.buf)
   end,
@@ -49,24 +49,24 @@ local function enable_ts_folding(buf)
 
   for _, win in ipairs(vim.fn.win_findbuf(buf)) do
     local wo = vim.wo[win][0]
-    if wo.foldexpr ~= '0' then
+    if wo.foldexpr ~= "0" then
       goto continue
     end
-    wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 
     -- Default `foldmethod` is 'manual', set to 'indent' in `core.opts`
     -- Prefer treesitter folding over indent folding
-    if wo.foldmethod ~= 'manual' and wo.foldmethod ~= 'indent' then
+    if wo.foldmethod ~= "manual" and wo.foldmethod ~= "indent" then
       goto continue
     end
-    wo.foldmethod = 'expr'
+    wo.foldmethod = "expr"
     ::continue::
   end
 end
 
-vim.api.nvim_create_autocmd('FileType', {
-  group = vim.api.nvim_create_augroup('ts.set_folding', {}),
-  desc = 'Set treesitter folding.',
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("ts.set_folding", {}),
+  desc = "Set treesitter folding.",
   callback = function(args)
     enable_ts_folding(args.buf)
   end,

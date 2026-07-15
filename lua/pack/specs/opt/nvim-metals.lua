@@ -1,22 +1,22 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/scalameta/nvim-metals',
+  src = "https://github.com/scalameta/nvim-metals",
   data = {
     deps = {
-      src = 'https://github.com/mfussenegger/nvim-dap',
+      src = "https://github.com/mfussenegger/nvim-dap",
       data = { optional = true },
     },
     events = {
-      event = 'FileType',
-      pattern = { 'scala', 'sbt' },
+      event = "FileType",
+      pattern = { "scala", "sbt" },
     },
     postload = function()
-      vim.api.nvim_create_autocmd('FileType', {
-        group = vim.api.nvim_create_augroup('nvim_metals.init', {}),
-        pattern = { 'scala', 'sbt' },
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("nvim_metals.init", {}),
+        pattern = { "scala", "sbt" },
         callback = function()
-          local metals = require('metals')
-          local dap_ok, dap = pcall(require, 'dap')
+          local metals = require("metals")
+          local dap_ok, dap = pcall(require, "dap")
           local config = metals.bare_config()
 
           if dap_ok then
@@ -25,28 +25,28 @@ return {
             end
             dap.configurations.scala = {
               {
-                type = 'scala',
-                request = 'launch',
-                name = 'Run or Test Target',
+                type = "scala",
+                request = "launch",
+                name = "Run or Test Target",
                 metals = {
-                  runType = 'runOrTestFile',
+                  runType = "runOrTestFile",
                 },
               },
               {
-                type = 'scala',
-                request = 'launch',
-                name = 'Test Target',
+                type = "scala",
+                request = "launch",
+                name = "Test Target",
                 metals = {
-                  runType = 'testTarget',
+                  runType = "testTarget",
                 },
               },
               {
-                type = 'scala',
-                request = 'attach',
-                name = 'Attach to Localhost',
-                hostName = 'localhost',
+                type = "scala",
+                request = "attach",
+                name = "Attach to Localhost",
+                hostName = "localhost",
                 port = 5005,
-                buildTarget = 'root',
+                buildTarget = "root",
               },
             }
           end

@@ -1,10 +1,10 @@
 ---@type lsp.config
 return {
-  filetypes = { 'lua' },
-  cmd = { 'lua-language-server' },
+  filetypes = { "lua" },
+  cmd = { "lua-language-server" },
   root_markers = {
-    '.luarc.json',
-    '.luarc.jsonc',
+    ".luarc.json",
+    ".luarc.jsonc",
   },
   settings = {
     Lua = {

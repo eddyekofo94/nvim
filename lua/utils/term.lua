@@ -34,7 +34,7 @@ end
 ---@return string[]: command running in the foreground
 function M.fg_cmds(buf)
   buf = vim._resolve_bufnr(buf)
-  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= 'terminal' then
+  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= "terminal" then
     return {}
   end
   local channel = vim.bo[buf].channel
@@ -44,17 +44,17 @@ function M.fg_cmds(buf)
   end
 
   local tty = (function()
-    local obj = vim.system({ 'ps', '-o', 'tty=', '-p', tostring(pid) }):wait()
+    local obj = vim.system({ "ps", "-o", "tty=", "-p", tostring(pid) }):wait()
     if obj.code == 0 then
       return vim.trim(obj.stdout)
     end
   end)()
-  if not tty or tty == '' then
+  if not tty or tty == "" then
     return {}
   end
 
   local stat_cmds_str = (function()
-    local obj = vim.system({ 'ps', '-o', 'stat=,args=', '-t', tty }):wait()
+    local obj = vim.system({ "ps", "-o", "stat=,args=", "-t", tty }):wait()
     if obj.code == 0 then
       return obj.stdout
     end
@@ -64,9 +64,9 @@ function M.fg_cmds(buf)
   end
 
   local cmds = {}
-  for line in vim.gsplit(stat_cmds_str, '\n', { trimempty = true }) do
-    local stat, cmd = line:match('(%S+)%s+(.*)')
-    if stat and stat:find('^%S+%+') then
+  for line in vim.gsplit(stat_cmds_str, "\n", { trimempty = true }) do
+    local stat, cmd = line:match("(%S+)%s+(.*)")
+    if stat and stat:find("^%S+%+") then
       table.insert(cmds, cmd)
     end
   end
@@ -81,11 +81,11 @@ end
 ---@return string name
 function M.parse_name(bufname)
   local path, pid, cmd, name =
-    bufname:match('^term://(.*)//(%d+):([^#]*)%s*#?%s*(.*)')
-  return vim.fn.fnamemodify(vim.trim(path or ''), ':p'),
-    vim.trim(pid or ''),
-    vim.trim(cmd or ''),
-    vim.trim(name or '')
+    bufname:match("^term://(.*)//(%d+):([^#]*)%s*#?%s*(.*)")
+  return vim.fn.fnamemodify(vim.trim(path or ""), ":p"),
+    vim.trim(pid or ""),
+    vim.trim(cmd or ""),
+    vim.trim(name or "")
 end
 
 ---@param bufname string original terminal buffer name
@@ -101,31 +101,31 @@ function M.compose_name(bufname, opts)
 
   local path, pid, cmd, name = M.parse_name(bufname)
   return string.format(
-    'term://%s//%s%s%s',
+    "term://%s//%s%s%s",
     vim.fn
-      .fnamemodify(opts.path or path or vim.fn.getcwd(), ':~')
-      :gsub('/+$', ''),
+      .fnamemodify(opts.path or path or vim.fn.getcwd(), ":~")
+      :gsub("/+$", ""),
     (function()
-      local term_pid = opts.pid or pid or ''
-      return tonumber(term_pid) and term_pid .. ':' or ''
+      local term_pid = opts.pid or pid or ""
+      return tonumber(term_pid) and term_pid .. ":" or ""
     end)(),
-    opts.cmd or cmd or '',
+    opts.cmd or cmd or "",
     (function()
       local name_str = opts.name or name
-      return name_str == '' and '' or ' # ' .. name_str
+      return name_str == "" and "" or " # " .. name_str
     end)()
   )
 end
 
-M.BRACKET_PASTE_START = '\27[200~'
-M.BRACKET_PASTE_END = '\27[201~'
+M.BRACKET_PASTE_START = "\27[200~"
+M.BRACKET_PASTE_END = "\27[201~"
 
 ---Send multi-line message to terminal
 ---@param msg string|string[] message
 ---@param buf? integer terminal buffer, default to current buffer
 function M.send(msg, buf)
   buf = vim._resolve_bufnr(buf)
-  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= 'terminal' then
+  if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].bt ~= "terminal" then
     return
   end
 
@@ -134,7 +134,7 @@ function M.send(msg, buf)
     return
   end
 
-  if type(msg) ~= 'table' then
+  if type(msg) ~= "table" then
     msg = { msg }
   end
   if vim.tbl_isempty(msg) then
@@ -143,7 +143,7 @@ function M.send(msg, buf)
 
   vim.api.nvim_chan_send(
     chan,
-    M.BRACKET_PASTE_START .. table.concat(msg, '\n') .. M.BRACKET_PASTE_END
+    M.BRACKET_PASTE_START .. table.concat(msg, "\n") .. M.BRACKET_PASTE_END
   )
 end
 

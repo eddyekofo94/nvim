@@ -1,29 +1,29 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/rcarriga/nvim-dap-ui',
+  src = "https://github.com/rcarriga/nvim-dap-ui",
   data = {
     lazy = true,
     deps = {
-      { src = 'https://github.com/mfussenegger/nvim-dap' },
-      { src = 'https://github.com/nvim-neotest/nvim-nio' },
+      { src = "https://github.com/mfussenegger/nvim-dap" },
+      { src = "https://github.com/nvim-neotest/nvim-nio" },
       {
-        src = 'https://github.com/kyazdani42/nvim-web-devicons',
+        src = "https://github.com/kyazdani42/nvim-web-devicons",
         data = { optional = true },
       },
     },
     postload = function()
-      local dap, dapui = require('dap'), require('dapui')
-      local static = require('utils.static')
+      local dap, dapui = require("dap"), require("dapui")
+      local static = require("utils.static")
 
-      dap.listeners.after.event_initialized['dapui_config'] = dapui.open
-      dap.listeners.before.event_terminated['dapui_config'] = dapui.close
-      dap.listeners.before.event_exited['dapui_config'] = dapui.close
+      dap.listeners.after.event_initialized["dapui_config"] = dapui.open
+      dap.listeners.before.event_terminated["dapui_config"] = dapui.close
+      dap.listeners.before.event_exited["dapui_config"] = dapui.close
 
-      vim.keymap.set({ 'n', 'x' }, '<F24>', dapui.eval, {
-        desc = 'Inspect element value',
+      vim.keymap.set({ "n", "x" }, "<F24>", dapui.eval, {
+        desc = "Inspect element value",
       })
-      vim.keymap.set({ 'n', 'x' }, '<Leader>GK', dapui.eval, {
-        desc = 'Inspect element value',
+      vim.keymap.set({ "n", "x" }, "<Leader>GK", dapui.eval, {
+        desc = "Inspect element value",
       })
 
       ---@diagnostic disable-next-line: missing-fields
@@ -32,20 +32,20 @@ return {
         layouts = {
           {
             elements = {
-              { id = 'scopes', size = 0.25 },
-              { id = 'watches', size = 0.25 },
-              { id = 'breakpoints', size = 0.25 },
-              { id = 'stacks', size = 0.25 },
+              { id = "scopes", size = 0.25 },
+              { id = "watches", size = 0.25 },
+              { id = "breakpoints", size = 0.25 },
+              { id = "stacks", size = 0.25 },
             },
-            position = 'left',
+            position = "left",
             size = 0.3,
           },
           {
             elements = {
-              { id = 'repl', size = 0.5 },
-              { id = 'console', size = 0.5 },
+              { id = "repl", size = 0.5 },
+              { id = "console", size = 0.5 },
             },
-            position = 'bottom',
+            position = "bottom",
             size = 0.25,
           },
         },
@@ -70,26 +70,26 @@ return {
         },
         mappings = {
           -- Use a table to apply multiple mappings
-          expand = { '=', 'za' },
-          open = { '<CR>', 'o', 'zo' },
-          remove = { 'dd', 'x' },
-          edit = { 's', 'cc' },
-          repl = 'r',
-          toggle = '<Leader><Leader>',
+          expand = { "=", "za" },
+          open = { "<CR>", "o", "zo" },
+          remove = { "dd", "x" },
+          edit = { "s", "cc" },
+          repl = "r",
+          toggle = "<Leader><Leader>",
         },
         floating = {
-          border = 'solid',
+          border = "solid",
           max_height = 20,
           max_width = 80,
           mappings = {
-            close = { 'q', '<Esc>' },
+            close = { "q", "<Esc>" },
           },
         },
         windows = { indent = 1 },
       })
 
-      require('utils.hl').persist(function()
-        vim.api.nvim_set_hl(0, 'DapUIFloatBorder', { link = 'FloatBorder' })
+      require("utils.hl").persist(function()
+        vim.api.nvim_set_hl(0, "DapUIFloatBorder", { link = "FloatBorder" })
       end)
     end,
   },

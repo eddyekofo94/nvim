@@ -5,34 +5,34 @@ M.root_markers = {
   -- inside a python project and have correct python version in nvim.
   -- This is crucial for running pytest from within nvim using vim-test or
   -- other jobs that requires a python virtual environment.
-  { 'venv', 'env', '.venv', '.env' },
-  { '.python-version' },
+  { "venv", "env", ".venv", ".env" },
+  { ".python-version" },
   {
-    '.git',
-    '.svn',
-    '.bzr',
-    '.hg',
+    ".git",
+    ".svn",
+    ".bzr",
+    ".hg",
   },
   {
-    '.project',
-    '.pro',
-    '.sln',
-    '.vcxproj',
+    ".project",
+    ".pro",
+    ".sln",
+    ".vcxproj",
   },
   {
-    'Makefile',
-    'makefile',
-    'MAKEFILE',
+    "Makefile",
+    "makefile",
+    "MAKEFILE",
   },
   {
-    '.gitignore',
-    '.editorconfig',
+    ".gitignore",
+    ".editorconfig",
   },
   {
-    'README',
-    'README.md',
-    'README.txt',
-    'README.org',
+    "README",
+    "README.md",
+    "README.txt",
+    "README.org",
   },
 }
 
@@ -47,7 +47,7 @@ function M.root(source, marker)
   source = source or 0
   marker = marker or M.root_markers
 
-  if type(marker) ~= 'table' then
+  if type(marker) ~= "table" then
     return fs_root(source, marker)
   end
 
@@ -56,7 +56,7 @@ function M.root(source, marker)
   for _, m in ipairs(marker) do
     -- `m` is a string, join with previous string markers as they are
     -- considered to have the same priority
-    if type(m) == 'string' then
+    if type(m) == "string" then
       table.insert(joined_markers, m)
       goto continue
     end
@@ -84,20 +84,20 @@ end
 ---@param path string
 ---@return string?
 function M.read_file(path)
-  local file = io.open(path, 'r')
+  local file = io.open(path, "r")
   if not file then
     return nil
   end
-  local content = file:read('*a')
+  local content = file:read("*a")
   file:close()
-  return content or ''
+  return content or ""
 end
 
 ---Write string into file
 ---@param path string
 ---@return boolean success
 function M.write_file(path, str)
-  local file = io.open(path, 'w')
+  local file = io.open(path, "w")
   if not file then
     return false
   end
@@ -139,7 +139,7 @@ function M.diff(paths)
   ---Groups of paths with the same tail
   ---key:val = tail:ihead[]
   ---@type table<string, ipath[]>
-  local groups = { [''] = ipaths }
+  local groups = { [""] = ipaths }
 
   while #vim.tbl_keys(groups) < n_paths do
     local g = {} ---@type table<string, ipath[]>
@@ -147,12 +147,12 @@ function M.diff(paths)
       for _, ihead in ipairs(iheads) do
         local head = ihead[1]
         local idx = ihead[2]
-        local t = vim.fn.fnamemodify(head, ':t')
-        local h = vim.fn.fnamemodify(head, ':h')
+        local t = vim.fn.fnamemodify(head, ":t")
+        local h = vim.fn.fnamemodify(head, ":h")
         if #vim.tbl_keys(groups) > 1 then
-          t = t == '' and tail or tail == '' and t or vim.fs.joinpath(t, tail)
+          t = t == "" and tail or tail == "" and t or vim.fs.joinpath(t, tail)
         end
-        h = h == '.' and '' or h
+        h = h == "." and "" or h
 
         if not g[t] then
           g[t] = {}
@@ -180,8 +180,8 @@ function M.contains(parent, sub, strict)
   -- `fnamemodify()` adds trailing `/` to directories
   -- `parent` must end with `/`, else when `sub` is `/foo/bar-baz/file.txt` and
   -- `parent` is `/foo/bar`, the function gives false positive
-  parent = vim.fn.fnamemodify(vim.fs.normalize(parent), ':p')
-  sub = vim.fn.fnamemodify(vim.fs.normalize(sub), ':p')
+  parent = vim.fn.fnamemodify(vim.fs.normalize(parent), ":p")
+  sub = vim.fn.fnamemodify(vim.fs.normalize(sub), ":p")
   if strict and parent == sub then
     return false
   end
@@ -196,7 +196,7 @@ function M.is_root_dir(dir)
 end
 
 function M.is_git_repo()
-  vim.fn.system('git rev-parse --is-inside-work-tree')
+  vim.fn.system("git rev-parse --is-inside-work-tree")
 
   return vim.v.shell_error == 0
 end
@@ -222,52 +222,52 @@ end
 function M.is_full_path(path)
   -- Use `fs.normalize()` to trim trailing slashes so that
   -- `foo/` and `foo` are treated equally
-  return vim.fs.normalize(vim.fn.fnamemodify(path, ':p'))
+  return vim.fs.normalize(vim.fn.fnamemodify(path, ":p"))
     == vim.fs.normalize(path)
 end
 
 function M.is_new_file()
-  local filename = vim.fn.expand('%')
-  return filename ~= ''
-    and vim.bo.buftype == ''
+  local filename = vim.fn.expand("%")
+  return filename ~= ""
+    and vim.bo.buftype == ""
     and vim.fn.filereadable(filename) == 0
 end
 
 function M.get_project_path()
   local full_path = vim.api.nvim_buf_get_name(0)
-  if full_path == '' then
-    return '[No Name]'
+  if full_path == "" then
+    return "[No Name]"
   end
 
-  local git_root = vim.fs.root(0, '.git')
+  local git_root = vim.fs.root(0, ".git")
 
   if not git_root then
-    return vim.fn.fnamemodify(full_path, ':.')
+    return vim.fn.fnamemodify(full_path, ":.")
   end
 
-  local project_name = vim.fn.fnamemodify(git_root, ':t')
-  local rel_to_root = vim.fn.fnamemodify(full_path, ':p'):sub(#git_root + 2)
-  return project_name .. '/' .. rel_to_root
+  local project_name = vim.fn.fnamemodify(git_root, ":t")
+  local rel_to_root = vim.fn.fnamemodify(full_path, ":p"):sub(#git_root + 2)
+  return project_name .. "/" .. rel_to_root
 end
 
 function M.get_filename()
   local current = vim.api.nvim_get_current_win()
   local filename = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(current))
-  local icon = ''
-  local icon_highlight = ''
+  local icon = ""
+  local icon_highlight = ""
 
-  if filename ~= '' then
-    local devicons_present, devicons = pcall(require, 'nvim-web-devicons')
+  if filename ~= "" then
+    local devicons_present, devicons = pcall(require, "nvim-web-devicons")
 
     if devicons_present then
       local ft_icon, icon_hl = devicons.get_icon(filename)
       icon = (ft_icon ~= nil and ft_icon) or icon
       icon_highlight = icon_hl
     end
-    filename = vim.fn.fnamemodify(filename, ':~:.')
-    filename = string.format('%s%s', icon .. ' ', filename)
+    filename = vim.fn.fnamemodify(filename, ":~:.")
+    filename = string.format("%s%s", icon .. " ", filename)
   else
-    filename = string.format(' %s%s ', icon, vim.bo.filetype):upper()
+    filename = string.format(" %s%s ", icon, vim.bo.filetype):upper()
   end
 
   return filename, icon_highlight
@@ -295,7 +295,7 @@ function M.shorten_path(path, sep, max_len)
     end
 
     local segment = segments[idx]
-    local shortened = segment:sub(1, vim.startswith(segment, '.') and 2 or 1)
+    local shortened = segment:sub(1, vim.startswith(segment, ".") and 2 or 1)
     segments[idx] = shortened
     len = len - (#segment - #shortened)
   end
@@ -308,11 +308,11 @@ end
 ---@param patterns string[]? root patterns
 ---@return string? nil if not found
 function M.cwd_dir(path, patterns)
-  if not path or path == '' then
+  if not path or path == "" then
     return nil
   end
 
-  path = path:gsub('^oil://', ''):gsub('/$', '')
+  path = path:gsub("^oil://", ""):gsub("/$", "")
 
   patterns = patterns or M.root_markers
 
@@ -321,7 +321,7 @@ function M.cwd_dir(path, patterns)
     return nil
   end
 
-  local start_dir = stat.type == 'directory' and path or vim.fs.dirname(path)
+  local start_dir = stat.type == "directory" and path or vim.fs.dirname(path)
 
   for _, group in ipairs(patterns or {}) do
     local matches = vim.fs.find(group, {
@@ -347,14 +347,14 @@ function M.relative(base, path)
   local n_path = vim.fs.normalize(path)
 
   if n_path == n_base then
-    return '.'
+    return "."
   end
 
-  if not n_base:match('[/\\]$') then
-    n_base = n_base .. '/'
+  if not n_base:match("[/\\]$") then
+    n_base = n_base .. "/"
   end
 
-  if n_path:find('^' .. vim.pesc(n_base), 1, true) then
+  if n_path:find("^" .. vim.pesc(n_base), 1, true) then
     return n_path:sub(#n_base + 1)
   end
 

@@ -1,4 +1,4 @@
-local utils = require('utils')
+local utils = require("utils")
 
 ---@class fallback_tbl each key shares a default / fallback pattern table
 ---that can be used for pattern matching if corresponding key is not present
@@ -25,7 +25,7 @@ function fallback_tbl:fallback(k)
     if vim.islist(dest) and vim.islist(default) then
       return vim.list_extend(dest, default)
     else
-      dest = vim.tbl_deep_extend('keep', dest, default)
+      dest = vim.tbl_deep_extend("keep", dest, default)
       return dest
     end
   elseif dest then
@@ -152,7 +152,7 @@ end
 ---Check if the cursor is in cmdline
 ---@return boolean
 local function in_cmdline()
-  return vim.fn.mode():match('^c') ~= nil
+  return vim.fn.mode():match("^c") ~= nil
 end
 
 ---Get the cursor position, whether in cmdline or normal buffer
@@ -174,7 +174,7 @@ end
 local function get_tabout_offset(text)
   local min_offset ---@type number?
   for _, pattern in ipairs(closing_patterns[vim.bo.ft]) do
-    local _, offset = text:find('%s*' .. pattern)
+    local _, offset = text:find("%s*" .. pattern)
     if offset then
       min_offset = min_offset and math.min(min_offset, offset) or offset
     end
@@ -193,14 +193,14 @@ local function get_tabout_pos()
   -- Do not jump if the cursor is at the beginning of the current line
   -- or behind a starting comment marker
   if
-    ''
+    ""
     == vim.trim(
       leading:gsub(
-        '^%s*'
+        "^%s*"
           .. utils.str.escape_magic(
-            vim.trim(vim.bo.commentstring:gsub('%%s.*', ''))
+            vim.trim(vim.bo.commentstring:gsub("%%s.*", ""))
           ),
-        ''
+        ""
       )
     )
   then
@@ -217,7 +217,7 @@ local function get_tabout_pos()
 
   -- Jump to the end of the line if no closing pattern is found and not already
   -- at end of line
-  if trailing ~= '' then
+  if trailing ~= "" then
     return {
       cursor[1],
       slen(current_line),
@@ -264,11 +264,11 @@ local function get_tabin_offset_with_closing_pattern(leading, closing_pattern)
 
   -- Case 1
   local _, _, content, closing, trailing = leading:find(
-    string.format('%s(%%s*)(%s)(.*)$', opening_pattern, closing_pattern)
+    string.format("%s(%%s*)(%s)(.*)$", opening_pattern, closing_pattern)
   )
   if content == nil or closing == nil then
     _, _, content, closing, trailing =
-      leading:find(string.format('^(%%s*)(%s)(.*)$', closing_pattern))
+      leading:find(string.format("^(%%s*)(%s)(.*)$", closing_pattern))
   end
 
   if content and closing then
@@ -278,12 +278,12 @@ local function get_tabin_offset_with_closing_pattern(leading, closing_pattern)
 
   -- Case 2
   _, _, _, closing, trailing = leading:find(
-    string.format('%s%%s*.*%%S(%%s*%s)(.*)$', opening_pattern, closing_pattern)
+    string.format("%s%%s*.*%%S(%%s*%s)(.*)$", opening_pattern, closing_pattern)
   )
 
   if content == nil or closing == nil then
     _, _, closing, trailing =
-      leading:find(string.format('%%S(%%s*%s)(.*)$', closing_pattern))
+      leading:find(string.format("%%S(%%s*%s)(.*)$", closing_pattern))
   end
 
   return slen(trailing) + slen(closing), slen(closing)
@@ -294,7 +294,7 @@ end
 ---@return number: offset column offset after jump
 local function get_tabin_offset(leading, prev_offset)
   prev_offset = prev_offset or 0
-  if leading == '' then
+  if leading == "" then
     return prev_offset
   end
 
@@ -329,7 +329,7 @@ local function get_tabin_pos()
 
   -- Jump to the beginning of the line if no closing pattern is found and not
   -- already at beginning of line
-  if leading ~= '' then
+  if leading ~= "" then
     return {
       cursor[1],
       0,
@@ -364,8 +364,8 @@ local function get_jump_pos(direction)
   end
 end
 
-local KC_RIGHT = vim.keycode('<Right>')
-local KC_LEFT = vim.keycode('<Left>')
+local KC_RIGHT = vim.keycode("<Right>")
+local KC_LEFT = vim.keycode("<Left>")
 
 ---Set the cursor position, whether in cmdline or normal buffer
 ---@param pos number[] cursor position
@@ -376,13 +376,13 @@ local function set_cursor(pos)
     local diff = pos[2] - cursor[2]
     local termcode =
       string.rep(diff > 0 and KC_RIGHT or KC_LEFT, math.abs(diff))
-    vim.api.nvim_feedkeys(termcode, 'nt', true)
+    vim.api.nvim_feedkeys(termcode, "nt", true)
   else
     vim.api.nvim_win_set_cursor(0, pos)
   end
 end
 
-local KC_START_NEW_UNDO = vim.keycode('<C-g>u')
+local KC_START_NEW_UNDO = vim.keycode("<C-g>u")
 
 ---Get the position to jump for Tab or Shift-Tab, perform the jump if
 ---there is a position to jump to
@@ -394,7 +394,7 @@ local function jump(direction)
     set_cursor(pos)
     -- Start new undo block after moving cursor, else changes made
     -- after the cursor jump cannot be undone
-    vim.api.nvim_feedkeys(KC_START_NEW_UNDO, 'nt', false)
+    vim.api.nvim_feedkeys(KC_START_NEW_UNDO, "nt", false)
     return true
   end
 end
@@ -407,17 +407,17 @@ local function setup()
   end
   vim.g.loaded_tabout = true
 
-  utils.key.amend('i', '<Tab>', function(fallback)
+  utils.key.amend("i", "<Tab>", function(fallback)
     if not jump(1) then
       fallback()
     end
-  end, { desc = 'Tab out' })
+  end, { desc = "Tab out" })
 
-  utils.key.amend('i', '<S-Tab>', function(fallback)
+  utils.key.amend("i", "<S-Tab>", function(fallback)
     if not jump(-1) then
       fallback()
     end
-  end, { desc = 'Tab in' })
+  end, { desc = "Tab in" })
 end
 
 return {

@@ -2,18 +2,25 @@ if vim.env.NVIM_NO3RD then
   return
 end
 
-local utils = require('utils')
+local utils = require("utils")
 
-local config_path = vim.fn.stdpath('config') --[[@as string]]
-local specs_start_path = vim.fs.joinpath(config_path, 'lua/pack/specs/start')
-local specs_opt_path = vim.fs.joinpath(config_path, 'lua/pack/specs/opt')
+local config_path = vim.fn.stdpath("config") --[[@as string]]
+local specs_start_path = vim.fs.joinpath(config_path, "lua/pack/specs/start")
+local specs_opt_path = vim.fs.joinpath(config_path, "lua/pack/specs/opt")
 
 ---@param path string
----@return vim.pack.Spec[]
-local function collect_specs(path)
-  local specs = {} ---@type vim.pack.Spec[]
+---@param start boolean
+---@return pack.structured_spec[]
+local function collect_specs(path, start)
+  local specs = {} ---@type pack.structured_spec[]
   for spec in vim.fs.dir(path) do
-    table.insert(specs, dofile(vim.fs.joinpath(path, spec)))
+    local plugin_spec = dofile(vim.fs.joinpath(path, spec))
+    if type(plugin_spec) == "string" then
+      plugin_spec = { src = plugin_spec }
+    end
+    plugin_spec.data = plugin_spec.data or {}
+    plugin_spec.data.start = start
+    table.insert(specs, plugin_spec)
   end
   return specs
 end
@@ -23,48 +30,48 @@ end
 if vim.fn.argc(-1) > 0 or not vim.uv.fs_stat(utils.pack.root()) then
   utils.pack.add(
     vim.list_extend(
-      collect_specs(specs_start_path),
-      collect_specs(specs_opt_path)
+      collect_specs(specs_start_path, true),
+      collect_specs(specs_opt_path, false)
     )
   )
 else
   -- Defer loading plugin specs in `opt` if no files are given
   -- Specs under `start` are always loaded on startup
-  utils.pack.add(collect_specs(specs_start_path))
+  utils.pack.add(collect_specs(specs_start_path, true))
 
   local function load_opt()
-    utils.pack.add(collect_specs(specs_opt_path))
+    utils.pack.add(collect_specs(specs_opt_path, false))
   end
 
-  utils.load.on_events('UIEnter', 'pack.load_opt', vim.schedule_wrap(load_opt))
+  utils.load.on_events("UIEnter", "pack.load_opt", vim.schedule_wrap(load_opt))
 
   utils.load.on_events(
-    { 'CmdUndefined', 'SessionLoadPost', 'FileType', 'TermOpen' },
-    'pack.load_opt',
+    { "CmdUndefined", "SessionLoadPost", "FileType", "TermOpen" },
+    "pack.load_opt",
     load_opt
   )
 end
 
 -- Provide the conventional lazy-plugin event without depending on lazy.nvim.
-vim.api.nvim_create_autocmd('UIEnter', {
+vim.api.nvim_create_autocmd("UIEnter", {
   once = true,
   callback = function()
     vim.schedule(function()
-      vim.api.nvim_exec_autocmds('User', { pattern = 'VeryLazy' })
+      vim.api.nvim_exec_autocmds("User", { pattern = "VeryLazy" })
     end)
   end,
-  desc = 'Emit the post-startup VeryLazy user event',
+  desc = "Emit the post-startup VeryLazy user event",
 })
 
-vim.api.nvim_create_user_command('PackInstallAll', function()
+vim.api.nvim_create_user_command("PackInstallAll", function()
   utils.pack.add(
     vim.list_extend(
-      collect_specs(specs_start_path),
-      collect_specs(specs_opt_path)
+      collect_specs(specs_start_path, true),
+      collect_specs(specs_opt_path, false)
     )
   )
 end, {})
 
-vim.api.nvim_create_user_command('PackUpdateAll', function()
+vim.api.nvim_create_user_command("PackUpdateAll", function()
   vim.pack.update()
 end, {})
