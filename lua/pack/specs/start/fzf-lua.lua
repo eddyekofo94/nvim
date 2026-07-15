@@ -232,6 +232,9 @@ return {
         return opts
       end
 
+      -- Keep the active list after picker close so a grep picker can resume.
+      -- At most one list is retained: the next gather replaces it, toggling
+      -- back removes it, and VimLeavePre provides the final cleanup.
       local function cleanup_toggle_list()
         if _toggle_state.listfile then
           vim.fn.delete(_toggle_state.listfile)
@@ -321,6 +324,46 @@ return {
 
         _toggle_state.listfile = listfile
         return listfile
+      end
+
+      ---Build a live-grep base command that streams a newline-delimited file
+      ---list through xargs. fzf-lua appends the live query to this command;
+      ---the xargs worker receives it as `$1`, then receives a bounded batch of
+      ---paths. Large cumulative selections therefore never become a Lua
+      ---`search_paths` table or one oversized ripgrep argv. The read loop
+      ---preserves spaces and shell metacharacters; `--` protects paths
+      ---beginning with a dash.
+      ---@param listfile string
+      ---@return string
+      local function grep_file_list_cmd(listfile)
+        local rg_opts = config.setup_opts.grep.rg_opts or ""
+        if rg_opts:match "%s%-e%s*$" then
+          rg_opts =
+            rg_opts:gsub("%s%-e%s*$", " --threads=1 --with-filename -e")
+        else
+          rg_opts = rg_opts .. " --threads=1 --with-filename -e"
+        end
+        local worker = table.concat({
+          "query=$1",
+          "shift",
+          "exec rg " .. rg_opts .. ' "$query" -- "$@"',
+        }, "; ")
+
+        return table.concat({
+          "if [ -s " .. shellescape(listfile) .. " ]; then",
+          '  while IFS= read -r file || [ -n "$file" ]; do',
+          '    case "$file" in',
+          '      "~/"*) file="$HOME/${file#\\~/}" ;;',
+          "    esac;",
+          "    printf '%s\\0' \"$file\";",
+          "  done < " .. shellescape(listfile) .. ";",
+          -- Quote `-0` so fzf-lua's output-delimiter heuristic does not
+          -- mistake xargs' NUL-delimited input for NUL-delimited rg output.
+          "fi | xargs '-0' sh -c " .. shellescape(worker) .. " sh",
+          -- fzf's transform action protocol is line-oriented. A newline in the
+          -- reload command terminates the action before the shell pipeline is
+          -- complete, so keep the entire command on one line.
+        }, " ")
       end
 
       ---Reconstruct a shell command that lists the picker's files. We need a
@@ -478,13 +521,14 @@ return {
         -- Branch A: file-like picker -> live_grep
         ----------------------------------------------------------------
         if _files_keys[key] then
-          local files
+          local listfile
           if key == "buffers" then
-            files = listed_buffer_files(cwd)
+            listfile =
+              write_filtered_file_list(listed_buffer_files(cwd), query)
           elseif key == "oldfiles" then
-            files = oldfile_entries(cwd)
+            listfile = write_filtered_file_list(oldfile_entries(cwd), query)
           elseif key == "args" then
-            files = argfiles()
+            listfile = write_filtered_file_list(argfiles(), query)
           else
             -- files / smart_files / git_files: re-run the picker's cmd and
             -- pipe through fzf --filter so only entries matching the
@@ -499,7 +543,7 @@ return {
               )
               return
             end
-            local listfile = write_filtered_file_list_from_cmd(cmd, query, cwd)
+            listfile = write_filtered_file_list_from_cmd(cmd, query, cwd)
             if not listfile then
               vim.notify(
                 "[Fzf-lua] toggle: failed to gather file list",
@@ -507,13 +551,6 @@ return {
               )
               return
             end
-            files = vim.fn.readfile(listfile)
-          end
-
-          -- Static-list pickers: filter the in-memory list with fzf --filter
-          if key == "buffers" or key == "oldfiles" or key == "args" then
-            local listfile = write_filtered_file_list(files, query)
-            files = listfile and vim.fn.readfile(listfile) or {}
           end
 
           -- Commit state only after a successful gather, so a transient
@@ -522,7 +559,8 @@ return {
           _toggle_state.source_key = key
           _toggle_state.cwd = cwd
 
-          if not files or #files == 0 then
+          local list_stat = listfile and vim.uv.fs_stat(listfile)
+          if not list_stat or list_stat.size == 0 then
             vim.notify(
               "[Fzf-lua] toggle: no files match query '"
                 .. display_query(query)
@@ -534,14 +572,10 @@ return {
           end
 
           local grep_opts = with_toggle_header({
-            search_paths = files,
+            cmd = grep_file_list_cmd(listfile),
             query = _toggle_state.grep_query,
             cwd = cwd,
             rg_glob = false,
-            rg_opts = (config.setup_opts.grep.rg_opts or ""):gsub(
-              "%s%-e%s*$",
-              " --threads=1 -e"
-            ),
             resume = false, -- always launch grep fresh
             no_esc = false,
           }, {
@@ -2086,10 +2120,11 @@ return {
       ---exit immediately ([Process exited 0]).
       ---
       ---Fix: if the stored opts are normalized, strip the internal markers and
-      ---reopen the picker by key so normalization runs in full. For toggle-flow
-      ---live_grep pickers (has search_paths) we fall back to the source files
-      ---picker recorded in _toggle_state, since the search_paths list is
-      ---ephemeral and may be stale after an interrupted toggle.
+      ---reopen the picker by key so normalization runs in full. Legacy
+      ---toggle-flow live_grep pickers that carry `search_paths` fall back to
+      ---the source picker because that in-memory list may be stale. The current
+      ---cmd-backed toggle retains one listfile until replacement or VimLeavePre,
+      ---so its general-case resume remains valid.
       ---@return nil
       local function safe_resume()
         local resume = fzf.config and fzf.config.__resume_data
@@ -2112,7 +2147,7 @@ return {
           or opts.query
           or ""
 
-        -- Special case: toggle-flow live_grep with search_paths.
+        -- Special case: legacy toggle-flow live_grep with search_paths.
         -- The search_paths list is transient (built from a filtered fd/rg run
         -- at toggle time) and may no longer reflect current state. Reopen the
         -- source files picker from _toggle_state so the user lands in a clean,
@@ -2203,19 +2238,29 @@ return {
           return buffer_root
         end
 
-        if window_cwd then
-          return window_cwd
-        end
-
+        -- Avoid accidentally crawling all of $HOME or `/` when Smart Files
+        -- already knows the last useful project directory.
         local last_cwd = valid_dir(vim.g._smart_files_last_cwd)
         if last_cwd then
           return last_cwd
+        end
+
+        if window_cwd then
+          return window_cwd
         end
 
         return valid_dir(vim.fn.getcwd()) or valid_dir(vim.uv.cwd()) or "."
       end
 
       local smart_files_oldfiles_cache = {}
+      local smart_files_oldfiles_cache_size = 0
+      local smart_files_oldfiles_cache_tick = 0
+
+      local function clear_smart_files_oldfiles_cache()
+        smart_files_oldfiles_cache = {}
+        smart_files_oldfiles_cache_size = 0
+        smart_files_oldfiles_cache_tick = 0
+      end
 
       -- Tmpfiles from the most recent smart_files() call. Deleted at the
       -- start of the next call (fzf has already exited by then) and at exit.
@@ -2240,14 +2285,37 @@ return {
         return ext and vim.tbl_contains(smart_files_image_exts, ext) or false
       end
 
-      local function smart_files_cache_key(real_cwd, oldfiles, scan_limit, other_limit)
+      local function smart_files_cache_key(real_cwd, scan_limit, other_limit)
         return table.concat({
           real_cwd,
           tostring(scan_limit),
           tostring(other_limit),
+        }, "\t")
+      end
+
+      local function smart_files_oldfiles_fingerprint(oldfiles)
+        return table.concat({
           tostring(#oldfiles),
           tostring(oldfiles[1] or ""),
         }, "\t")
+      end
+
+      local function trim_smart_files_oldfiles_cache(limit)
+        while smart_files_oldfiles_cache_size > limit do
+          local oldest_key
+          local oldest_tick
+          for key, entry in pairs(smart_files_oldfiles_cache) do
+            if not oldest_tick or entry.last_used < oldest_tick then
+              oldest_key = key
+              oldest_tick = entry.last_used
+            end
+          end
+          if not oldest_key then
+            break
+          end
+          smart_files_oldfiles_cache[oldest_key] = nil
+          smart_files_oldfiles_cache_size = smart_files_oldfiles_cache_size - 1
+        end
       end
 
       local function smart_files_recent_entries(real_cwd, opts)
@@ -2255,16 +2323,29 @@ return {
         local other_oldfiles_limit = opts.smart_other_oldfiles_limit or 5
         local oldfiles_scan_limit = opts.smart_oldfiles_scan_limit or 1000
         local cache_ttl_ms = opts.smart_oldfiles_cache_ttl_ms or 10000
+        local cache_limit = math.max(opts.smart_oldfiles_cache_limit or 16, 0)
         local cache_key = smart_files_cache_key(
           real_cwd,
-          oldfiles,
           oldfiles_scan_limit,
           other_oldfiles_limit
         )
+        local fingerprint = smart_files_oldfiles_fingerprint(oldfiles)
         local now = vim.uv.hrtime() / 1000000
+        trim_smart_files_oldfiles_cache(cache_limit)
         local cached = smart_files_oldfiles_cache[cache_key]
-        if cached and now - cached.time <= cache_ttl_ms then
+        if
+          cached
+          and cached.fingerprint == fingerprint
+          and now - cached.time <= cache_ttl_ms
+        then
+          smart_files_oldfiles_cache_tick = smart_files_oldfiles_cache_tick + 1
+          cached.last_used = smart_files_oldfiles_cache_tick
           return vim.deepcopy(cached.cwd_oldfiles), vim.deepcopy(cached.other_oldfiles)
+        end
+
+        if cached then
+          smart_files_oldfiles_cache[cache_key] = nil
+          smart_files_oldfiles_cache_size = smart_files_oldfiles_cache_size - 1
         end
 
         local cwd_oldfiles = {}
@@ -2311,11 +2392,18 @@ return {
           ::skip_oldfile::
         end
 
-        smart_files_oldfiles_cache[cache_key] = {
-          time = now,
-          cwd_oldfiles = cwd_oldfiles,
-          other_oldfiles = other_oldfiles,
-        }
+        if cache_limit > 0 then
+          smart_files_oldfiles_cache_tick = smart_files_oldfiles_cache_tick + 1
+          smart_files_oldfiles_cache[cache_key] = {
+            time = now,
+            fingerprint = fingerprint,
+            last_used = smart_files_oldfiles_cache_tick,
+            cwd_oldfiles = cwd_oldfiles,
+            other_oldfiles = other_oldfiles,
+          }
+          smart_files_oldfiles_cache_size = smart_files_oldfiles_cache_size + 1
+          trim_smart_files_oldfiles_cache(cache_limit)
+        end
         return vim.deepcopy(cwd_oldfiles), vim.deepcopy(other_oldfiles)
       end
 
@@ -2425,7 +2513,7 @@ return {
 
         local smart_actions = {
           ["ctrl-r"] = function()
-            smart_files_oldfiles_cache = {}
+            clear_smart_files_oldfiles_cache()
             vim.g._fzf_transitioning = true
             vim.schedule(function()
               fzf.smart_files {

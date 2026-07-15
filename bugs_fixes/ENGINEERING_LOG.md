@@ -73,3 +73,17 @@ Automated status: `tools/verify.sh` passes. Real-TTY checks returned 56
 Insert-mode candidates, rendered the menu, installed `<C-Space>`, accepted
 `completion_candidate` with `<C-n><CR>`, and rendered command-line path
 completion without errors.
+
+## 2026-07-15 - Smart Files cumulative grep transport
+
+- Reproduced `converter` -> `Ctrl-G` -> `OVERRIDES` returning `0/0` even though
+  `converter.py` contained matches.
+- Forced ripgrep filenames for one-file xargs batches.
+- Prevented fzf-lua from mistaking xargs' NUL-delimited input for
+  NUL-delimited ripgrep output by quoting the `'-0'` flag.
+- Added a regression test through the real fzf-lua libuv output transform, not
+  only direct shell execution.
+
+Automated status: all five Smart Files tests pass and `tools/verify.sh` passes.
+Normal-session QA confirmed the exact grep result, toggle-back, `Ctrl-R`, and
+F4/F5 preview behavior with empty `:messages` output.

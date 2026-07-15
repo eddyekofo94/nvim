@@ -31,6 +31,8 @@ NVIM_APPNAME=nvim nvim --headless -u NONE \
   '+lua for _, f in ipairs(vim.fn.glob("**/*.lua", false, true)) do local chunk, err = loadfile(f); if not chunk then error(f .. ": " .. err) end end' \
   +qa
 
+make test-smart-files
+
 luacheck -q \
   lua/core/options.lua \
   lua/core/pack.lua \

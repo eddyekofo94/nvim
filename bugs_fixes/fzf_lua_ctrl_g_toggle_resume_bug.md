@@ -143,3 +143,28 @@ process has already exited normally, which matches the visible
 between files and grep. It should not accidentally accept/open an item, and
 `<leader>'` should resume or safely reopen the last logical picker instead of
 showing a dead terminal buffer with `[Process exited 0]`.
+
+## 2026-07-15 - Cumulative Grep Empty-Result Fix
+
+The file-to-grep toggle could preserve a cumulative file list yet show `0/0`
+for content present in the selected files. The reproducer filtered Smart Files
+with `converter`, toggled with `Ctrl-G`, and searched for `OVERRIDES` in
+`converter.py`.
+
+Two command-boundary problems caused the empty result:
+
+1. A one-file xargs batch let ripgrep omit the filename, producing an entry
+   that fzf-lua could not treat as `file:line:column:text`.
+2. The literal `xargs -0` text triggered fzf-lua's output-delimiter heuristic,
+   even though only xargs input was NUL-delimited and ripgrep output remained
+   newline-delimited. The transport buffered and discarded the matches.
+
+The cumulative grep worker now forces `--with-filename`, keeps its live command
+on one line, and quotes xargs' `'-0'` flag so the output splitter uses newlines.
+Its active listfile is intentionally retained for picker resume, bounded to one
+file, replaced by the next gather, removed on toggle-back, and deleted at
+`VimLeavePre`.
+`tests/smart_files_spec.lua` covers the public toggle action and the real
+fzf-lua libuv transform path, plus replacement cleanup for the retained
+listfile. `tools/verify.sh` passes, and normal-session QA confirmed grep,
+toggle-back, refresh, and F4/F5 preview behavior.

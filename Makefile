@@ -12,3 +12,7 @@ format:
 .PHONY: lint
 lint:
 	luacheck -q .
+
+.PHONY: test-smart-files
+test-smart-files:
+	NVIM_APPNAME=nvim nvim --headless '+packadd plenary.nvim' '+PlenaryBustedFile tests/smart_files_spec.lua'
