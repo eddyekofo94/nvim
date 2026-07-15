@@ -1,9 +1,8 @@
 local M = {}
-local term_utils = require "utils.term"
+local term_utils = require("utils.term")
 
 -- Terminal state
 local _last_term_buf = nil
-local _term_fullscreen = false
 local _term_normal_height = 16
 
 -- Create TermOpen autocmd at module load time (not lazily)
@@ -245,7 +244,12 @@ function M.setup()
   vim.g.loaded_term_plugin = true
 
   -- Send Escape directly to terminal
-  vim.keymap.set("t", "<Esc>", "<Esc>", { replace_keycodes = false, desc = "Send Escape to terminal" })
+  vim.keymap.set(
+    "t",
+    "<Esc>",
+    "<Esc>",
+    { replace_keycodes = false, desc = "Send Escape to terminal" }
+  )
   -- Use `<C-\><Esc>` instead to exit terminal mode
   vim.keymap.set(
     "t",
@@ -266,9 +270,9 @@ function M.setup()
       M.term_init(buf)
     end)
 
-  local groupid = vim.api.nvim_create_augroup("term", {})
+  local setup_group = vim.api.nvim_create_augroup("term", {})
   vim.api.nvim_create_autocmd("TermOpen", {
-    group = groupid,
+    group = setup_group,
     desc = "Set terminal keymaps and options, open term in split.",
     callback = function(args)
       term_init(args.buf)
@@ -288,9 +292,9 @@ vim.api.nvim_create_user_command("STerm", function()
 end, { desc = "Open terminal in horizontal split" })
 
 vim.api.nvim_create_user_command("BTerm", function()
-  vim.cmd "split"
-  vim.cmd "wincmd J"
-  vim.cmd "resize 16"
+  vim.cmd("split")
+  vim.cmd("wincmd J")
+  vim.cmd("resize 16")
   vim.cmd.terminal()
   vim.b.focus_disable = true
   vim.w.focus_disable = true
@@ -307,16 +311,16 @@ vim.keymap.set("n", "<A-i>", function()
     end
   end
   if _last_term_buf and vim.api.nvim_buf_is_valid(_last_term_buf) then
-    vim.cmd "split"
-    vim.cmd "wincmd J"
-    vim.cmd "resize 16"
+    vim.cmd("split")
+    vim.cmd("wincmd J")
+    vim.cmd("resize 16")
     vim.api.nvim_win_set_buf(0, _last_term_buf)
     vim.b.focus_disable = true
     vim.w.focus_disable = true
   else
-    vim.cmd "split"
-    vim.cmd "wincmd J"
-    vim.cmd "resize 16"
+    vim.cmd("split")
+    vim.cmd("wincmd J")
+    vim.cmd("resize 16")
     vim.cmd.terminal()
     vim.b.focus_disable = true
     vim.w.focus_disable = true
@@ -346,7 +350,7 @@ vim.keymap.set({ "n", "t" }, "<A-o>", function()
     vim.cmd("resize " .. _term_normal_height)
     vim.w[win].term_fullscreen = false
   else
-    vim.cmd "resize 100%"
+    vim.cmd("resize 100%")
     vim.w[win].term_fullscreen = true
   end
 end, { desc = "Toggle terminal fullscreen" })
@@ -359,7 +363,7 @@ end, { desc = "Open new terminal vertically" })
 vim.api.nvim_create_user_command("FTerm", function(opts)
   local cmd = opts.args and #opts.args > 0 and opts.args or vim.o.shell
   vim.cmd.terminal(cmd)
-  vim.cmd "resize 100%"
+  vim.cmd("resize 100%")
   local win = vim.api.nvim_get_current_win()
   local buf = vim.api.nvim_win_get_buf(win)
   vim.w[win].term_fullscreen = true
@@ -370,7 +374,7 @@ end, { nargs = "?", desc = "Open terminal fullscreen" })
 
 vim.api.nvim_create_user_command("LazyGit", function()
   vim.cmd.terminal("LazyGit")
-  vim.cmd "resize 100%"
+  vim.cmd("resize 100%")
   local win = vim.api.nvim_get_current_win()
   local buf = vim.api.nvim_win_get_buf(win)
   vim.w[win].term_fullscreen = true

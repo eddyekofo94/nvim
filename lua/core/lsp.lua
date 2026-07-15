@@ -1,50 +1,47 @@
-local lsp = require('utils.lsp')
+local lsp = require("utils.lsp")
 
 local M = {}
 local attached = {}
 
-vim.api.nvim_create_autocmd('LspAttach', {
-  desc = 'Setup document highlight on LspAttach.',
+vim.api.nvim_create_autocmd("LspAttach", {
+  desc = "Setup document highlight on LspAttach.",
   callback = function(args)
-    if not require('utils.load').loaded['core.lsp'] then
+    if not require("utils.load").loaded["core.lsp"] then
       return
     end
-    local key = args.data.client_id .. ':' .. args.buf
+    local key = args.data.client_id .. ":" .. args.buf
     if attached[key] then
       return
     end
     attached[key] = true
-    M.on_attach(
-      vim.lsp.get_client_by_id(args.data.client_id),
-      args.buf
-    )
+    M.on_attach(vim.lsp.get_client_by_id(args.data.client_id), args.buf)
   end,
 })
 
 function M.on_attach(client, buf)
   local group = vim.api.nvim_create_augroup(
-    'lsp.document_highlight.' .. buf,
+    "lsp.document_highlight." .. buf,
     { clear = true }
   )
-  vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+  vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
     group = group,
     buffer = buf,
     callback = function()
       local clients = vim.lsp.get_clients({ bufnr = buf })
       for _, c in ipairs(clients) do
-        if c:supports_method('textDocument/documentHighlight', buf) then
+        if c:supports_method("textDocument/documentHighlight", buf) then
           vim.lsp.buf.document_highlight()
           return
         end
       end
     end,
   })
-  vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+  vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
     group = group,
     buffer = buf,
     callback = vim.lsp.buf.clear_references,
   })
-  vim.api.nvim_create_autocmd('LspDetach', {
+  vim.api.nvim_create_autocmd("LspDetach", {
     group = group,
     buffer = buf,
     callback = function(detach_args)
@@ -53,7 +50,7 @@ function M.on_attach(client, buf)
         local remaining = vim.lsp.get_clients({ bufnr = buf })
         local has_highlight = vim.iter(remaining):any(function(c)
           return c.id ~= detach_args.data.client_id
-            and c:supports_method('textDocument/documentHighlight', buf)
+            and c:supports_method("textDocument/documentHighlight", buf)
         end)
         if not has_highlight then
           vim.api.nvim_del_augroup_by_id(group)
@@ -64,8 +61,8 @@ function M.on_attach(client, buf)
 end
 
 vim.lsp.config(
-  '*',
-  vim.tbl_deep_extend('force', lsp.default_config, {
+  "*",
+  vim.tbl_deep_extend("force", lsp.default_config, {
     capabilities = {
       textDocument = {
         sync = {
@@ -82,9 +79,9 @@ vim.lsp.start = lsp.start
 -- Enable all LSP servers immediately
 -- This module is already lazy-loaded on first FileType event (see init.lua),
 -- so we can enable servers directly without another deferred autocmd
-for _, dir in ipairs(vim.api.nvim__get_runtime({ 'lsp' }, true, {})) do
+for _, dir in ipairs(vim.api.nvim__get_runtime({ "lsp" }, true, {})) do
   for config_file in vim.fs.dir(dir) do
-    vim.lsp.enable(vim.fn.fnamemodify(config_file, ':r'))
+    vim.lsp.enable(vim.fn.fnamemodify(config_file, ":r"))
   end
 end
 
@@ -92,20 +89,20 @@ end
 -- implementation or type definition is found
 do
   local methods = {
-    'textDocument/references',
-    'textDocument/definition',
-    'textDocument/declaration',
-    'textDocument/implementation',
-    'textDocument/typeDefinition',
+    "textDocument/references",
+    "textDocument/definition",
+    "textDocument/declaration",
+    "textDocument/implementation",
+    "textDocument/typeDefinition",
   }
 
   for _, method in ipairs(methods) do
-    local obj_name = method:match('/(%w*)$'):gsub('s$', '')
+    local obj_name = method:match("/(%w*)$"):gsub("s$", "")
     local handler = vim.lsp.handlers[method]
 
     vim.lsp.handlers[method] = function(err, result, ctx, ...)
       if not result or vim.tbl_isempty(result) then
-        vim.notify('[LSP] no ' .. obj_name .. ' found')
+        vim.notify("[LSP] no " .. obj_name .. " found")
         return
       end
 
@@ -143,17 +140,17 @@ do
     return open_floating_preview(
       contents,
       syntax,
-      vim.tbl_deep_extend('force', opts, {
-        border = 'solid',
+      vim.tbl_deep_extend("force", opts, {
+        border = "solid",
         max_width = math.max(80, math.ceil(vim.go.columns * 0.75)),
         max_height = math.max(20, math.ceil(vim.go.lines * 0.4)),
         close_events = {
-          'CursorMovedI',
-          'CursorMoved',
-          'InsertEnter',
-          'WinScrolled',
-          'WinResized',
-          'VimResized',
+          "CursorMovedI",
+          "CursorMoved",
+          "InsertEnter",
+          "WinScrolled",
+          "WinResized",
+          "VimResized",
         },
       })
     )
@@ -181,14 +178,14 @@ do
   local lsp_autostop_pending
   local lsp_autostop_timeout_ms = 60000
 
-  vim.api.nvim_create_autocmd('LspDetach', {
-    group = vim.api.nvim_create_augroup('lsp.auto_stop', {}),
-    desc = 'Automatically stop detached language servers.',
+  vim.api.nvim_create_autocmd("LspDetach", {
+    group = vim.api.nvim_create_augroup("lsp.auto_stop", {}),
+    desc = "Automatically stop detached language servers.",
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client then
         vim.notify(
-          '[LSP] ' .. client.name .. ' detached',
+          "[LSP] " .. client.name .. " detached",
           vim.log.levels.DEBUG
         )
       end
@@ -199,9 +196,9 @@ do
       lsp_autostop_pending = true
       vim.defer_fn(function()
         lsp_autostop_pending = nil
-        for _, client in ipairs(vim.lsp.get_clients()) do
-          if not next(client.attached_buffers or {}) then
-            lsp.soft_stop(client)
+        for _, lsp_client in ipairs(vim.lsp.get_clients()) do
+          if not next(lsp_client.attached_buffers or {}) then
+            lsp.soft_stop(lsp_client)
           end
         end
       end, lsp_autostop_timeout_ms)
@@ -215,24 +212,24 @@ do
   local timers = {}
 
   local activity_events = {
-    'LspAttach',
-    'LspStart',
-    'BufReadPost',
-    'BufWritePost',
-    'InsertEnter',
-    'TextChangedI',
-    'TextChangedP',
+    "LspAttach",
+    "LspStart",
+    "BufReadPost",
+    "BufWritePost",
+    "InsertEnter",
+    "TextChangedI",
+    "TextChangedP",
   }
 
   local group =
-    vim.api.nvim_create_augroup('lsp.inactivity_timeout', { clear = true })
+    vim.api.nvim_create_augroup("lsp.inactivity_timeout", { clear = true })
 
-  vim.api.nvim_create_autocmd('LspStart', {
+  vim.api.nvim_create_autocmd("LspStart", {
     group = group,
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client then
-        vim.notify('[LSP] ' .. client.name .. ' started', vim.log.levels.INFO)
+        vim.notify("[LSP] " .. client.name .. " started", vim.log.levels.INFO)
       end
     end,
   })
@@ -241,28 +238,31 @@ do
     group = group,
     callback = function(args)
       local buf = args.buf
-      for _, client in ipairs(vim.lsp.get_clients({ buffer = buf })) do
-        if timers[client.id] then
-          timers[client.id]:close()
+      for _, lsp_client in ipairs(vim.lsp.get_clients({ buffer = buf })) do
+        if timers[lsp_client.id] then
+          timers[lsp_client.id]:close()
         end
-        timers[client.id] = vim.defer_fn(function()
+        local client_id = lsp_client.id
+        timers[client_id] = vim.defer_fn(function()
           if vim.api.nvim_buf_is_valid(buf) then
-            local client = vim.lsp.get_client_by_id(client.id)
-            if client and next(client.attached_buffers or {}) then
+            local active_client = vim.lsp.get_client_by_id(client_id)
+            if
+              active_client and next(active_client.attached_buffers or {})
+            then
               vim.notify(
-                '[LSP] stopping ' .. client.name .. ' due to inactivity',
+                "[LSP] stopping " .. active_client.name .. " due to inactivity",
                 vim.log.levels.DEBUG
               )
-              lsp.soft_stop(client)
+              lsp.soft_stop(active_client)
             end
           end
-          timers[client.id] = nil
+          timers[client_id] = nil
         end, inactivity_timeout_ms)
       end
     end,
   })
 
-  vim.api.nvim_create_autocmd('LspDetach', {
+  vim.api.nvim_create_autocmd("LspDetach", {
     group = group,
     callback = function(args)
       local client_id = args.data.client_id
@@ -305,7 +305,7 @@ do
     end
   end
 
-  local key = require('utils.key')
+  local key = require("utils.key")
 
   -- stylua: ignore start
   key.amend({ 'n', 'x' }, 'gd', act_if_supports_method('textDocument/definition', 'definition'), { desc = 'Go to definition' })

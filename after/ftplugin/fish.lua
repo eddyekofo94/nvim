@@ -1,7 +1,7 @@
 vim.bo.commentstring = "# %s"
-vim.opt_local.formatoptions:remove "t"
+vim.opt_local.formatoptions:remove("t")
 
-local hl = require "utils.hl"
+local hl = require("utils.hl")
 hl.persist(function()
   hl.set(0, "@string", { link = "String" })
   hl.set(0, "@string.escape", { link = "SpecialChar" })

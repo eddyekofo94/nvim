@@ -3,8 +3,8 @@ local M = {}
 local _resolve_context_cache = {}
 local _resolve_context_ttl = 5000 -- ms
 
-vim.api.nvim_create_autocmd({ 'BufWrite', 'FileChangedShellPost' }, {
-  group = vim.api.nvim_create_augroup('git.refresh_writetick', {}),
+vim.api.nvim_create_autocmd({ "BufWrite", "FileChangedShellPost" }, {
+  group = vim.api.nvim_create_augroup("git.refresh_writetick", {}),
   callback = function(args)
     vim.b[args.buf].git_writetick = vim.uv.hrtime()
   end,
@@ -28,18 +28,18 @@ function M.diffstat(buf, args)
   if
     (vim.b[buf].git_diffstat_writetick or 0)
       < (vim.b[buf].git_writetick or 1)
-    and vim.fn.executable('git') == 1
+    and vim.fn.executable("git") == 1
   then
     local bufname = vim.api.nvim_buf_get_name(buf)
     local dirname = vim.fs.dirname(bufname)
     local now = vim.uv.hrtime()
-    local cmd = vim.list_extend({ 'git', '-C', dirname, unpack(args or {}) }, {
-      '--no-pager',
-      'diff',
-      '-U0',
-      '--no-color',
-      '--no-ext-diff',
-      '--',
+    local cmd = vim.list_extend({ "git", "-C", dirname, unpack(args or {}) }, {
+      "--no-pager",
+      "diff",
+      "-U0",
+      "--no-color",
+      "--no-ext-diff",
+      "--",
       bufname,
     })
 
@@ -51,10 +51,10 @@ function M.diffstat(buf, args)
       end
 
       local stat = { added = 0, removed = 0, changed = 0 }
-      for _, line in ipairs(vim.split(o.stdout, '\n')) do
-        if line:find('^@@ ') then
+      for _, line in ipairs(vim.split(o.stdout, "\n")) do
+        if line:find("^@@ ") then
           local num_lines_old, num_lines_new =
-            line:match('^@@ %-%d+,?(%d*) %+%d+,?(%d*)')
+            line:match("^@@ %-%d+,?(%d*) %+%d+,?(%d*)")
           num_lines_old = tonumber(num_lines_old) or 1
           num_lines_new = tonumber(num_lines_new) or 1
           local num_lines_changed = math.min(num_lines_old, num_lines_new)
@@ -95,16 +95,16 @@ function M.execute(buf, args)
   end
 
   local cache_key = vim.fn.sha256(table.concat(args)):sub(1, 8)
-  local cache_key_writetick = cache_key .. '_writetick'
+  local cache_key_writetick = cache_key .. "_writetick"
 
   if
     (vim.b[buf][cache_key_writetick] or 0) < (vim.b[buf].git_writetick or 1)
-    and vim.fn.executable('git') == 1
+    and vim.fn.executable("git") == 1
   then
     local now = vim.uv.hrtime()
     local cmd = {
-      'git',
-      '-C',
+      "git",
+      "-C",
       vim.fs.dirname(vim.api.nvim_buf_get_name(buf)),
       unpack(args),
     }
@@ -144,7 +144,7 @@ function M.resolve_context(buf, fallback_args)
   end
 
   -- Check cache
-  local cache_key = buf .. '|' .. vim.inspect(fallback_args)
+  local cache_key = buf .. "|" .. vim.inspect(fallback_args)
   local cached = _resolve_context_cache[cache_key]
   if
     cached and (vim.uv.hrtime() / 1e6) - cached.time < _resolve_context_ttl
@@ -152,25 +152,25 @@ function M.resolve_context(buf, fallback_args)
     return cached.work_tree, cached.git_dir
   end
 
-  local work_tree = M.execute(buf, { 'rev-parse', '--show-toplevel' })
+  local work_tree = M.execute(buf, { "rev-parse", "--show-toplevel" })
   for _, args in ipairs(fallback_args) do
     if work_tree then
       break
     end
     work_tree = M.execute(
       buf,
-      vim.list_extend(vim.deepcopy(args), { 'rev-parse', '--show-toplevel' })
+      vim.list_extend(vim.deepcopy(args), { "rev-parse", "--show-toplevel" })
     )
   end
 
-  local git_dir = M.execute(buf, { 'rev-parse', '--git-dir' })
+  local git_dir = M.execute(buf, { "rev-parse", "--git-dir" })
   for _, args in ipairs(fallback_args) do
     if git_dir then
       break
     end
     git_dir = M.execute(
       buf,
-      vim.list_extend(vim.deepcopy(args), { 'rev-parse', '--git-dir' })
+      vim.list_extend(vim.deepcopy(args), { "rev-parse", "--git-dir" })
     )
   end
 

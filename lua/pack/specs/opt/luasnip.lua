@@ -1,15 +1,15 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/L3MON4D3/LuaSnip',
+  src = "https://github.com/L3MON4D3/LuaSnip",
   data = {
-    build = 'make install_jsregexp',
-    events = { event = 'ModeChanged', pattern = '*:[iRss\x13vV\x16]*' },
+    build = "make install_jsregexp",
+    events = { event = "ModeChanged", pattern = "*:[iRss\x13vV\x16]*" },
     postload = function()
-      local ls = require('luasnip')
-      local ls_types = require('luasnip.util.types')
-      local ls_vim_version = require('luasnip.util.vimversion')
-      local ls_ft = require('luasnip.extras.filetype_functions')
-      local utils = require('utils')
+      local ls = require("luasnip")
+      local ls_types = require("luasnip.util.types")
+      local ls_vim_version = require("luasnip.util.vimversion")
+      local ls_ft = require("luasnip.extras.filetype_functions")
+      local utils = require("utils")
 
       -- Cache `ge()` to fix performance issue:
       -- https://github.com/L3MON4D3/LuaSnip/issues/1393
@@ -21,7 +21,7 @@ return {
         ft = ft or vim.bo.ft
         utils.load.ft_load_once(
           ft,
-          'pack.res.luasnip.snippets',
+          "pack.res.luasnip.snippets",
           function(_, snips)
             if not snips or vim.tbl_isempty(snips) then
               return
@@ -35,7 +35,7 @@ return {
 
       ls.setup({
         ft_func = function()
-          load_snippets('all')
+          load_snippets("all")
           local langs
           local ok, result = pcall(ls_ft.from_pos_or_filetype)
           if ok then
@@ -52,17 +52,17 @@ return {
         link_roots = true,
         exit_roots = false,
         link_children = true,
-        region_check_events = 'CursorMoved,CursorMovedI,InsertEnter',
-        delete_check_events = 'TextChanged,TextChangedI,InsertLeave',
+        region_check_events = "CursorMoved,CursorMovedI,InsertEnter",
+        delete_check_events = "TextChanged,TextChangedI,InsertLeave",
         enable_autosnippets = true,
-        cut_selection_keys = '<Tab>',
+        cut_selection_keys = "<Tab>",
         ext_opts = {
           [ls_types.choiceNode] = {
             active = {
               virt_text = {
                 {
                   utils.static.icons.ArrowUpDown,
-                  'Number',
+                  "Number",
                 },
               },
             },
@@ -72,17 +72,17 @@ return {
 
       -- Unlink current snippet on leaving insert/select mode
       -- https://github.com/L3MON4D3/LuaSnip/issues/258#issuecomment-1011938524
-      vim.api.nvim_create_autocmd('ModeChanged', {
-        desc = 'Unlink current snippet on leaving insert/selection mode.',
-        group = vim.api.nvim_create_augroup('luasnip.unlink', {}),
-        pattern = '[si]*:[^si]*',
+      vim.api.nvim_create_autocmd("ModeChanged", {
+        desc = "Unlink current snippet on leaving insert/selection mode.",
+        group = vim.api.nvim_create_augroup("luasnip.unlink", {}),
+        pattern = "[si]*:[^si]*",
         -- Blink.cmp will enter normal mode shortly on accepting snippet completion,
         -- see https://github.com/Saghen/blink.cmp/issues/2035
         -- We don't want to unlink the current snippet in that case, as a workaround
         -- wait a short time after leaving insert/select mode and unlink current
         -- snippet if still not inside insert/select mode
         callback = vim.schedule_wrap(function(args)
-          if vim.fn.mode():match('^[si]') then -- still in insert/select mode
+          if vim.fn.mode():match("^[si]") then -- still in insert/select mode
             return
           end
           if
@@ -97,12 +97,12 @@ return {
       -- fallback to empty functions
       local tabout = setmetatable({}, {
         __index = function(self, key)
-          if rawget(self, '_init') then
+          if rawget(self, "_init") then
             return
           end
-          rawset(self, '_init', true)
+          rawset(self, "_init", true)
 
-          local has_tabout, tabout_plugin = pcall(require, 'plugin.tabout')
+          local has_tabout, tabout_plugin = pcall(require, "plugin.tabout")
           if has_tabout then
             for k, v in pairs(tabout_plugin) do
               self[k] = v
@@ -167,7 +167,7 @@ return {
         local e = range[2]
         return {
           start = { line = s[1], character = s[2] },
-          ['end'] = { line = e[1], character = e[2] },
+          ["end"] = { line = e[1], character = e[2] },
         }
       end
 
@@ -176,7 +176,7 @@ return {
       ---@param range2 integer[][] 0-based range
       ---@return boolean
       local function range_contains(range1, range2)
-        return require('utils.lsp').range_contains(
+        return require("utils.lsp").range_contains(
           range_convert(range1),
           range_convert(range2)
         )
@@ -187,7 +187,7 @@ return {
       ---@param cursor integer[]? 1,0-based cursor position
       ---@return boolean
       local function range_contains_cursor(range, cursor)
-        return require('utils.lsp').range_contains_cursor(
+        return require("utils.lsp").range_contains_cursor(
           range_convert(range),
           cursor
         )
@@ -360,12 +360,12 @@ return {
       -- after switching to insert mode can still return 'n'. Use `vim.schedule()` to
       -- ensure the mode is correctly reported before mapping.
       vim.schedule(function()
-        if vim.startswith(vim.fn.mode(), 'i') then
+        if vim.startswith(vim.fn.mode(), "i") then
           setup_insert_mode_tab_keymaps()
         else
-          vim.api.nvim_create_autocmd('InsertEnter', {
+          vim.api.nvim_create_autocmd("InsertEnter", {
             once = true,
-            desc = 'Set snippet `<Tab>`/`<S-Tab>` keymaps in insert mode to avoid being overridden by tabout plugin keymaps.',
+            desc = "Set snippet `<Tab>`/`<S-Tab>` keymaps in insert mode to avoid being overridden by tabout plugin keymaps.",
             callback = setup_insert_mode_tab_keymaps,
           })
         end

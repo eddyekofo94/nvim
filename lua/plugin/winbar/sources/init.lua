@@ -4,6 +4,6 @@
 ---@type table<string, winbar.source>
 return setmetatable({}, {
   __index = function(_, key)
-    return require('plugin.winbar.sources.' .. key)
+    return require("plugin.winbar.sources." .. key)
   end,
 })

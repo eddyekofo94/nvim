@@ -6,7 +6,7 @@ if vim.g.vscode then
   return
 end
 
-local load = require "utils.load"
+local load = require("utils.load")
 
 -- expandtab
 load.on_events("InsertEnter", "plugin.expandtab", function()
@@ -78,16 +78,16 @@ local function load_ui(name)
   vim.opt[name] = string.format("%%!v:lua.require'plugin.%s'()", name)
 end
 
-load_ui "tabline"
-load_ui "statusline"
-load_ui "statuscolumn"
+load_ui("tabline")
+load_ui("statusline")
+load_ui("statuscolumn")
 
 -- Load plugin.term immediately for commands
-require "plugin.term"
+require("plugin.term")
 
 -- Load plugin.term setup on TermOpen
 load.on_events({ "TermOpen", "TermEnter" }, "plugin.term", function(args)
-  local term = require "plugin.term"
+  local term = require("plugin.term")
   term.setup()
   vim.keymap.set("n", ".", term.rerun, {
     buffer = args.buf,
@@ -141,7 +141,7 @@ if vim.g.loaded_session == nil then
     require("plugin.session").load(nil, true)
   end, { desc = "Load session (workspace) for cwd" })
 
-  require("plugin.session").setup {
+  require("plugin.session").setup({
     autoload = {
       enabled = true,
       events = { "UIEnter" },
@@ -162,7 +162,7 @@ if vim.g.loaded_session == nil then
       },
     },
     autoremove = { enabled = false },
-  }
+  })
 end
 
 load.on_events("UIEnter", "plugin.colorful-winsep")

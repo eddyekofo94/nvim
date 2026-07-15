@@ -87,3 +87,35 @@ completion without errors.
 Automated status: all five Smart Files tests pass and `tools/verify.sh` passes.
 Normal-session QA confirmed the exact grep result, toggle-back, `Ctrl-R`, and
 F4/F5 preview behavior with empty `:messages` output.
+
+## 2026-07-15 - Trigger-accurate lazy loading and Copilot lifecycle
+
+- Reproduced `UIEnter` loading unrelated optional plugins because the custom
+  loader treated any installed plugin containing `lua/` or `plugin/` as eager.
+- Marked collected specs with their actual `start`/`opt` origin and removed the
+  filesystem-content heuristic, so trigger-bearing opt plugins wait for their
+  configured command, key, event, or explicit dependency. Intentionally
+  non-lazy opt specs still load when the opt set is registered after startup.
+- Removed Sidekick's Copilot dependency because Sidekick NES is disabled;
+  Sidekick continues to load on `User VeryLazy` with all CLI mappings intact.
+- Moved Copilot startup to `InsertEnter` and added `VimLeavePre` teardown plus a
+  forced client stop, covering both active clients and scheduled-startup races.
+- Added UIEnter and process-lifecycle regressions to `tools/verify.sh`.
+- Fixed two command-line event precedence errors and one tmux floating-window
+  precedence error, then removed the dead code exposed by the full lint pass.
+- Aligned the repository with StyLua's documented two-space, parenthesized-call
+  style and the preferred double-quote policy; whole-repository formatting and
+  lint now pass.
+- Restored Homebrew command discovery for GUI/clean-environment launches and
+  made the verifier assert that `fzf` is available in that context.
+- Deleted the tracked statusline backup and Python bytecode, ignored equivalent
+  generated debris, and removed the inactive `data/lazy` and `data/packages`
+  stores after a quarantine verification pass.
+- Previewed 36 orphaned Copilot language servers (831.2 MiB RSS), terminated
+  that exact PID set with `TERM`, and confirmed zero survivors.
+
+Automated status: `tools/verify.sh`, full `make lint`, `make format-check`, clean
+startup, and repeated Copilot process-lifecycle checks pass. Real-TTY QA showed
+Copilot `Online` and attached with an inline suggestion and `<C-j>` mapping;
+Sidekick's live 18-entry CLI selector opened normally. Every QA exit left zero
+Copilot language-server orphans.

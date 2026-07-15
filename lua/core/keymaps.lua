@@ -5,10 +5,10 @@ require("utils.load").on_events(
   "UIEnter",
   "keymaps",
   vim.schedule_wrap(function()
-    local Key = require "utils.key"
+    local Key = require("utils.key")
     local map = Key.map
 
-    local key = require "utils.key"
+    local key = require("utils.key")
 
     -- Multi-window operations
     -- stylua: ignore start
@@ -109,7 +109,7 @@ require("utils.load").on_events(
     map('t', '<C-x>', vim.api.nvim_replace_termcodes('<C-\\><C-N>', true, true, true), { desc = 'Escape terminal mode' })
     -- stylua: ignore end
 
-    local win = require "utils.win"
+    local win = require("utils.win")
 
     map("n", "<leader>wx", function()
       win.smart_close(false)
@@ -147,7 +147,7 @@ require("utils.load").on_events(
     end
 
     local function paste_all()
-      local content = vim.fn.getreg "+"
+      local content = vim.fn.getreg("+")
       if content == "" then
         vim.notify("Clipboard is empty!", vim.log.levels.WARN)
         return
@@ -155,7 +155,6 @@ require("utils.load").on_events(
       local lines = vim.split(content, "[\r\n]")
       vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
       vim.notify("Buffer replaced from clipboard", vim.log.levels.INFO)
-      vim.cmd.format()
     end
 
     map("n", "<leader>ya", copy_all, { desc = "Copy entire buffer" })
@@ -179,11 +178,11 @@ require("utils.load").on_events(
       "n",
       "d<Space>",
       key.with_cursorpos(key.with_lazyredraw(function()
-        vim.cmd.substitute {
+        vim.cmd.substitute({
           [[/\s\+$//e]],
           range = { 1, vim.api.nvim_buf_line_count(0) },
           mods = { silent = true, keeppatterns = true },
-        }
+        })
       end)),
       { desc = "Delete trailing whitespaces" }
     )
@@ -290,14 +289,14 @@ require("utils.load").on_events(
 
 -- Modernized Smart Move
 -- Using a direct logic string for expr maps is often faster in the input loop
-local function smart_move(key)
+local function smart_move(direction)
   return function()
     -- Check if we are in a mode where 'gj' makes sense
     -- and ensure we handle the 'v:count' correctly.
     if vim.v.count == 0 then
-      return "g" .. key
+      return "g" .. direction
     end
-    return key
+    return direction
   end
 end
 
@@ -363,7 +362,7 @@ end
       { "n", "x" },
       "zV",
       key.with_lazyredraw(function()
-        vim.cmd.normal { "zMzv", bang = true }
+        vim.cmd.normal({ "zMzv", bang = true })
       end),
       { desc = "Close all folds except current" }
     )
@@ -396,8 +395,8 @@ end
     ---@param motion 'i'|'a'
     ---@return string
     function _G._textobj_fold(motion)
-      local lnum = vim.fn.line "." --[[@as integer]]
-      local sel_start = vim.fn.line "v"
+      local lnum = vim.fn.line(".") --[[@as integer]]
+      local sel_start = vim.fn.line("v")
       local lev = vim.fn.foldlevel(lnum)
       local levp = vim.fn.foldlevel(lnum - 1)
       -- Multi-line selection with cursor on top of selection
@@ -421,14 +420,14 @@ end
     ---Go to the first line of current paragraph
     local function goto_paragraph_firstline()
       local chunk_size = 10
-      local linenr = vim.fn.line "."
+      local linenr = vim.fn.line(".")
       local count = vim.v.count1
 
       -- If current line is the first line of paragraph, move one line
       -- upwards first to goto the first line of previous paragraph
       if linenr >= 2 then
         local lines = vim.api.nvim_buf_get_lines(0, linenr - 2, linenr, false)
-        if lines[1]:match "^$" and lines[2]:match "%S" then
+        if lines[1]:match("^$") and lines[2]:match("%S") then
           linenr = linenr - 1
         end
       end
@@ -442,16 +441,16 @@ end
         )
         for i, line in ipairs(vim.iter(chunk):rev():totable()) do
           local current_linenr = linenr - i
-          if line:match "^$" then
+          if line:match("^$") then
             count = count - 1
             if count <= 0 then
-              vim.cmd.normal { "m'", bang = true }
+              vim.cmd.normal({ "m'", bang = true })
               vim.cmd(tostring(current_linenr + 1))
               return
             end
           elseif current_linenr <= 1 then
-            vim.cmd.normal { "m'", bang = true }
-            vim.cmd "1"
+            vim.cmd.normal({ "m'", bang = true })
+            vim.cmd("1")
             return
           end
         end
@@ -462,7 +461,7 @@ end
     ---Go to the last line of current paragraph
     local function goto_paragraph_lastline()
       local chunk_size = 10
-      local linenr = vim.fn.line "."
+      local linenr = vim.fn.line(".")
       local buf_line_count = vim.api.nvim_buf_line_count(0)
       local count = vim.v.count1
 
@@ -471,7 +470,7 @@ end
       if buf_line_count - linenr >= 1 then
         local lines =
           vim.api.nvim_buf_get_lines(0, linenr - 1, linenr + 1, false)
-        if lines[1]:match "%S" and lines[2]:match "^$" then
+        if lines[1]:match("%S") and lines[2]:match("^$") then
           linenr = linenr + 1
         end
       end
@@ -481,15 +480,15 @@ end
           vim.api.nvim_buf_get_lines(0, linenr, linenr + chunk_size, false)
         for i, line in ipairs(chunk) do
           local current_linenr = linenr + i
-          if line:match "^$" then
+          if line:match("^$") then
             count = count - 1
             if count <= 0 then
-              vim.cmd.normal { "m'", bang = true }
+              vim.cmd.normal({ "m'", bang = true })
               vim.cmd(tostring(current_linenr - 1))
               return
             end
           elseif current_linenr >= buf_line_count then
-            vim.cmd.normal { "m'", bang = true }
+            vim.cmd.normal({ "m'", bang = true })
             vim.cmd(tostring(buf_line_count))
             return
           end
@@ -540,7 +539,7 @@ end
         end
 
         local line = vim.api.nvim_get_current_line()
-        if line:match "^%s*$" then
+        if line:match("^%s*$") then
           return '"_dd'
         end
         return "dd"
@@ -565,55 +564,27 @@ end
         { prompt = "Plugin to delete: " },
         function(choice)
           if choice then
-            vim.pack.del { choice }
+            vim.pack.del({ choice })
           end
         end
       )
     end, { desc = "Delete plugin" })
 
-    -- Buffer operations (from backup)
-    local function copy_all()
-      local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-      local content = table.concat(lines, "\n")
-      vim.fn.setreg("+", content)
-      vim.notify(
-        "Copied entire buffer to system clipboard",
-        vim.log.levels.INFO
-      )
-    end
-
-    local function paste_all()
-      local content = vim.fn.getreg "+"
-      if content == "" then
-        vim.notify("Clipboard is empty!", vim.log.levels.WARN)
-        return
-      end
-      local lines = vim.split(content, "[\r\n]")
-      vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-      vim.notify("Buffer replaced from clipboard", vim.log.levels.INFO)
-    end
-
+    -- Buffer operations
     local function delete_all()
       vim.api.nvim_buf_set_lines(0, 0, -1, false, {})
       vim.notify("Buffer cleared", vim.log.levels.INFO)
     end
 
     map("n", "<Leader>da", delete_all, { desc = "Delete all in buffer" })
-    map("n", "<Leader>ya", copy_all, { desc = "Copy entire buffer" })
-    map(
-      "n",
-      "<Leader>cpa",
-      paste_all,
-      { desc = "Replace buffer with clipboard" }
-    )
 
     -- Smart line movement
-    local function smart_line_move(key)
+    local function smart_line_move(direction)
       return function()
         if vim.v.count == 0 then
-          return "g" .. key
+          return "g" .. direction
         else
-          return key
+          return direction
         end
       end
     end
@@ -622,7 +593,7 @@ end
       local current_line = vim.api.nvim_get_current_line()
       local cursor_pos = vim.api.nvim_win_get_cursor(0)
       local current_col = cursor_pos[2] + 1
-      local first_non_blank_match = current_line:match "^(%s*)%S"
+      local first_non_blank_match = current_line:match("^(%s*)%S")
       local first_non_blank_col = 1
       if first_non_blank_match then
         first_non_blank_col = #first_non_blank_match + 1
@@ -636,7 +607,7 @@ end
     map(
       { "n", "x" },
       "gl",
-      smart_line_move "$",
+      smart_line_move("$"),
       { expr = true, desc = "Smart end of line" }
     )
 
@@ -700,7 +671,7 @@ require("utils.load").on_events(
   "CmdlineEnter",
   "keymaps.cmdline_abbrevs",
   function()
-    local key = require "utils.key"
+    local key = require("utils.key")
 
     key.command_map(":", "lua =")
     key.command_abbrev("man", "Man")

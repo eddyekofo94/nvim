@@ -39,6 +39,7 @@ local M = {}
 ---be loaded on specific keys, events, commands, or manually using
 ---`utils.pack.load()`
 ---@field lazy? boolean
+---@field start? boolean Plugin belongs to the eager startup spec set
 ---Whether the plugin is registered as a dependency/extension of another plugin
 ---Plugins that are both explicitly registered as stand-alone and as deps/exts
 ---have `asdeps=false`
@@ -66,21 +67,21 @@ local loaded = {}
 local initialized = {}
 
 local structured_data_fields = {
-  'build',
-  'cmd',
-  'cmds',
-  'deps',
-  'event',
-  'events',
-  'exts',
-  'init',
-  'key',
-  'keys',
-  'lazy',
-  'load',
-  'optional',
-  'postload',
-  'preload',
+  "build",
+  "cmd",
+  "cmds",
+  "deps",
+  "event",
+  "events",
+  "exts",
+  "init",
+  "key",
+  "keys",
+  "lazy",
+  "load",
+  "optional",
+  "postload",
+  "preload",
 }
 
 ---@param spec pack.structured_spec
@@ -97,7 +98,7 @@ end
 ---Get plugin installation root dir
 ---@return string
 function M.root()
-  return vim.fs.joinpath(vim.fn.stdpath('data'), 'site/pack/core/opt')
+  return vim.fs.joinpath(vim.fn.stdpath("data"), "site/pack/core/opt")
 end
 
 ---Get install path of a plugin given spec
@@ -110,7 +111,7 @@ end
 ---@param spec pack.spec
 ---@param path string
 function M.load(spec, path)
-  if type(spec) == 'string' then
+  if type(spec) == "string" then
     spec = { src = spec }
   end
 
@@ -133,7 +134,7 @@ function M.load(spec, path)
     for _, dep in
       ipairs(spec.data.deps --[=[@as pack.spec[]]=])
     do
-      local dep_spec = specs_registry[type(dep) == 'string' and dep or dep.src]
+      local dep_spec = specs_registry[type(dep) == "string" and dep or dep.src]
       M.load(dep_spec, M.path(dep_spec))
     end
   end
@@ -163,7 +164,7 @@ function M.load(spec, path)
     for _, ext in
       ipairs(spec.data.exts --[=[@as pack.spec[]]=])
     do
-      local ext_spec = specs_registry[type(ext) == 'string' and ext or ext.src]
+      local ext_spec = specs_registry[type(ext) == "string" and ext or ext.src]
       M.load(ext_spec, M.path(ext_spec))
     end
   end
@@ -200,28 +201,18 @@ function M.lazy_load(spec, path)
     data.key = nil
   end
 
-  for _, trig in ipairs({ 'cmds', 'keys', 'events' }) do
+  for _, trig in ipairs({ "cmds", "keys", "events" }) do
     if not spec.data[trig] then
       goto continue
     end
     lazy = true
-    require('utils.load')['on_' .. trig](spec.data[trig], spec.src, function()
+    require("utils.load")["on_" .. trig](spec.data[trig], spec.src, function()
       M.load(spec, path)
     end)
     ::continue::
   end
 
-  -- Plugins in start/ directory should always be loaded
-  -- Only opt plugins can be truly lazy-loaded
-  -- Check for both plugin/ dir (vim plugins) and lua/ dir (lua plugins)
-  local plugin_path = M.path(spec)
-  local is_start = vim.fn.isdirectory(plugin_path .. '/plugin') == 1
-    or vim.fn.isdirectory(plugin_path .. '/lua') == 1
-
-  if not lazy and not (spec.data and spec.data.asdeps) then
-    M.load(spec, path)
-  elseif is_start then
-    -- Start plugins must be loaded regardless of lazy setting
+  if spec.data.start or (not lazy and not spec.data.asdeps) then
     M.load(spec, path)
   end
 end
@@ -238,7 +229,7 @@ function M.register(specs, default)
 
   ---@cast specs pack.structured_spec[]
   for i, spec in ipairs(specs) do
-    if type(spec) == 'string' then
+    if type(spec) == "string" then
       specs[i] = { src = spec }
     end
     normalize_structured_data(specs[i])
@@ -290,7 +281,7 @@ function M.register(specs, default)
       and spec.data.asdeps
 
     specs_registry[spec.src] =
-      vim.tbl_deep_extend('force', existing_spec or default or {}, spec)
+      vim.tbl_deep_extend("force", existing_spec or default or {}, spec)
 
     -- `asdeps` in the existing and new spec should be `AND`ed together
     if specs_registry[spec.src].data then
@@ -313,7 +304,7 @@ function M.build(spec, path)
   end
   built[spec.src] = true
 
-  vim.notify(string.format('[utils.pack] Building %s', spec.src))
+  vim.notify(string.format("[utils.pack] Building %s", spec.src))
 
   -- Build can be a function, a vim command (starting with ':'), or a shell
   -- command
@@ -323,20 +314,20 @@ function M.build(spec, path)
   if vim.is_callable(spec.data.build) then
     success, err = pcall(spec.data.build --[[@as function]], spec, path)
   elseif
-    vim.startswith(spec.data.build --[[@as string]], ':')
+    vim.startswith(spec.data.build --[[@as string]], ":")
   then
     success, err = pcall(
       vim.cmd --[[@as function]],
       spec
         .data
         .build --[[@as string]]
-        :gsub('^:', '')
+        :gsub("^:", "")
     )
   else
     local o = vim
       .system(
-        type(spec.data.build) == 'table' and spec.data.build
-          or { 'sh', '-c', spec.data.build },
+        type(spec.data.build) == "table" and spec.data.build
+          or { "sh", "-c", spec.data.build },
         { cwd = path }
       )
       :wait()
@@ -346,11 +337,11 @@ function M.build(spec, path)
 
   if success then
     vim.notify(
-      string.format('[utils.pack] Successfully built plugin %s', spec.src)
+      string.format("[utils.pack] Successfully built plugin %s", spec.src)
     )
   else
     vim.notify(
-      string.format('[utils.pack] Error building plugin %s: %s', spec.src, err),
+      string.format("[utils.pack] Error building plugin %s: %s", spec.src, err),
       vim.log.levels.ERROR
     )
   end
@@ -381,10 +372,10 @@ function M.add(specs)
   M.register(specs)
 
   -- Set autocmd to build plugin on pack changed (installed/updated)
-  vim.api.nvim_create_autocmd('PackChanged', {
-    group = vim.api.nvim_create_augroup('pack.build', { clear = false }),
+  vim.api.nvim_create_autocmd("PackChanged", {
+    group = vim.api.nvim_create_augroup("pack.build", { clear = false }),
     callback = function(args)
-      if args.data.kind == 'delete' then
+      if args.data.kind == "delete" then
         return
       end
       local spec = specs_registry[args.data.spec.src]
@@ -414,7 +405,7 @@ function M.add(specs)
   })
   if not ok then
     vim.notify(
-      string.format('[utils.pack] Failed to add plugins: %s', err),
+      string.format("[utils.pack] Failed to add plugins: %s", err),
       vim.log.levels.ERROR
     )
   end

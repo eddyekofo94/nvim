@@ -22,18 +22,18 @@ function M.get_args(cache)
     local bufname = vim.api.nvim_buf_get_name(0)
 
     vim.ui.input({
-      prompt = 'Enter arguments: ',
-      completion = 'file',
+      prompt = "Enter arguments: ",
+      completion = "file",
       default = cache.args[bufname],
     }, function(input)
-      if input and input ~= '' then
+      if input and input ~= "" then
         cache.args[bufname] = input
       end
       vim.cmd.stopinsert()
     end)
 
     return cache.args[bufname]
-      and require('utils.cmd').split(cache.args[bufname])
+      and require("utils.cmd").split(cache.args[bufname])
   end
 end
 
@@ -46,8 +46,8 @@ function M.get_prog(cache)
     local bufname = vim.api.nvim_buf_get_name(0)
 
     vim.ui.input({
-      prompt = 'Enter path to executable: ',
-      completion = 'file',
+      prompt = "Enter path to executable: ",
+      completion = "file",
       default = (function()
         local prog = cache.progs[bufname]
         if prog then
@@ -56,10 +56,10 @@ function M.get_prog(cache)
 
         local cwd = vim.fn.getcwd(0)
         local progs = vim.fs.find({
-          vim.fn.fnamemodify(bufname, ':t:r'),
-          vim.fn.fnamemodify(cwd, ':t'),
+          vim.fn.fnamemodify(bufname, ":t:r"),
+          vim.fn.fnamemodify(cwd, ":t"),
         }, {
-          path = vim.fn.fnamemodify(bufname, ':p:h'),
+          path = vim.fn.fnamemodify(bufname, ":p:h"),
           upward = true,
         })
         return progs[1] or cwd

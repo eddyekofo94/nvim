@@ -6,8 +6,8 @@
 -- Last Updated: Sat 17 Jan 2026 09:14:34 PM PST
 
 -- Clear hlgroups and set colors_name {{{
-vim.cmd.hi('clear')
-vim.g.colors_name = 'cockatoo'
+vim.cmd.hi("clear")
+vim.g.colors_name = "cockatoo"
 -- }}}
 
 -- Palette {{{

@@ -1,8 +1,8 @@
 local M = {}
-local un = require('utils.snip.nodes')
-local uf = require('utils.snip.funcs')
-local us = require('utils.snip.snips')
-local ls = require('luasnip')
+local un = require("utils.snip.nodes")
+local uf = require("utils.snip.funcs")
+local us = require("utils.snip.snips")
+local ls = require("luasnip")
 local sn = ls.snippet_node
 local i = ls.insert_node
 local c = ls.choice_node
@@ -11,71 +11,71 @@ local d = ls.dynamic_node
 
 M.snippets = {
   us.sn({
-    trig = 'ret',
-    desc = 'return statement',
-  }, t('return')),
+    trig = "ret",
+    desc = "return statement",
+  }, t("return")),
   us.sn({
-    trig = 'cont',
-    desc = 'continue statement',
-  }, t('continue')),
+    trig = "cont",
+    desc = "continue statement",
+  }, t("continue")),
   us.sn({
-    trig = 'brk',
-    desc = 'break statement',
-  }, t('break')),
+    trig = "brk",
+    desc = "break statement",
+  }, t("break")),
   us.msn({
-    { trig = 'pr' },
-    { trig = 'ec' },
-    { trig = 'em' },
-  }, t('echom ')),
+    { trig = "pr" },
+    { trig = "ec" },
+    { trig = "em" },
+  }, t("echom ")),
   us.msn(
     {
-      { trig = 'pl' },
-      { trig = 'el' },
-      common = { desc = 'Print a line' },
+      { trig = "pl" },
+      { trig = "el" },
+      common = { desc = "Print a line" },
     },
-    un.fmtad('echom <q><line><q>', {
+    un.fmtad("echom <q><line><q>", {
       q = un.qt(),
       line = c(1, {
-        i(nil, '----------------------------------------'),
-        i(nil, '........................................'),
-        i(nil, '========================================'),
-        i(nil, '########################################'),
+        i(nil, "----------------------------------------"),
+        i(nil, "........................................"),
+        i(nil, "========================================"),
+        i(nil, "########################################"),
       }),
     })
   ),
   us.msn(
     {
-      { trig = 'pck' },
-      { trig = 'eck' },
+      { trig = "pck" },
+      { trig = "eck" },
     },
-    un.fmtad('echom <q><v_esc>:<q> <v>', {
+    un.fmtad("echom <q><v_esc>:<q> <v>", {
       q = un.qt(),
       v = i(1),
       v_esc = d(2, function(texts)
-        local str = vim.fn.escape(texts[1][1], '\\' .. uf.get_quotation_type())
+        local str = vim.fn.escape(texts[1][1], "\\" .. uf.get_quotation_type())
         return sn(nil, i(1, str))
       end, { 1 }),
     })
   ),
   us.sn(
     {
-      trig = 'ck',
+      trig = "ck",
       priority = 999,
     },
-    un.fmtad('<q><v_esc>:<q> <v>', {
+    un.fmtad("<q><v_esc>:<q> <v>", {
       q = un.qt(),
       v = i(1),
       v_esc = d(2, function(texts)
-        local str = vim.fn.escape(texts[1][1], '\\' .. uf.get_quotation_type())
+        local str = vim.fn.escape(texts[1][1], "\\" .. uf.get_quotation_type())
         return sn(nil, i(1, str))
       end, { 1 }),
     })
   ),
   us.msn(
     {
-      { trig = 'fn' },
-      { trig = 'fun' },
-      { trig = 'func' },
+      { trig = "fn" },
+      { trig = "fun" },
+      { trig = "func" },
     },
     un.fmtad(
       [[
@@ -84,7 +84,7 @@ M.snippets = {
         endfunction
       ]],
       {
-        name = i(1, 'FuncName'),
+        name = i(1, "FuncName"),
         args = i(2),
         body = un.body(3, 1),
       }
@@ -92,9 +92,9 @@ M.snippets = {
   ),
   us.mssn(
     {
-      { trig = 'mn' },
-      { trig = 'main' },
-      common = { desc = 'main function' },
+      { trig = "mn" },
+      { trig = "main" },
+      common = { desc = "main function" },
     },
     un.fmtad(
       [[
@@ -109,7 +109,7 @@ M.snippets = {
     )
   ),
   us.sn(
-    { trig = 'aug' },
+    { trig = "aug" },
     un.fmtad(
       [[
         augroup <name>
@@ -118,7 +118,7 @@ M.snippets = {
         augroup END
       ]],
       {
-        name = i(1, 'augroup_name'),
+        name = i(1, "augroup_name"),
         body = un.body(2, 1),
         idnt = un.idnt(1),
       }
@@ -126,8 +126,8 @@ M.snippets = {
   ),
   us.sn(
     {
-      trig = 'if',
-      desc = 'if statement',
+      trig = "if",
+      desc = "if statement",
     },
     un.fmtad(
       [[
@@ -136,16 +136,16 @@ M.snippets = {
         endif
       ]],
       {
-        cond = i(1, 'v:true'),
+        cond = i(1, "v:true"),
         body = un.body(2, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'el' },
-      { trig = 'else' },
-      common = { desc = 'else statement' },
+      { trig = "el" },
+      { trig = "else" },
+      common = { desc = "else statement" },
     },
     un.fmtad(
       [[
@@ -159,11 +159,11 @@ M.snippets = {
   ),
   us.msn(
     {
-      { trig = 'eli' },
-      { trig = 'elif' },
-      { trig = 'elsei' },
-      { trig = 'elseif' },
-      common = { desc = 'elseif statement' },
+      { trig = "eli" },
+      { trig = "elif" },
+      { trig = "elsei" },
+      { trig = "elseif" },
+      common = { desc = "elseif statement" },
     },
     un.fmtad(
       [[
@@ -171,19 +171,19 @@ M.snippets = {
         <body>
       ]],
       {
-        cond = i(1, 'v:true'),
+        cond = i(1, "v:true"),
         body = un.body(2, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'for' },
-      { trig = 'fr' },
-      { trig = 'forr' },
-      { trig = 'forange' },
-      { trig = 'forrange' },
-      common = { desc = 'for loop (list)' },
+      { trig = "for" },
+      { trig = "fr" },
+      { trig = "forr" },
+      { trig = "forange" },
+      { trig = "forrange" },
+      common = { desc = "for loop (list)" },
     },
     un.fmtad(
       [[
@@ -192,17 +192,17 @@ M.snippets = {
         endfor
       ]],
       {
-        var = i(1, 'var'),
-        list = i(2, 'list'),
+        var = i(1, "var"),
+        list = i(2, "list"),
         body = un.body(3, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'fi' },
-      { trig = 'fori' },
-      common = { desc = 'for i in range(...) loop' },
+      { trig = "fi" },
+      { trig = "fori" },
+      common = { desc = "for i in range(...) loop" },
     },
     un.fmtad(
       [[
@@ -211,7 +211,7 @@ M.snippets = {
         endfor
       ]],
       {
-        idx = i(1, 'i'),
+        idx = i(1, "i"),
         range = i(2),
         body = un.body(3, 1),
       }
@@ -219,9 +219,9 @@ M.snippets = {
   ),
   us.msn(
     {
-      { trig = 'f_' },
-      { trig = 'for_' },
-      common = { desc = 'for _ in range(...) loop' },
+      { trig = "f_" },
+      { trig = "for_" },
+      common = { desc = "for _ in range(...) loop" },
     },
     un.fmtad(
       [[
@@ -230,7 +230,7 @@ M.snippets = {
         endfor
       ]],
       {
-        idx = i(1, '_'),
+        idx = i(1, "_"),
         range = i(2),
         body = un.body(3, 1),
       }
@@ -238,9 +238,9 @@ M.snippets = {
   ),
   us.msn(
     {
-      { trig = 'wh' },
-      { trig = 'while' },
-      common = { desc = 'while loop' },
+      { trig = "wh" },
+      { trig = "while" },
+      common = { desc = "while loop" },
     },
     un.fmtad(
       [[
@@ -249,16 +249,16 @@ M.snippets = {
         endwhile
       ]],
       {
-        cond = i(1, 'v:true'),
+        cond = i(1, "v:true"),
         body = un.body(2, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'tr' },
-      { trig = 'try' },
-      common = { desc = 'try...except statement' },
+      { trig = "tr" },
+      { trig = "try" },
+      common = { desc = "try...except statement" },
     },
     un.fmtad(
       [[
@@ -277,8 +277,8 @@ M.snippets = {
   ),
   us.sn(
     {
-      trig = 'cat',
-      desc = 'catch statement',
+      trig = "cat",
+      desc = "catch statement",
     },
     un.fmtad(
       [[
@@ -293,10 +293,10 @@ M.snippets = {
   ),
   us.msnr(
     {
-      { trig = '^(%s*)fin' },
-      { trig = '^(%s*)final' },
+      { trig = "^(%s*)fin" },
+      { trig = "^(%s*)final" },
       common = {
-        desc = 'finally statement',
+        desc = "finally statement",
       },
     },
     un.fmtad(
@@ -314,8 +314,8 @@ M.snippets = {
   ),
   us.sn(
     {
-      trig = 'finally',
-      desc = 'finally statement',
+      trig = "finally",
+      desc = "finally statement",
     },
     un.fmtad(
       [[

@@ -35,4 +35,3 @@ return {
   rosewater = "#f5e0dc",
   sapphire = "#74c7ec",
 }
-

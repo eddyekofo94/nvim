@@ -31,4 +31,3 @@ return {
   folder_bg = "#717171",
   coal = "#8a8a8a",
 }
-

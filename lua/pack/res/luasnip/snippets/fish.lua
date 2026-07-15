@@ -1,10 +1,10 @@
 local M = {}
-local u = require('utils')
-local uf = require('utils.snip.funcs')
-local un = require('utils.snip.nodes')
-local us = require('utils.snip.snips')
-local conds = require('utils.snip.conds')
-local ls = require('luasnip')
+local u = require("utils")
+local uf = require("utils.snip.funcs")
+local un = require("utils.snip.nodes")
+local us = require("utils.snip.snips")
+local conds = require("utils.snip.conds")
+local ls = require("luasnip")
 local sn = ls.snippet_node
 local t = ls.text_node
 local i = ls.insert_node
@@ -13,30 +13,30 @@ local d = ls.dynamic_node
 
 M.snippets = {
   us.msns({
-    { trig = 'sb' },
-    { trig = '#!', snippetType = 'autosnippet' },
-    desc = 'Shebang',
+    { trig = "sb" },
+    { trig = "#!", snippetType = "autosnippet" },
+    desc = "Shebang",
   }, {
-    t('#!'),
+    t("#!"),
     c(1, {
-      i(nil, '/usr/bin/env fish'),
-      i(nil, '/usr/bin/fish'),
+      i(nil, "/usr/bin/env fish"),
+      i(nil, "/usr/bin/fish"),
     }),
   }),
   us.sans({
-    trig = '#!',
-    desc = 'Shebang',
+    trig = "#!",
+    desc = "Shebang",
   }, {
-    t('#!'),
+    t("#!"),
     c(1, {
-      i(nil, '/usr/bin/env fish'),
-      i(nil, '/usr/bin/fish'),
+      i(nil, "/usr/bin/env fish"),
+      i(nil, "/usr/bin/fish"),
     }),
   }),
   us.sn(
     {
-      trig = 'if',
-      desc = 'if statement',
+      trig = "if",
+      desc = "if statement",
     },
     un.fmtad(
       [[
@@ -45,17 +45,17 @@ M.snippets = {
         end
       ]],
       {
-        cond = i(1, 'true'),
+        cond = i(1, "true"),
         body = un.body(2, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'ife' },
-      { trig = 'ifel' },
-      { trig = 'ifelse' },
-      common = { desc = 'if...else statement' },
+      { trig = "ife" },
+      { trig = "ifel" },
+      { trig = "ifelse" },
+      common = { desc = "if...else statement" },
     },
     un.fmtad(
       [[
@@ -66,7 +66,7 @@ M.snippets = {
         end
       ]],
       {
-        cond = i(1, 'true'),
+        cond = i(1, "true"),
         body = un.body(2, 1),
         else_body = i(3),
         idnt = un.idnt(1),
@@ -75,9 +75,9 @@ M.snippets = {
   ),
   us.msn(
     {
-      { trig = 'elif' },
-      { trig = 'eif' },
-      common = { desc = 'else if statement' },
+      { trig = "elif" },
+      { trig = "eif" },
+      common = { desc = "else if statement" },
     },
     un.fmtad(
       [[
@@ -85,19 +85,19 @@ M.snippets = {
         <body>
       ]],
       {
-        cond = i(1, 'true'),
+        cond = i(1, "true"),
         body = un.body(2, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'for' },
-      { trig = 'fr' },
-      { trig = 'forr' },
-      { trig = 'forange' },
-      { trig = 'forrange' },
-      common = { desc = 'for loop' },
+      { trig = "for" },
+      { trig = "fr" },
+      { trig = "forr" },
+      { trig = "forange" },
+      { trig = "forrange" },
+      common = { desc = "for loop" },
     },
     un.fmtad(
       [[
@@ -106,17 +106,17 @@ M.snippets = {
         end
       ]],
       {
-        var = i(1, 'item'),
-        items = i(2, '$items'),
+        var = i(1, "item"),
+        items = i(2, "$items"),
         body = un.body(3, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'fi' },
-      { trig = 'fori' },
-      common = { desc = 'for i loop' },
+      { trig = "fi" },
+      { trig = "fori" },
+      common = { desc = "for i loop" },
     },
     un.fmtad(
       [[
@@ -125,20 +125,20 @@ M.snippets = {
         end
       ]],
       {
-        idx = i(1, 'i'),
-        s = i(2, '1'),
-        e = i(3, '10'),
+        idx = i(1, "i"),
+        s = i(2, "1"),
+        e = i(3, "10"),
         body = un.body(4, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'f_' },
-      { trig = 'f-' },
-      { trig = 'for_' },
-      { trig = 'for-' },
-      common = { desc = 'for _ loop' },
+      { trig = "f_" },
+      { trig = "f-" },
+      { trig = "for_" },
+      { trig = "for-" },
+      common = { desc = "for _ loop" },
     },
     un.fmtad(
       [[
@@ -147,18 +147,18 @@ M.snippets = {
         end
       ]],
       {
-        idx = i(1, '_'),
-        s = i(2, '1'),
-        e = i(3, '10'),
+        idx = i(1, "_"),
+        s = i(2, "1"),
+        e = i(3, "10"),
         body = un.body(4, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'wh' },
-      { trig = 'while' },
-      common = { desc = 'while loop' },
+      { trig = "wh" },
+      { trig = "while" },
+      common = { desc = "while loop" },
     },
     un.fmtad(
       [[
@@ -167,16 +167,16 @@ M.snippets = {
         end
       ]],
       {
-        cond = i(1, 'false'),
+        cond = i(1, "false"),
         body = un.body(2, 1),
       }
     )
   ),
   us.msn(
     {
-      { trig = 'fn' },
-      { trig = 'func' },
-      common = { desc = 'Function definition' },
+      { trig = "fn" },
+      { trig = "func" },
+      common = { desc = "Function definition" },
     },
     un.fmtad(
       [[
@@ -185,37 +185,37 @@ M.snippets = {
         end
       ]],
       {
-        name = i(1, 'func'),
+        name = i(1, "func"),
         body = un.body(2, 1),
       }
     )
   ),
   us.sn({
-    trig = 'ret',
-    desc = 'return statement',
+    trig = "ret",
+    desc = "return statement",
   }, {
     d(1, function()
-      return u.ts.find_node('function') and sn(nil, { t('return') })
-        or sn(nil, { t('exit') })
+      return u.ts.find_node("function") and sn(nil, { t("return") })
+        or sn(nil, { t("exit") })
     end),
   }),
   us.sn({
-    trig = 'cont',
-    desc = 'continue statement',
-  }, t('continue')),
+    trig = "cont",
+    desc = "continue statement",
+  }, t("continue")),
   us.sn({
-    trig = 'brk',
-    desc = 'break statement',
-  }, t('break')),
+    trig = "brk",
+    desc = "break statement",
+  }, t("break")),
   us.sn({
-    trig = 'ex',
-    desc = 'exit statement',
-  }, t('exit')),
+    trig = "ex",
+    desc = "exit statement",
+  }, t("exit")),
   us.mssn(
     {
-      { trig = 'mn' },
-      { trig = 'main' },
-      common = { desc = 'main function' },
+      { trig = "mn" },
+      { trig = "main" },
+      common = { desc = "main function" },
     },
     un.fmtad(
       [[
@@ -230,10 +230,10 @@ M.snippets = {
   ),
   us.msn(
     {
-      { trig = 'sw' },
-      { trig = 'swi' },
-      { trig = 'switch' },
-      common = { desc = 'switch statement' },
+      { trig = "sw" },
+      { trig = "swi" },
+      { trig = "switch" },
+      common = { desc = "switch statement" },
     },
     un.fmtad(
       [[
@@ -246,7 +246,7 @@ M.snippets = {
       ]],
       {
         idnt = un.idnt(1),
-        expr = i(1, '$argv[1]'),
+        expr = i(1, "$argv[1]"),
         match1 = i(2, "'*'"),
         body = un.body(3, 2),
         match2 = i(4, "'*'"),
@@ -256,10 +256,10 @@ M.snippets = {
   ),
   us.msnr(
     {
-      { trig = '^(%s*)ca' },
-      { trig = '^(%s*)cas' },
-      { trig = '^(%s*)case' },
-      common = { desc = 'case statement' },
+      { trig = "^(%s*)ca" },
+      { trig = "^(%s*)cas" },
+      { trig = "^(%s*)case" },
+      common = { desc = "case statement" },
     },
     un.fmtad(
       [[
@@ -275,86 +275,86 @@ M.snippets = {
       }
     )
   ),
-  us.sn({ trig = 'eo', desc = 'echo command' }, t('echo ')),
-  us.sn({ trig = 'pr', desc = 'printf command' }, t('printf ')),
+  us.sn({ trig = "eo", desc = "echo command" }, t("echo ")),
+  us.sn({ trig = "pr", desc = "printf command" }, t("printf ")),
   us.msn(
     {
-      { trig = 'pl' },
-      { trig = 'el' },
-      common = { desc = 'Print a line' },
+      { trig = "pl" },
+      { trig = "el" },
+      common = { desc = "Print a line" },
     },
     un.fmtad("echo '<line>'", {
       line = c(1, {
-        i(nil, '----------------------------------------'),
-        i(nil, '........................................'),
-        i(nil, '========================================'),
-        i(nil, '########################################'),
+        i(nil, "----------------------------------------"),
+        i(nil, "........................................"),
+        i(nil, "========================================"),
+        i(nil, "########################################"),
       }),
     })
   ),
   us.msn(
     {
-      { trig = 'pck' },
-      { trig = 'eck' },
-      common = { desc = 'Debug check expression value' },
+      { trig = "pck" },
+      { trig = "eck" },
+      common = { desc = "Debug check expression value" },
     },
     un.fmtad([[echo '<v_esc>:' <v>]], {
-      v = i(1, '$var'),
+      v = i(1, "$var"),
       v_esc = d(2, function(texts)
-        local str = vim.fn.escape(texts[1][1], '\\'):gsub([[']], [['"'"']])
+        local str = vim.fn.escape(texts[1][1], "\\"):gsub([[']], [['"'"']])
         return sn(nil, i(1, str))
       end, { 1 }),
     })
   ),
   us.sn(
     {
-      trig = 'ck',
+      trig = "ck",
       priority = 999,
-      desc = 'Debug check expression value (cont.)',
+      desc = "Debug check expression value (cont.)",
     },
     un.fmtad([['<v_esc>:' <v>]], {
-      v = i(1, '$var'),
+      v = i(1, "$var"),
       v_esc = d(2, function(texts)
-        local str = vim.fn.escape(texts[1][1], '\\'):gsub([[']], [['"'"']])
+        local str = vim.fn.escape(texts[1][1], "\\"):gsub([[']], [['"'"']])
         return sn(nil, i(1, str))
       end, { 1 }),
     })
   ),
   us.sn({
-    trig = 'read',
-    desc = 'read input',
+    trig = "read",
+    desc = "read input",
   }, {
-    t('read '),
+    t("read "),
     c(1, {
       i(nil, "-P 'Prompt: ' var"),
-      i(nil, '-n 1 var'),
-      i(nil, 'var'),
+      i(nil, "-n 1 var"),
+      i(nil, "var"),
     }),
   }),
   us.sn({
-    trig = 'var',
-    desc = 'variable declaration',
+    trig = "var",
+    desc = "variable declaration",
   }, {
     c(1, {
-      un.fmtad('set <name> <value>', {
-        name = i(1, 'var'),
-        value = i(2, 'value'),
+      un.fmtad("set <name> <value>", {
+        name = i(1, "var"),
+        value = i(2, "value"),
       }),
-      un.fmtad('set -l <name> <value>', {
-        name = i(1, 'var'),
-        value = i(2, 'value'),
+      un.fmtad("set -l <name> <value>", {
+        name = i(1, "var"),
+        value = i(2, "value"),
       }),
-      un.fmtad('set -g <name> <value>', {
-        name = i(1, 'var'),
-        value = i(2, 'value'),
+      un.fmtad("set -g <name> <value>", {
+        name = i(1, "var"),
+        value = i(2, "value"),
       }),
     }),
   }),
   us.msn(
     {
-      { trig = 'ap' },
-      { trig = 'argp' },
-      common = { desc = 'argparse option parsing' },
+      { trig = "ap" },
+      { trig = "argp" },
+      common = { desc = "argparse option parsing" },
     },
     un.fmtad(
       [[
@@ -370,8 +370,8 @@ M.snippets = {
   ),
   us.sn(
     {
-      trig = 'begin',
-      desc = 'begin block',
+      trig = "begin",
+      desc = "begin block",
     },
     un.fmtad(
       [[
@@ -386,65 +386,65 @@ M.snippets = {
   ),
   us.sn(
     {
-      trig = 'cd',
-      desc = 'cd with exit or return',
+      trig = "cd",
+      desc = "cd with exit or return",
     },
     d(1, function()
-      if u.ts.find_node({ 'function_definition' }) then
+      if u.ts.find_node({ "function_definition" }) then
         return sn(
           nil,
-          un.fmtad('cd <dir>; or return', {
-            dir = i(1, 'dir'),
+          un.fmtad("cd <dir>; or return", {
+            dir = i(1, "dir"),
           })
         )
       end
       return sn(
         nil,
-        un.fmtad('cd <dir; or exit', {
-          dir = i(1, 'dir'),
+        un.fmtad("cd <dir; or exit", {
+          dir = i(1, "dir"),
         })
       )
     end)
   ),
   us.msn(
     {
-      { trig = 'si' },
-      { trig = 'sil' },
-      common = { desc = 'Run command silently' },
+      { trig = "si" },
+      { trig = "sil" },
+      common = { desc = "Run command silently" },
     },
     c(1, {
-      t('&>/dev/null'), -- suppress stdout and error
-      t('2>/dev/null'), -- suppress error only
-      t('>/dev/null'), -- suppress stdout only
+      t("&>/dev/null"), -- suppress stdout and error
+      t("2>/dev/null"), -- suppress error only
+      t(">/dev/null"), -- suppress stdout only
     })
   ),
   us.msn({
-    { trig = 'ne' },
-    { trig = 'noe' },
-    { trig = 'noerr' },
-    common = { desc = 'Suppress error' },
-  }, t('2>/dev/null')),
+    { trig = "ne" },
+    { trig = "noe" },
+    { trig = "noerr" },
+    common = { desc = "Suppress error" },
+  }, t("2>/dev/null")),
   us.sn(
     {
-      trig = 'err',
-      desc = 'Print to stderr',
+      trig = "err",
+      desc = "Print to stderr",
     },
     d(1, function()
       if not conds.at_line_start() then
-        return sn(nil, t('>&2'))
+        return sn(nil, t(">&2"))
       end
       return sn(
         nil,
         un.fmtad('echo "<msg>" >>&2', {
-          msg = i(1, 'msg'),
+          msg = i(1, "msg"),
         })
       )
     end)
   ),
   us.sn(
     {
-      trig = 'clean',
-      desc = 'cleanup function',
+      trig = "clean",
+      desc = "cleanup function",
     },
     un.fmtad(
       [[
@@ -453,22 +453,22 @@ M.snippets = {
         }
       ]],
       {
-        cleanup = i(1, 'cleanup'),
-        body = un.body(2, 1, 'kill (jobs -p) 2>/dev/null; wait'),
+        cleanup = i(1, "cleanup"),
+        body = un.body(2, 1, "kill (jobs -p) 2>/dev/null; wait"),
       }
     )
   ),
   us.sn(
     {
-      trig = 'trap',
-      desc = 'trap command',
+      trig = "trap",
+      desc = "trap command",
     },
-    un.fmtad('trap <cmd> <sig>', {
+    un.fmtad("trap <cmd> <sig>", {
       cmd = d(1, function()
         for _, line in
-          ipairs(vim.api.nvim_buf_get_lines(0, 0, vim.fn.line('.'), false))
+          ipairs(vim.api.nvim_buf_get_lines(0, 0, vim.fn.line("."), false))
         do
-          local cleanup_func = line:match('function (clean[%w_]*)')
+          local cleanup_func = line:match("function (clean[%w_]*)")
           if cleanup_func then
             return sn(nil, i(1, cleanup_func))
           end
@@ -476,38 +476,38 @@ M.snippets = {
         return sn(nil, i(1, [['kill (jobs -p) 2>/dev/null; wait']]))
       end),
       sig = c(2, {
-        i(nil, 'EXIT INT TERM HUP'), -- common signals that terminates a program by default, useful for most scripts
-        i(nil, 'EXIT INT TERM'), -- handle `HUP` in another trap, used in a daemon script
-        i(nil, 'EXIT'),
-        i(nil, 'INT'),
-        i(nil, 'TERM'),
-        i(nil, 'HUP'), -- disconnected from terminal, useful for interactive scripts that needs a terminal
+        i(nil, "EXIT INT TERM HUP"), -- common signals that terminates a program by default, useful for most scripts
+        i(nil, "EXIT INT TERM"), -- handle `HUP` in another trap, used in a daemon script
+        i(nil, "EXIT"),
+        i(nil, "INT"),
+        i(nil, "TERM"),
+        i(nil, "HUP"), -- disconnected from terminal, useful for interactive scripts that needs a terminal
       }),
     })
   ),
   us.msn({
-    { trig = 'hr' },
-    { trig = 'here' },
-    common = { desc = 'Get script dir' },
-  }, t('(status dirname)/')),
+    { trig = "hr" },
+    { trig = "here" },
+    common = { desc = "Get script dir" },
+  }, t("(status dirname)/")),
   us.msn(
     {
-      { trig = 'bs' },
-      { trig = 'base' },
-      common = { desc = 'Base of the filename (without extension)' },
+      { trig = "bs" },
+      { trig = "base" },
+      common = { desc = "Base of the filename (without extension)" },
     },
-    un.fmtad('(path stem -- $<fname>)', {
-      fname = i(1, 'fname'),
+    un.fmtad("(path stem -- $<fname>)", {
+      fname = i(1, "fname"),
     })
   ),
   us.msn(
     {
-      { trig = 'ext' },
-      { trig = 'extension' },
-      common = { desc = 'Extension of the filename' },
+      { trig = "ext" },
+      { trig = "extension" },
+      common = { desc = "Extension of the filename" },
     },
-    un.fmtad('(path extension -- $<fname>)', {
-      fname = i(1, 'fname'),
+    un.fmtad("(path extension -- $<fname>)", {
+      fname = i(1, "fname"),
     })
   ),
 }

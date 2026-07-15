@@ -1,5 +1,5 @@
 return {
   pytest = {
-    options = '-s', -- show print output
+    options = "-s", -- show print output
   },
 }

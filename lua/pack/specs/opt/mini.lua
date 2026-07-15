@@ -1,9 +1,9 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/echasnovski/mini.nvim',
+  src = "https://github.com/echasnovski/mini.nvim",
   data = {
     postload = function()
-      require('mini.trailspace').setup()
+      require("mini.trailspace").setup()
     end,
   },
 }

@@ -16,7 +16,7 @@ local function z_args_norm(args)
 
   local last_arg = args[#args]
   return last_arg
-      and require('utils.fs').is_full_path(last_arg)
+      and require("utils.fs").is_full_path(last_arg)
       and { last_arg }
     or args
 end
@@ -26,18 +26,18 @@ end
 ---@param args? string|string[]
 ---@return string
 local function z_args_esc(args)
-  if type(args) ~= 'table' then
+  if type(args) ~= "table" then
     args = { args }
   end
   if vim.tbl_isempty(args) then
-    return ''
+    return ""
   end
 
   return table.concat(
     vim.tbl_map(function(path)
       return vim.fn.shellescape(vim.fn.expand(path))
     end, z_args_norm(args)),
-    ' '
+    " "
   )
 end
 
@@ -53,33 +53,33 @@ local z_backends = {
     exists = function()
       return vim.env.SHELL
         and vim.fn.executable(vim.env.SHELL) == 1
-        and vim.system({ vim.env.SHELL, '-c', 'type z' }):wait().code == 0
+        and vim.system({ vim.env.SHELL, "-c", "type z" }):wait().code == 0
     end,
     cmd = {
       jump = function(trig)
-        return { vim.env.SHELL, '-c', 'z -e ' .. z_args_esc(trig) }
+        return { vim.env.SHELL, "-c", "z -e " .. z_args_esc(trig) }
       end,
       list = function(trig)
-        return { vim.env.SHELL, '-c', 'z -l ' .. z_args_esc(trig) }
+        return { vim.env.SHELL, "-c", "z -l " .. z_args_esc(trig) }
       end,
       add = function(dir)
-        return { vim.env.SHELL, '-c', 'cd ' .. z_args_esc(dir) }
+        return { vim.env.SHELL, "-c", "cd " .. z_args_esc(dir) }
       end,
     },
   },
   zoxide = {
     exists = function()
-      return vim.fn.executable('zoxide') == 1
+      return vim.fn.executable("zoxide") == 1
     end,
     cmd = {
       jump = function(trig)
-        return { 'zoxide', 'query', unpack(z_args_norm(trig)) }
+        return { "zoxide", "query", unpack(z_args_norm(trig)) }
       end,
       list = function(trig)
-        return { 'zoxide', 'query', '-l', unpack(z_args_norm(trig)) }
+        return { "zoxide", "query", "-l", unpack(z_args_norm(trig)) }
       end,
       add = function(dir)
-        return { 'zoxide', 'add', dir }
+        return { "zoxide", "add", dir }
       end,
     },
   },
@@ -101,10 +101,10 @@ local z = (function()
       __index = function()
         return function()
           vim.notify_once(
-            '[z] `z` command not available\n',
+            "[z] `z` command not available\n",
             vim.log.levels.WARN
           )
-          return { vim.env.SHELL, '-c', 'exit' }
+          return { vim.env.SHELL, "-c", "exit" }
         end
       end,
     }),
@@ -118,7 +118,7 @@ local cmp_list_cache ---@type string[]?
 ---@param cmd string
 ---@return function
 local function cmp(cmd)
-  local cmd_reg = string.format('.*%s%%s+', cmd)
+  local cmd_reg = string.format(".*%s%%s+", cmd)
   ---@param cmdline string the entire command line
   ---@param cursorpos integer cursor position in the command line
   ---@return string[] completion completion results
@@ -130,8 +130,8 @@ local function cmp(cmd)
     -- `z foo bar` should only complete `/foo/bar` instead of both (using
     -- both 'foo' and 'bar' to match)
     -- TODO: only split on spaces that are not escaped
-    local argslead = cmdline:sub(1, cursorpos):gsub(cmd_reg, '')
-    local trigs = vim.split(argslead, ' ', { trimempty = true })
+    local argslead = cmdline:sub(1, cursorpos):gsub(cmd_reg, "")
+    local trigs = vim.split(argslead, " ", { trimempty = true })
 
     -- Avoid calling `z` on each keystroke when auto completion is enabled
     if
@@ -171,12 +171,12 @@ function M.jump(input)
   vim.system(z.cmd.jump(input), { text = true }, function(obj)
     if obj.code ~= 0 then
       vim.schedule(function()
-        vim.notify('[z] ' .. (obj.stderr or obj.stdout))
+        vim.notify("[z] " .. (obj.stderr or obj.stdout))
       end)
       return
     end
 
-    local path = vim.trim(vim.gsplit(obj.stdout, '\n')() or '')
+    local path = vim.trim(vim.gsplit(obj.stdout, "\n")() or "")
     vim.uv.fs_stat(path, function(_, stat)
       if not stat then
         return
@@ -198,14 +198,14 @@ function M.list(input)
   ---@diagnostic disable-next-line: need-check-nil
   local o = vim.system(z.cmd.list(input)):wait()
   if o.code ~= 0 then
-    vim.notify('[z] ' .. o.stderr or o.stdout)
+    vim.notify("[z] " .. o.stderr or o.stdout)
     return {}
   end
 
   return vim
-    .iter(vim.gsplit(o.stdout, '\n', { trimempty = true }))
+    .iter(vim.gsplit(o.stdout, "\n", { trimempty = true }))
     :map(function(line)
-      return line:match('^[0-9.]*%s*(.*)')
+      return line:match("^[0-9.]*%s*(.*)")
     end)
     :totable()
 end
@@ -215,7 +215,7 @@ end
 function M.select(input)
   vim.ui.select(
     M.list(input),
-    { prompt = 'Open directory: ' },
+    { prompt = "Open directory: " },
     function(dir) ---@param dir string?
       if not dir then
         return
@@ -232,21 +232,21 @@ function M.setup()
   end
   vim.g.loaded_z = true
 
-  vim.api.nvim_create_user_command('Z', cmd(M.jump), {
-    desc = 'Open a directory from z.',
-    complete = cmp('Z'),
-    nargs = '*',
+  vim.api.nvim_create_user_command("Z", cmd(M.jump), {
+    desc = "Open a directory from z.",
+    complete = cmp("Z"),
+    nargs = "*",
   })
-  vim.api.nvim_create_user_command('ZSelect', cmd(M.select), {
-    desc = 'Open a directory from z interactively.',
-    complete = cmp('ZSelect'),
-    nargs = '*',
+  vim.api.nvim_create_user_command("ZSelect", cmd(M.select), {
+    desc = "Open a directory from z interactively.",
+    complete = cmp("ZSelect"),
+    nargs = "*",
   })
 
   if z.exists() then
-    vim.api.nvim_create_autocmd('DirChanged', {
-      desc = 'Record nvim path in z.',
-      group = vim.api.nvim_create_augroup('z.record_dir', {}),
+    vim.api.nvim_create_autocmd("DirChanged", {
+      desc = "Record nvim path in z.",
+      group = vim.api.nvim_create_augroup("z.record_dir", {}),
       callback = function(args)
         local dir = args.file
         vim.system(z.cmd.add(dir))

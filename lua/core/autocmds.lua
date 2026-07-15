@@ -3,7 +3,7 @@
 ---@return nil
 local function augroup(group, ...)
   local id = vim.api.nvim_create_augroup(group, {})
-  for _, a in ipairs { ... } do
+  for _, a in ipairs({ ... }) do
     a[2].group = id
     vim.api.nvim_create_autocmd(unpack(a))
   end
@@ -132,9 +132,9 @@ augroup("auto_save", {
             return
           end
           vim.api.nvim_buf_call(args.buf, function()
-            vim.cmd.update {
+            vim.cmd.update({
               mods = { emsg_silent = true },
-            }
+            })
           end)
         end)
       end)
@@ -196,7 +196,7 @@ do
           return
         end
 
-        local fs_utils = require "utils.fs"
+        local fs_utils = require("utils.fs")
         local root_dir =
           fs_utils.root(file, vim.b.root_markers or fs_utils.root_markers)
 
@@ -350,8 +350,8 @@ augroup("fix_cmdline_iskeyword", {
       vim.g._isk_lisp_buf = args.buf
       vim.g._isk_save = vim.bo[args.buf].isk
       vim.g._lisp_save = vim.bo[args.buf].lisp
-      vim.cmd.setlocal "isk&"
-      vim.cmd.setlocal "lisp&"
+      vim.cmd.setlocal("isk&")
+      vim.cmd.setlocal("lisp&")
     end,
   },
 }, {
@@ -430,10 +430,10 @@ augroup("dynamic_cc", {
 })
 
 do
-  local hl = require "utils.hl"
+  local hl = require("utils.hl")
 
   hl.persist(function()
-    local hl_utils = require "utils.hl"
+    local hl_utils = require("utils.hl")
     local normal = hl_utils.get(0, { name = "Normal", winhl_link = false })
     local float_border =
       hl_utils.get(0, { name = "FloatBorder", winhl_link = false })
@@ -478,15 +478,15 @@ do
           if vim.opt_local.winhighlight:get().Normal then
             return
           end
-          vim.opt_local.winhighlight:append {
+          vim.opt_local.winhighlight:append({
             Normal = "NormalSpecial",
             EndOfBuffer = "NormalSpecial",
-          }
+          })
 
           vim.opt_local.number = false
           vim.opt_local.relativenumber = false
           vim.opt_local.signcolumn = "no" -- Removes the gutter on the left
-          vim.opt_local.fillchars:append { eob = " " }
+          vim.opt_local.fillchars:append({ eob = " " })
         end)
       end),
     },
@@ -535,7 +535,7 @@ do
             goto continue
           end
           local bufname = vim.api.nvim_buf_get_name(buf)
-          if bufname:match "://" then
+          if bufname:match("://") then
             goto continue
           end
           if not vim.uv.fs_stat(bufname) then
@@ -549,10 +549,10 @@ do
 end
 
 do
-  local json = require "utils.json"
+  local json = require("utils.json")
 
   local colors_config_file =
-    vim.fs.joinpath(vim.fn.stdpath "state", "colors.json")
+    vim.fs.joinpath(vim.fn.stdpath("state"), "colors.json")
 
   local function restore_colorscheme()
     local colors_config = vim.tbl_deep_extend(
@@ -564,10 +564,10 @@ do
     vim.go.bg = colors_config.bg
 
     if vim.v.vim_did_enter == 1 then
-      vim.cmd.colorscheme {
+      vim.cmd.colorscheme({
         args = { colors_config.colors_name },
         mods = { emsg_silent = true },
-      }
+      })
     end
   end
 
@@ -608,15 +608,15 @@ do
 
           if colors_config.colors_name ~= vim.g.colors_name then
             colors_config.colors_name = vim.g.colors_name
-            if vim.fn.executable "setcolor" == 1 then
-              vim.system { "setcolor", vim.g.colors_name }
+            if vim.fn.executable("setcolor") == 1 then
+              vim.system({ "setcolor", vim.g.colors_name })
             end
           end
 
           if colors_config.bg ~= vim.go.bg and vim.go.termguicolors then
             colors_config.bg = vim.go.bg
-            if vim.fn.executable "setbg" == 1 then
-              vim.system { "setbg", vim.go.bg }
+            if vim.fn.executable("setbg") == 1 then
+              vim.system({ "setbg", vim.go.bg })
             end
           end
 
@@ -632,7 +632,7 @@ augroup("auto_formatoptions", {
   {
     desc = "Disable New Line Comment",
     callback = function()
-      vim.opt.formatoptions:remove { "c", "r", "o" }
+      vim.opt.formatoptions:remove({ "c", "r", "o" })
     end,
   },
 })
@@ -715,11 +715,11 @@ augroup("substitute_notify", {
   {
     desc = "Notify number of changes after substitute",
     callback = function(ctx)
-      if not ctx.match == ":" then
+      if ctx.match ~= ":" then
         return
       end
       local cmdline = vim.fn.getcmdline()
-      local isSubstitution = cmdline:find "s ?/.+/.-/%a*$"
+      local isSubstitution = cmdline:find("s ?/.+/.-/%a*$")
       if isSubstitution then
         vim.cmd(cmdline .. "ne")
       end
@@ -733,7 +733,7 @@ augroup("quickfix_auto_open", {
     desc = "Open quickfix window if there are results.",
     callback = function(info)
       if #vim.fn.getqflist() > 1 then
-        vim.schedule(vim.cmd[info.match:find "^l" and "lwindow" or "cwindow"])
+        vim.schedule(vim.cmd[info.match:find("^l") and "lwindow" or "cwindow"])
       end
     end,
   },
@@ -767,7 +767,7 @@ augroup("statusline_redraw", {
   {
     desc = "Redraw statusline on changes",
     callback = function()
-      vim.cmd "redrawstatus"
+      vim.cmd("redrawstatus")
     end,
   },
 })
@@ -799,7 +799,7 @@ augroup("fix_virtual_edit_cursor", {
   {
     desc = "Record cursor position in visual mode if virtualedit is set.",
     callback = function()
-      if vim.wo.ve:find "all" then
+      if vim.wo.ve:find("all") then
         vim.w.ve_cursor = vim.fn.getcurpos()
       end
     end,
@@ -811,11 +811,11 @@ augroup("cleanup_history", {
   {
     desc = "Clean up line-jump from command history",
     callback = function(ctx)
-      if not ctx.match == ":" then
+      if ctx.match ~= ":" then
         return
       end
       vim.defer_fn(function()
-        local lineJump = vim.fn.histget(":", -1):match "^%d+$"
+        local lineJump = vim.fn.histget(":", -1):match("^%d+$")
         if lineJump then
           vim.fn.histdel(":", -1)
         end
@@ -830,21 +830,21 @@ augroup("auto_delete_dirs", {
     once = true,
     desc = "Clean up old view and undo directories",
     callback = function()
-      if os.date "%a" == "Mon" then
-        vim.fn.system {
+      if os.date("%a") == "Mon" then
+        vim.fn.system({
           "find",
           vim.opt.viewdir:get(),
           "-mtime",
           "+60d",
           "-delete",
-        }
-        vim.fn.system {
+        })
+        vim.fn.system({
           "find",
           vim.opt.undodir:get()[1],
           "-mtime",
           "+30d",
           "-delete",
-        }
+        })
       end
     end,
   },
@@ -859,7 +859,7 @@ vim.api.nvim_create_autocmd("WinClosed", {
     -- args.match contains the window ID being closed
     local closed_win = tonumber(args.match)
     if closed_win == vim.api.nvim_get_current_win() then
-      vim.cmd "wincmd p"
+      vim.cmd("wincmd p")
     end
   end,
 })
@@ -871,7 +871,7 @@ augroup("change_to_cur_dir", {
     callback = function(info)
       if
         info.file == ""
-        or info.file:match "://"
+        or info.file:match("://")
         or vim.bo[info.buf].bt ~= ""
       then
         return

@@ -6,7 +6,7 @@
 -- Last Updated: Wed 01 Oct 2025 01:33:37 AM EDT
 
 -- Clear hlgroups and set colors_name {{{
-vim.cmd.hi "clear"
+vim.cmd.hi("clear")
 vim.g.colors_name = "catppuccin"
 -- }}}
 
@@ -86,7 +86,6 @@ if vim.go.bg == "dark" then
   -- UI Elements
   line = { "#383747", 236 }
   statusline = { "#232232", 234 }
-  pmenu_bg = { "#ABE9B3", 114 }
   folder_bg = { "#89B4FA", 111 }
 else
   -- Catppuccin Latte (Exact Hex)
@@ -794,39 +793,6 @@ local hlgroups = {
   LspReady = { fg = green, bg = statusline },
   -- NamuPreview = { link = "CursorLine" },
 }
-
-local hl = require "utils.hl"
-local get_hlgroup = hl.get_hlgroup
--- local persist = hl.persist
--- local set_hlgroups = hl.set_hlgroups
-local bg = get_hlgroup("Normal").bg
-local bg_alt = get_hlgroup("Visual").bg
-local snack_green = get_hlgroup("String").fg
-local snack_red = get_hlgroup("ErrorMsg").fg
-local bg_dark = get_hlgroup("NormalFloat").bg
--- return a table of highlights for snacks.picker based on
--- colors retrieved from highlight groups
-
-local chad_hl = {
-  SnacksPickerBorder = { fg = bg_alt, bg = bg },
-  SnacksPicker = { bg = bg },
-  SnacksPickerPreviewBorder = { fg = bg, bg = bg },
-  SnacksPickerPreview = { bg = bg },
-  SnacksPickerPreviewTitle = { fg = bg, bg = snack_green },
-  SnacksPickerBoxBorder = { fg = bg, bg = bg },
-  SnacksPickerInputBorder = { fg = bg, bg = bg },
-  SnacksPickerInputSearch = { fg = snack_red, bg = bg },
-  SnacksPickerListBorder = { fg = bg, bg = bg_dark },
-  SnacksPickerList = { bg = bg_dark },
-  SnacksPickerListTitle = { fg = bg, bg = bg_dark },
-  SnacksPickerCursorLine = { bg = bg },
-
-  SnacksPickerDir = { link = "Directory" },
-  SnacksPickerPathHidden = { link = "Comment" },
-  SnacksPickerMatch = { fg = snack_red },
-}
-
--- hlgroups = require("utils.general").extend_tbl(hlgroups, chad_hl)
 
 -- Highlight group overrides {{{1
 if vim.go.bg == "light" then

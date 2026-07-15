@@ -9,8 +9,8 @@ return {
     },
     postload = function()
       local map = require("utils.key").nmap
-      local focus = require "focus"
-      local hl = require "utils.hl"
+      local focus = require("focus")
+      local hl = require("utils.hl")
 
       local ignore_filetypes = {
         "notification_history",

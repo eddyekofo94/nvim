@@ -5,10 +5,10 @@
 
 ---@type lsp.config
 return {
-  filetypes = { 'dockerfile' },
+  filetypes = { "dockerfile" },
   cmd = {
-    'docker-langserver',
-    '--stdio',
+    "docker-langserver",
+    "--stdio",
   },
-  root_markers = { 'Dockerfile' },
+  root_markers = { "Dockerfile" },
 }

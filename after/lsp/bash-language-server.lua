@@ -1,13 +1,13 @@
 ---@type lsp.config
 return {
-  filetypes = { 'sh' },
+  filetypes = { "sh" },
   cmd = {
-    'bash-language-server',
-    'start',
+    "bash-language-server",
+    "start",
   },
   settings = {
     bashIde = {
-      globPattern = vim.env.GLOB_PATTERN or '*@(.sh|.inc|.bash|.command)',
+      globPattern = vim.env.GLOB_PATTERN or "*@(.sh|.inc|.bash|.command)",
       shfmt = {
         keepPadding = true,
       },

@@ -1,9 +1,9 @@
-local cmd = 'prettier'
+local cmd = "prettier"
 
 local cmds = {
-  'prettier_d',
-  'prettierd',
-  'prettier',
+  "prettier_d",
+  "prettierd",
+  "prettier",
 }
 
 for _, c in ipairs(cmds) do
@@ -16,7 +16,7 @@ end
 local prettier_lang_settings = {
   {
     formatCommand = cmd
-      .. ' --stdin-filepath ${INPUT} ${--range-start=charStart} ${--range-end=charEnd} ${--tab-width=tabWidth} ${--use-tabs=!insertSpaces}',
+      .. " --stdin-filepath ${INPUT} ${--range-start=charStart} ${--range-end=charEnd} ${--tab-width=tabWidth} ${--use-tabs=!insertSpaces}",
     formatCanRange = true,
     formatStdin = true,
   },
@@ -25,35 +25,35 @@ local prettier_lang_settings = {
 ---@type lsp.config
 return {
   filetypes = {
-    'typescript',
-    'javascript',
-    'typescriptreact',
-    'javascriptreact',
-    'jsonc',
-    'json',
-    'html',
-    'css',
+    "typescript",
+    "javascript",
+    "typescriptreact",
+    "javascriptreact",
+    "jsonc",
+    "json",
+    "html",
+    "css",
   },
-  cmd = { 'efm-langserver' },
+  cmd = { "efm-langserver" },
   requires = { cmd },
   name = cmd,
   root_markers = {
     {
-      'prettier.config.js',
-      'prettier.config.mjs',
-      'prettier.config.cjs',
-      '.prettierrc',
-      '.prettierrc.js',
-      '.prettierrc.mjs',
-      '.prettierrc.cjs',
-      '.prettierrc.json',
-      '.prettierrc.hjson',
-      '.prettierrc.json5',
-      '.prettierrc.toml',
-      '.prettierrc.yaml',
-      '.prettierrc.yml',
+      "prettier.config.js",
+      "prettier.config.mjs",
+      "prettier.config.cjs",
+      ".prettierrc",
+      ".prettierrc.js",
+      ".prettierrc.mjs",
+      ".prettierrc.cjs",
+      ".prettierrc.json",
+      ".prettierrc.hjson",
+      ".prettierrc.json5",
+      ".prettierrc.toml",
+      ".prettierrc.yaml",
+      ".prettierrc.yml",
     },
-    { 'package.json' },
+    { "package.json" },
   },
   init_options = {
     documentFormatting = true,

@@ -1,11 +1,11 @@
-local cmd = 'eslint'
+local cmd = "eslint"
 
 local cmds = {
-  'eslint-language-server',
-  'vscode-eslint-language-server',
-  'eslint_d',
-  'eslintd',
-  'eslint',
+  "eslint-language-server",
+  "vscode-eslint-language-server",
+  "eslint_d",
+  "eslintd",
+  "eslint",
 }
 
 for _, c in ipairs(cmds) do
@@ -16,76 +16,76 @@ for _, c in ipairs(cmds) do
 end
 
 local fts = {
-  'typescript',
-  'javascript',
-  'typescriptreact',
-  'javascriptreact',
-  'json',
-  'jsonc',
-  'html',
-  'css',
+  "typescript",
+  "javascript",
+  "typescriptreact",
+  "javascriptreact",
+  "json",
+  "jsonc",
+  "html",
+  "css",
 }
 
 local root_markers = {
-  'eslint.config.js',
-  'eslint.config.mjs',
-  'eslint.config.cjs',
-  '.eslintrc.js',
-  '.eslintrc.cjs',
-  '.eslintrc.yml',
-  '.eslintrc.yaml',
-  '.eslintrc.json',
+  "eslint.config.js",
+  "eslint.config.mjs",
+  "eslint.config.cjs",
+  ".eslintrc.js",
+  ".eslintrc.cjs",
+  ".eslintrc.yml",
+  ".eslintrc.yaml",
+  ".eslintrc.json",
 }
 
 -- Prefer eslint native language server over efm + eslint
 -- https://github.com/neovim/nvim-lspconfig/blob/master/lua/lspconfig/configs/eslint.lua
-if vim.endswith(cmd, 'language-server') then
+if vim.endswith(cmd, "language-server") then
   ---@type lsp.config
   return {
     filetypes = fts,
-    cmd = { cmd, '--stdio' },
+    cmd = { cmd, "--stdio" },
     settings = {
-      validate = 'on',
+      validate = "on",
       packageManager = nil,
       useESLintClass = false,
       experimental = { useFlatConfig = false },
-      codeActionOnSave = { enable = false, mode = 'all' },
+      codeActionOnSave = { enable = false, mode = "all" },
       format = true,
       quiet = false,
-      onIgnoredFiles = 'off',
+      onIgnoredFiles = "off",
       rulesCustomizations = {},
-      run = 'onType',
+      run = "onType",
       problems = { shortenToSingleLine = false },
       -- `nodePath` configures the directory in which the eslint server should start its node_modules resolution.
       -- This path is relative to the workspace folder (root dir) of the server instance.
-      nodePath = '',
+      nodePath = "",
       -- Use the workspace folder location or the file location (if no workspace folder is open) as the working directory
-      workingDirectory = { mode = 'location' },
+      workingDirectory = { mode = "location" },
       codeAction = {
         disableRuleComment = {
           enable = true,
-          location = 'separateLine',
+          location = "separateLine",
         },
       },
     },
     handlers = {
-      ['eslint/openDoc'] = function(_, result)
+      ["eslint/openDoc"] = function(_, result)
         if not result then
           return
         end
         local sysname = vim.loop.os_uname().sysname
-        if sysname:match('Windows') then
-          os.execute(string.format('start %q', result.url))
+        if sysname:match("Windows") then
+          os.execute(string.format("start %q", result.url))
           return
         end
-        if sysname:match('Linux') then
-          os.execute(string.format('xdg-open %q', result.url))
+        if sysname:match("Linux") then
+          os.execute(string.format("xdg-open %q", result.url))
           return
         end
-        os.execute(string.format('open %q', result.url))
+        os.execute(string.format("open %q", result.url))
         return {}
       end,
-      ['eslint/confirmESLintExecution'] = function(_, result)
+      ["eslint/confirmESLintExecution"] = function(_, result)
         if not result then
           return
         end
@@ -99,7 +99,7 @@ if vim.endswith(cmd, 'language-server') then
       -- file (e.g. `.eslintrc`)
       config.settings.workspaceFolder = {
         uri = root_dir,
-        name = vim.fn.fnamemodify(root_dir, ':t'),
+        name = vim.fn.fnamemodify(root_dir, ":t"),
       }
 
       ---Check if a file exists in project
@@ -114,8 +114,8 @@ if vim.endswith(cmd, 'language-server') then
       end
 
       -- Support Yarn2 (PnP) projects
-      if vim.iter({ '.pnp.cjs', '.pnp.js' }):any(file_exists) then
-        config.cmd = vim.list_extend({ 'yarn', 'exec' }, config.cmd)
+      if vim.iter({ ".pnp.cjs", ".pnp.js" }):any(file_exists) then
+        config.cmd = vim.list_extend({ "yarn", "exec" }, config.cmd)
       end
     end,
   }
@@ -124,14 +124,14 @@ end
 -- Eslint language server not available, fall back to efm + eslint
 local eslint_lang_settings = {
   {
-    formatCommand = cmd == 'eslint' and 'eslint --fix ${INPUT}'
-      or cmd .. ' --fix-to-stdout --stdin --stdin-filename ${INPUT}',
+    formatCommand = cmd == "eslint" and "eslint --fix ${INPUT}"
+      or cmd .. " --fix-to-stdout --stdin --stdin-filename ${INPUT}",
     formatStdin = true,
     lintCommand = cmd
-      .. ' --no-color --format visualstudio --stdin --stdin-filename ${INPUT}',
+      .. " --no-color --format visualstudio --stdin --stdin-filename ${INPUT}",
     lintFormats = {
-      '%f(%l,%c): %trror : %m',
-      '%f(%l,%c): %tarning : %m',
+      "%f(%l,%c): %trror : %m",
+      "%f(%l,%c): %tarning : %m",
     },
     lintSource = cmd,
     lintAfterOpen = true,
@@ -143,7 +143,7 @@ local eslint_lang_settings = {
 ---@type lsp.config
 return {
   filetypes = fts,
-  cmd = { 'efm-langserver' },
+  cmd = { "efm-langserver" },
   requires = { cmd },
   name = cmd,
   init_options = {

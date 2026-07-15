@@ -14,7 +14,7 @@ function M.is_empty(tab)
   if #wins > 1 then
     return false
   end
-  return require('utils.win').is_empty(wins[1])
+  return require("utils.win").is_empty(wins[1])
 end
 
 return M

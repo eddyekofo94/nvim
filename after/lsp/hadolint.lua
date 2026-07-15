@@ -3,19 +3,19 @@
 
 ---@type lsp.config
 return {
-  filetypes = { 'dockerfile' },
-  cmd = { 'efm-langserver' },
-  requires = { 'hadolint' },
-  name = 'hadolint',
-  root_markers = { '.hadolint.yaml' },
+  filetypes = { "dockerfile" },
+  cmd = { "efm-langserver" },
+  requires = { "hadolint" },
+  name = "hadolint",
+  root_markers = { ".hadolint.yaml" },
   settings = {
     languages = {
       dockerfile = {
         {
-          lintSource = 'hadolint',
-          lintCommand = 'hadolint --format gnu ${INPUT}',
+          lintSource = "hadolint",
+          lintCommand = "hadolint --format gnu ${INPUT}",
           lintFormats = {
-            'hadolint:%f:%l: SC%n %t%\\w\\+: %m',
+            "hadolint:%f:%l: SC%n %t%\\w\\+: %m",
           },
           lintStdin = false,
           lintOffset = -1,

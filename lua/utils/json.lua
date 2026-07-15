@@ -1,5 +1,5 @@
 local M = {}
-local utils = require('utils')
+local utils = require("utils")
 
 ---Read json contents as lua table
 ---@param path string

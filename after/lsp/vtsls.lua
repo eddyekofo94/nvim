@@ -4,20 +4,20 @@
 ---@type lsp.config
 return {
   filetypes = {
-    'typescript',
-    'javascript',
-    'typescriptreact',
-    'javascriptreact',
+    "typescript",
+    "javascript",
+    "typescriptreact",
+    "javascriptreact",
   },
-  cmd = { 'vtsls', '--stdio' },
+  cmd = { "vtsls", "--stdio" },
   root_markers = {
     {
-      'tsconfig.json',
-      'jsconfig.json',
+      "tsconfig.json",
+      "jsconfig.json",
     },
-    { 'package.json' },
+    { "package.json" },
   },
   init_options = {
-    hostInfo = 'neovim',
+    hostInfo = "neovim",
   },
 }

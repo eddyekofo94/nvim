@@ -1,18 +1,18 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/dgagn/diagflow.nvim',
+  src = "https://github.com/dgagn/diagflow.nvim",
   data = {
-    event = 'LspAttach',
+    event = "LspAttach",
     postload = function()
-      require('diagflow').setup({
+      require("diagflow").setup({
         enable = function()
-          return vim.bo.filetype ~= 'lazy'
+          return vim.bo.filetype ~= "lazy"
         end,
         inline_padding_left = 5,
-        placement = 'top',
-        text_align = 'right',
+        placement = "top",
+        text_align = "right",
         show_sign = true,
-        scope = 'cursor',
+        scope = "cursor",
       })
     end,
   },

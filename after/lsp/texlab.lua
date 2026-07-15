@@ -1,23 +1,23 @@
 ---@type lsp.config
 return {
-  filetypes = { 'tex' },
-  cmd = { 'texlab' },
-  root_markers = { '.latexmkrc' },
+  filetypes = { "tex" },
+  cmd = { "texlab" },
+  root_markers = { ".latexmkrc" },
   settings = {
     texlab = {
       rootDirectory = nil,
       build = {
-        executable = 'latexmk',
+        executable = "latexmk",
         args = {
-          '-pdf',
-          '-interaction=nonstopmode',
-          '-synctex=1',
-          '%f',
+          "-pdf",
+          "-interaction=nonstopmode",
+          "-synctex=1",
+          "%f",
         },
         onSave = false,
         forwardSearchAfter = false,
       },
-      auxDirectory = '.',
+      auxDirectory = ".",
       forwardSearch = {
         executable = nil,
         args = {},
@@ -27,12 +27,12 @@ return {
         onEdit = false,
       },
       diagnosticsDelay = 300,
-      latexFormatter = 'latexindent',
+      latexFormatter = "latexindent",
       latexindent = {
-        ['local'] = nil,
+        ["local"] = nil,
         modifyLineBreaks = false,
       },
-      bibtexFormatter = 'texlab',
+      bibtexFormatter = "texlab",
       formatterLineLength = 80,
     },
   },

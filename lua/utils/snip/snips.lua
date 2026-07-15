@@ -1,5 +1,5 @@
-local ls = require('luasnip')
-local conds = require('utils.snip.conds')
+local ls = require("luasnip")
+local conds = require("utils.snip.conds")
 
 -- Map snippet attribute string to snippet attribute options
 local snip_attr_map = {
@@ -17,8 +17,8 @@ local snip_attr_map = {
   R = { regTrig = false },
   h = { hidden = true },
   H = { hidden = false },
-  a = { snippetType = 'autosnippet' },
-  A = { snippetType = 'snippet' },
+  a = { snippetType = "autosnippet" },
+  A = { snippetType = "snippet" },
   m = {
     condition = conds.in_mathzone,
     show_condition = conds.in_mathzone,
@@ -57,12 +57,12 @@ local snip_attr_map = {
   },
   -- After text block
   b = {
-    condition = conds.after_pattern('[%w%d%)%]%}%>]%s*'),
-    show_condition = conds.after_pattern('[%w%d%)%]%}%>]%s*'),
+    condition = conds.after_pattern("[%w%d%)%]%}%>]%s*"),
+    show_condition = conds.after_pattern("[%w%d%)%]%}%>]%s*"),
   },
   B = {
-    condition = -conds.after_pattern('[%w%d%)%]%}%>]%s*'),
-    show_condition = -conds.after_pattern('[%w%d%)%]%}%>]%s*'),
+    condition = -conds.after_pattern("[%w%d%)%]%}%>]%s*"),
+    show_condition = -conds.after_pattern("[%w%d%)%]%}%>]%s*"),
   },
 }
 
@@ -79,12 +79,12 @@ local function snip_attr_add_new_opt(snip_attr, opt_key, opt_val)
     snip_attr[opt_key] = opt_val
     return
   end
-  if opt_key:match('condition$') then
+  if opt_key:match("condition$") then
     snip_attr[opt_key] = opt_orig_val * opt_val
     return
   end
-  if type(opt_orig_val) == 'table' and type(opt_val) == 'table' then
-    snip_attr[opt_key] = vim.tbl_deep_extend('force', opt_orig_val, opt_val)
+  if type(opt_orig_val) == "table" and type(opt_val) == "table" then
+    snip_attr[opt_key] = vim.tbl_deep_extend("force", opt_orig_val, opt_val)
     return
   end
   snip_attr[opt_key] = opt_val
@@ -92,7 +92,7 @@ end
 
 return setmetatable({}, {
   __index = function(self, snip_name)
-    local snip_attr_str = snip_name:gsub('^m?s', '')
+    local snip_attr_str = snip_name:gsub("^m?s", "")
     local snip_attr = {}
     for i = 1, #snip_attr_str do
       local snip_attr_opts = snip_attr_map[snip_attr_str:sub(i, i)]
@@ -102,7 +102,7 @@ return setmetatable({}, {
         end
       end
     end
-    if snip_name:match('^m') then
+    if snip_name:match("^m") then
       self[snip_name] = ls.extend_decorator.apply(ls.multi_snippet, {
         common = snip_attr,
       })

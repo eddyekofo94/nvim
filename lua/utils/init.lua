@@ -30,6 +30,6 @@ return setmetatable({
   win = nil, ---@module 'utils.win'
 }, {
   __index = function(_, key)
-    return require('utils.' .. key)
+    return require("utils." .. key)
   end,
 })

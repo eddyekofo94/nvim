@@ -6,15 +6,15 @@ vim.g.loaded_intro = true
 ---Check if the intro message is disabled by user
 ---@return boolean
 local function intro_disabled()
-  return vim.go.shortmess:find('I', 1, true) ~= nil
+  return vim.go.shortmess:find("I", 1, true) ~= nil
 end
 
 ---Disable builtin intro message
 ---@return nil
 local function disable_intro()
   local eventignore = vim.go.eventignore
-  vim.opt.eventignore:append('OptionSet')
-  vim.opt.shortmess:append('I')
+  vim.opt.eventignore:append("OptionSet")
+  vim.opt.shortmess:append("I")
   vim.go.eventignore = eventignore
 end
 
@@ -30,7 +30,7 @@ end
 
 -- Set eventignore to avoid triggering plugin lazy-loading handlers
 local eventignore = vim.go.eventignore
-vim.go.eventignore = 'all'
+vim.go.eventignore = "all"
 
 local buf ---@type integer?
 local win ---@type integer?
@@ -43,12 +43,12 @@ local function clear_intro()
   end
 end
 
-local groupid = vim.api.nvim_create_augroup('intro', {})
+local groupid = vim.api.nvim_create_augroup("intro", {})
 
-vim.api.nvim_create_autocmd('UIEnter', {
+vim.api.nvim_create_autocmd("UIEnter", {
   group = groupid,
   once = true,
-  desc = 'Show the intro message on entering the UI.',
+  desc = "Show the intro message on entering the UI.",
   callback = function()
     ---@class intro.chunk
     ---@field text string
@@ -69,16 +69,16 @@ vim.api.nvim_create_autocmd('UIEnter', {
         chunks = {
           {
             text = string.format(
-              'Neovim :: %s',
-              vim.go.termguicolors and 'M Λ C R O' or 'M A C R O'
+              "Neovim :: %s",
+              vim.go.termguicolors and "M Λ C R O" or "M A C R O"
             ),
-            hl = 'Normal',
+            hl = "Normal",
           },
         },
       },
       {
         chunks = {
-          { text = 'Editing made simple', hl = 'NonText' },
+          { text = "Editing made simple", hl = "NonText" },
         },
       },
       { chunks = {} },
@@ -89,21 +89,21 @@ vim.api.nvim_create_autocmd('UIEnter', {
           if random_num < 1 / 3 then
             return {
               {
-                text = vim.fn.keytrans(vim.g.mapleader or '\\'),
-                hl = 'NonText',
+                text = vim.fn.keytrans(vim.g.mapleader or "\\"),
+                hl = "NonText",
               },
-              { text = ' to start', hl = 'Normal' },
+              { text = " to start", hl = "Normal" },
             }
           end
           if random_num < 2 / 3 then
             return {
-              { text = ':h', hl = 'NonText' },
-              { text = ' for help', hl = 'Normal' },
+              { text = ":h", hl = "NonText" },
+              { text = " for help", hl = "Normal" },
             }
           end
           return {
-            { text = ':qa', hl = 'NonText' },
-            { text = ' to quit', hl = 'Normal' },
+            { text = ":qa", hl = "NonText" },
+            { text = " to quit", hl = "Normal" },
           }
         end)(),
       },
@@ -114,8 +114,8 @@ vim.api.nvim_create_autocmd('UIEnter', {
     local win_config = {
       width = 0,
       height = #lines,
-      relative = 'editor',
-      style = 'minimal',
+      relative = "editor",
+      style = "minimal",
       focusable = false,
       noautocmd = true,
       zindex = 1,
@@ -123,7 +123,7 @@ vim.api.nvim_create_autocmd('UIEnter', {
 
     ---Calculate the width, offset, concatenated text, etc.
     for _, line in ipairs(lines) do
-      line.text = ''
+      line.text = ""
       line.width = 0
       for _, chunk in ipairs(line.chunks) do
         chunk.len = #chunk.text
@@ -154,8 +154,8 @@ vim.api.nvim_create_autocmd('UIEnter', {
 
     -- Create the scratch buffer to display the intro message
     buf = vim.api.nvim_create_buf(false, true)
-    vim.bo[buf].bufhidden = 'wipe'
-    vim.bo[buf].buftype = 'nofile'
+    vim.bo[buf].bufhidden = "wipe"
+    vim.bo[buf].buftype = "nofile"
     vim.bo[buf].swapfile = false
     vim.bo[buf].modifiable = true -- fix error when used with `nvim -M`
     vim.api.nvim_buf_set_lines(
@@ -164,12 +164,12 @@ vim.api.nvim_create_autocmd('UIEnter', {
       -1,
       false,
       vim.tbl_map(function(line)
-        return string.rep(' ', line.offset) .. line.text
+        return string.rep(" ", line.offset) .. line.text
       end, lines)
     )
 
     -- Apply highlight groups
-    local ns = vim.api.nvim_create_namespace('NvimIntro')
+    local ns = vim.api.nvim_create_namespace("NvimIntro")
     for linenr, line in ipairs(lines) do
       local chunk_offset = line.offset
       for _, chunk in ipairs(line.chunks) do
@@ -203,39 +203,39 @@ vim.api.nvim_create_autocmd('UIEnter', {
 
     -- Using `vim.w[win]` will change global value and affect other windows
     vim.api.nvim_win_call(win, function()
-      vim.opt_local.winhl = 'NormalFloat:Normal,Search:,Incsearch:'
+      vim.opt_local.winhl = "NormalFloat:Normal,Search:,Incsearch:"
       vim.opt_local.spell = false
     end)
   end,
 })
 
 vim.api.nvim_create_autocmd({
-  'BufAdd',
-  'BufModifiedSet',
-  'BufReadPre',
-  'CursorMoved',
-  'InsertEnter',
-  'SessionLoadPost',
-  'StdinReadPre',
-  'TermEnter',
-  'TermOpen',
-  'TextChanged',
-  'VimResized',
-  'WinEnter',
+  "BufAdd",
+  "BufModifiedSet",
+  "BufReadPre",
+  "CursorMoved",
+  "InsertEnter",
+  "SessionLoadPost",
+  "StdinReadPre",
+  "TermEnter",
+  "TermOpen",
+  "TextChanged",
+  "VimResized",
+  "WinEnter",
 }, {
   once = true,
   group = groupid,
-  desc = 'Clear the intro on user action.',
+  desc = "Clear the intro on user action.",
   callback = function()
     disable_intro()
     clear_intro()
   end,
 })
 
-vim.api.nvim_create_autocmd('OptionSet', {
+vim.api.nvim_create_autocmd("OptionSet", {
   group = groupid,
-  pattern = 'shortmess',
-  desc = 'Clear the intro if intro message is disabled by user.',
+  pattern = "shortmess",
+  desc = "Clear the intro if intro message is disabled by user.",
   callback = function()
     if intro_disabled() then
       clear_intro()

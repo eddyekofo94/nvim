@@ -1,20 +1,20 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/NvChad/nvterm',
+  src = "https://github.com/NvChad/nvterm",
   data = {
     enabled = false,
-    dependencies = { 'MunifTanjim/nui.nvim' },
+    dependencies = { "MunifTanjim/nui.nvim" },
     postload = function()
-      require('nvterm').setup({
+      require("nvterm").setup({
         terminals = {
           type_opts = {
             float = {
-              relative = 'editor',
+              relative = "editor",
               row = 0.3,
               col = 0.25,
               width = 0.5,
               height = 0.4,
-              border = 'single',
+              border = "single",
             },
           },
         },
@@ -24,8 +24,7 @@ return {
         },
       })
 
-      local nmap = require('utils.key').nmap
-      local map = require('utils.key').map
+      local nmap = require("utils.key").nmap
 
       -- map({ 't', 'n' }, '<A-i>', function()
       --   return require('nvterm.terminal').toggle('float')
@@ -39,13 +38,13 @@ return {
       --   return require('nvterm.terminal').toggle('vertical')
       -- end, { desc = 'Toggle vertical term' })
 
-      nmap('<leader>tf', function()
-        return require('nvterm.terminal').new('float')
-      end, { desc = 'Terminal new float term' })
+      nmap("<leader>tf", function()
+        return require("nvterm.terminal").new("float")
+      end, { desc = "Terminal new float term" })
 
-      nmap('<leader>tv', function()
-        return require('nvterm.terminal').new('vertical')
-      end, { desc = 'Terminal new ver term' })
+      nmap("<leader>tv", function()
+        return require("nvterm.terminal").new("vertical")
+      end, { desc = "Terminal new ver term" })
     end,
   },
 }

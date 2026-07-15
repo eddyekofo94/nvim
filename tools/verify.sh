@@ -32,6 +32,8 @@ NVIM_APPNAME=nvim nvim --headless -u NONE \
   +qa
 
 make test-smart-files
+make test-lazy-loading
+make test-copilot-lifecycle
 
 luacheck -q \
   lua/core/options.lua \
@@ -76,9 +78,25 @@ if [ "$(realpath "$inherited_data")" != "$(realpath "$default_data")" ]; then
   exit 1
 fi
 
+for legacy_store in "$inherited_data/lazy" "$inherited_data/packages"; do
+  if [ -e "$legacy_store" ]; then
+    printf 'Inactive legacy plugin store returned: %s\n' "$legacy_store" >&2
+    exit 1
+  fi
+done
+
+config_debris=$(find . -path './.git' -prune -o -type f \
+  \( -name '*.bak' -o -name '*.pyc' \) -print)
+if [ -n "$config_debris" ]; then
+  printf 'Backup or Python bytecode remains in the config tree:\n%s\n' \
+    "$config_debris" >&2
+  exit 1
+fi
+
 clean_output="$tmpdir/clean-environment.log"
 if ! env -i HOME="$HOME" PATH="/usr/bin:/bin" NVIM_APPNAME=nvim \
   TERM=xterm-256color "$nvim_bin" --headless README.md \
+  '+lua assert(vim.fn.executable("fzf") == 1, "fzf unavailable in clean startup")' \
   '+lua vim.cmd.packadd("dropbar.nvim"); require("dropbar").setup()' \
   '+sleep 1' +qa >"$clean_output" 2>&1; then
   cat "$clean_output"

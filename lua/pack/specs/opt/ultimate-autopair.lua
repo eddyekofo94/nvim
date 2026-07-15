@@ -1,11 +1,11 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/altermo/ultimate-autopair.nvim',
+  src = "https://github.com/altermo/ultimate-autopair.nvim",
   data = {
-    events = { 'InsertEnter', 'CmdlineEnter' },
+    events = { "InsertEnter", "CmdlineEnter" },
     postload = function()
       _G.UA_DEBUG_DONT = true
-      local ap_utils = require('ultimate-autopair.utils')
+      local ap_utils = require("ultimate-autopair.utils")
 
       ---FileType options memoization
       ---@type table<string, table<string, string|integer|boolean|table>>
@@ -53,10 +53,10 @@ return {
       ---@type string[]
       local compltype = {}
 
-      vim.api.nvim_create_autocmd('CmdlineChanged', {
-        desc = 'Record cmd compltype to determine whether to autopair.',
+      vim.api.nvim_create_autocmd("CmdlineChanged", {
+        desc = "Record cmd compltype to determine whether to autopair.",
         group = vim.api.nvim_create_augroup(
-          'ultimate-autopair.record_cmdcompltype',
+          "ultimate-autopair.record_cmdcompltype",
           {}
         ),
         callback = function()
@@ -69,7 +69,7 @@ return {
         end,
       })
 
-      require('ultimate-autopair').setup({
+      require("ultimate-autopair").setup({
         extensions = {
           suround = false,
           -- Improve performance when typing fast, see
@@ -82,41 +82,41 @@ return {
                   not f.in_cmdline()
                   -- Disable autopairs when inserting a regex, e.g.
                   -- `:s/{pattern}/{string}/[flags]` or `:g/{pattern}/[cmd]`, etc.
-                  or (compltype[2] ~= 'command' or compltype[1] ~= '')
+                  or (compltype[2] ~= "command" or compltype[1] ~= "")
                 )
             end,
           },
         },
-        { '[=[', ']=]', ft = { 'lua' } },
-        { '<<<', '>>>', ft = { 'cuda' } },
+        { "[=[", "]=]", ft = { "lua" } },
+        { "<<<", ">>>", ft = { "cuda" } },
         {
-          '/*',
-          '*/',
+          "/*",
+          "*/",
           ft = {
-            'c',
-            'cpp',
-            'cuda',
-            'go',
-            'java',
-            'scala',
-            'typescript',
-            'javascript',
-            'typescriptreact',
-            'javascriptreact',
+            "c",
+            "cpp",
+            "cuda",
+            "go",
+            "java",
+            "scala",
+            "typescript",
+            "javascript",
+            "typescriptreact",
+            "javascriptreact",
           },
           newline = true,
           space = true,
         },
         {
-          '<',
-          '>',
+          "<",
+          ">",
           disable_start = true,
           disable_end = true,
         },
         {
-          '>',
-          '<',
-          ft = { 'html', 'xml', 'markdown' },
+          ">",
+          "<",
+          ft = { "html", "xml", "markdown" },
           disable_start = true,
           disable_end = true,
           newline = true,
@@ -125,95 +125,95 @@ return {
         -- Paring '$' and '*' are handled by snippets,
         -- only use autopair to delete matched pairs here
         {
-          '$',
-          '$',
-          ft = { 'markdown', 'tex' },
+          "$",
+          "$",
+          ft = { "markdown", "tex" },
           disable_start = true,
           disable_end = true,
         },
         {
-          '*',
-          '*',
-          ft = { 'markdown' },
+          "*",
+          "*",
+          ft = { "markdown" },
           disable_start = true,
           disable_end = true,
         },
         {
-          '\\left(',
-          '\\right)',
+          "\\left(",
+          "\\right)",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left[',
-          '\\right]',
+          "\\left[",
+          "\\right]",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left{',
-          '\\right}',
+          "\\left{",
+          "\\right}",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left<',
-          '\\right>',
+          "\\left<",
+          "\\right>",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left\\lfloor',
-          '\\right\\rfloor',
+          "\\left\\lfloor",
+          "\\right\\rfloor",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left\\lceil',
-          '\\right\\rceil',
+          "\\left\\lceil",
+          "\\right\\rceil",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left\\vert',
-          '\\right\\vert',
+          "\\left\\vert",
+          "\\right\\vert",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left\\lVert',
-          '\\right\\rVert',
+          "\\left\\lVert",
+          "\\right\\rVert",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\left\\lVert',
-          '\\right\\rVert',
+          "\\left\\lVert",
+          "\\right\\rVert",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\begin{bmatrix}',
-          '\\end{bmatrix}',
+          "\\begin{bmatrix}",
+          "\\end{bmatrix}",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
         {
-          '\\begin{pmatrix}',
-          '\\end{pmatrix}',
+          "\\begin{pmatrix}",
+          "\\end{pmatrix}",
           newline = true,
           space = true,
-          ft = { 'markdown', 'tex' },
+          ft = { "markdown", "tex" },
         },
       })
     end,

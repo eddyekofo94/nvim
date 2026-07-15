@@ -1,12 +1,12 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/chrisgrieser/nvim-early-retirement',
+  src = "https://github.com/chrisgrieser/nvim-early-retirement",
   data = {
     postload = function()
-      require('early-retirement').setup({
+      require("early-retirement").setup({
         retirementAgeMins = 15,
         ignoredFiletypes = {},
-        ignoreFilenamePattern = '',
+        ignoreFilenamePattern = "",
         ignoreAltFile = false,
         minimumBufferNum = 2,
         ignoreUnsavedChangesBufs = true,

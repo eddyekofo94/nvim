@@ -4,9 +4,9 @@ vim.env.CGO_ENABLED = 0
 
 ---@type lsp.config
 return {
-  filetypes = { 'go' },
-  cmd = { 'gopls' },
-  root_markers = { 'go.work', 'go.mod' },
+  filetypes = { "go" },
+  cmd = { "gopls" },
+  root_markers = { "go.work", "go.mod" },
   settings = {
     gopls = {
       completeUnimported = true,

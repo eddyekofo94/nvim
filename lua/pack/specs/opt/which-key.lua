@@ -1,15 +1,15 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/folke/which-key.nvim',
+  src = "https://github.com/folke/which-key.nvim",
   data = {
     load = function(spec, path)
-      local load = require('utils.load')
+      local load = require("utils.load")
 
       local function load_wk()
         if spec.data and spec.data.preload then
           spec.data.preload(spec, path)
         end
-        load.load('which-key.nvim')
+        load.load("which-key.nvim")
         if spec.data and spec.data.postload then
           spec.data.postload(spec, path)
         end
@@ -18,13 +18,13 @@ return {
       if vim.v.vim_did_enter then
         vim.schedule(load_wk)
       else
-        load.on_events('UIEnter', 'which-key', vim.schedule_wrap(load_wk))
+        load.on_events("UIEnter", "which-key", vim.schedule_wrap(load_wk))
       end
     end,
     postload = function()
-      local icons = require('utils.static.icons')
-      local wk_win = require('which-key.win')
-      local wk_trig = require('which-key.triggers')
+      local icons = require("utils.static.icons")
+      local wk_win = require("which-key.win")
+      local wk_trig = require("which-key.triggers")
 
       -- Hijack `which-key.win.show()` to fix gap to the right of which-key window
       -- when using helix preset
@@ -44,36 +44,36 @@ return {
       wk_trig.add = (function(add_fn)
         ---@param trig wk.Trigger
         return function(trig)
-          if trig.keys == '<M->' then
+          if trig.keys == "<M->" then
             return
           end
           add_fn(trig)
         end
       end)(wk_trig.add)
 
-      local wk = require('which-key')
+      local wk = require("which-key")
 
       wk.setup({
-        preset = 'helix',
+        preset = "helix",
         delay = function(ctx)
           return ctx.plugin and 0 or 640
         end,
-        win = { border = 'solid' },
+        win = { border = "solid" },
         sort = {
-          'local',
-          'order',
-          'group',
-          'desc',
-          'alphanum',
-          'mod',
+          "local",
+          "order",
+          "group",
+          "desc",
+          "alphanum",
+          "mod",
         },
         filter = function(mapping)
-          return not mapping.lhs:find('<Esc>', 0, true)
-            and not mapping.lhs:find('<.*Mouse.*>')
-            and not mapping.lhs:find('<.*ScrollWheel.*>')
+          return not mapping.lhs:find("<Esc>", 0, true)
+            and not mapping.lhs:find("<.*Mouse.*>")
+            and not mapping.lhs:find("<.*ScrollWheel.*>")
         end,
         defer = function(ctx)
-          return ctx.mode == 'V' or ctx.mode == '<C-V>' or ctx.mode == 'v'
+          return ctx.mode == "V" or ctx.mode == "<C-V>" or ctx.mode == "v"
         end,
         plugins = {
           marks = false,
@@ -84,9 +84,9 @@ return {
         },
         icons = {
           mappings = false,
-          breadcrumb = '',
-          separator = '',
-          group = '+',
+          breadcrumb = "",
+          separator = "",
+          group = "+",
           ellipsis = icons.Ellipsis,
           keys = {
             Up = icons.keys.Up,
@@ -122,45 +122,45 @@ return {
       })
 
       wk.add({
-        { 'gs', group = 'Text split/swap' },
-        { 'gq', group = 'Format' },
-        { 'gr', group = 'LSP' },
-        { '<Leader>g', group = 'Git' },
-        { '<Leader>f', group = 'Find' },
-        { '<Leader>fg', group = 'Git' },
-        { '<Leader>gf', group = 'Find' },
-        { '<Leader>fS', group = 'LSP' },
-        { '<Leader>G', group = 'Debug' },
-        { '<Leader>t', group = 'Test' },
-        { '<Leader>P', group = 'Plugin' },
-        { '<Leader><Tab>', group = 'Table mode' },
-        { '<Leader><Tab>d', group = 'Delete' },
-        { '<Leader><Tab>i', group = 'Insert' },
-        { '<Leader><Tab>f', group = 'Formula' },
-        { '<LocalLeader>l', group = 'TeX' },
+        { "gs", group = "Text split/swap" },
+        { "gq", group = "Format" },
+        { "gr", group = "LSP" },
+        { "<Leader>g", group = "Git" },
+        { "<Leader>f", group = "Find" },
+        { "<Leader>fg", group = "Git" },
+        { "<Leader>gf", group = "Find" },
+        { "<Leader>fS", group = "LSP" },
+        { "<Leader>G", group = "Debug" },
+        { "<Leader>t", group = "Test" },
+        { "<Leader>P", group = "Plugin" },
+        { "<Leader><Tab>", group = "Table mode" },
+        { "<Leader><Tab>d", group = "Delete" },
+        { "<Leader><Tab>i", group = "Insert" },
+        { "<Leader><Tab>f", group = "Formula" },
+        { "<LocalLeader>l", group = "TeX" },
       })
 
-      require('utils.hl').persist(function()
+      require("utils.hl").persist(function()
         if vim.go.termguicolors then
           return
         end
 
         -- Ensure visibility in TTY
-        vim.api.nvim_set_hl(0, 'WhichKey', { link = 'Normal', default = true })
+        vim.api.nvim_set_hl(0, "WhichKey", { link = "Normal", default = true })
         vim.api.nvim_set_hl(
           0,
-          'WhichKeyDesc',
-          { link = 'Normal', default = true }
+          "WhichKeyDesc",
+          { link = "Normal", default = true }
         )
-        vim.api.nvim_set_hl(0, 'WhichKeySeparator', {
-          link = 'WhichKeyGroup',
+        vim.api.nvim_set_hl(0, "WhichKeySeparator", {
+          link = "WhichKeyGroup",
           default = true,
         })
       end)
 
-      vim.api.nvim_create_autocmd('ModeChanged', {
-        desc = 'Redraw statusline shortly after mode change to ensure correct mode display after enting visual mode when which-key.nvim is enabled.',
-        group = vim.api.nvim_create_augroup('which-key.redraw_statusline', {}),
+      vim.api.nvim_create_autocmd("ModeChanged", {
+        desc = "Redraw statusline shortly after mode change to ensure correct mode display after enting visual mode when which-key.nvim is enabled.",
+        group = vim.api.nvim_create_augroup("which-key.redraw_statusline", {}),
         callback = vim.schedule_wrap(function()
           vim.cmd.redrawstatus({
             mods = { emsg_silent = true },

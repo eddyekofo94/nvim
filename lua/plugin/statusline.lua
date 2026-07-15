@@ -1,5 +1,5 @@
-local utils = require "utils"
-local icons = require "utils.static.icons"
+local utils = require("utils")
+local icons = require("utils.static.icons")
 local groupid = vim.api.nvim_create_augroup("statusline", {})
 
 _G._statusline = {}
@@ -340,7 +340,7 @@ _G.LspSpinnerTimer:start(
   100,
   vim.schedule_wrap(function()
     local has_busy = false
-    for _, client in ipairs(vim.lsp.get_clients { bufnr = 0 }) do
+    for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
       if server_progress[client.name] == true then
         has_busy = true
         break
@@ -365,7 +365,6 @@ local lsp_incapable_ft = {
   noicefloat = true,
 }
 
-
 ---@return string
 function _G._statusline.wordcount()
   local stats = nil
@@ -387,7 +386,7 @@ function _G._statusline.wordcount()
   end
 
   local vwords, vchars = 0, 0
-  if vim.fn.mode():find "^[vsVS\x16\x13]" then
+  if vim.fn.mode():find("^[vsVS\x16\x13]") then
     stats = stats or vim.fn.wordcount()
     vwords = stats.visual_words
     vchars = stats.visual_chars
@@ -579,8 +578,6 @@ vim.api.nvim_create_autocmd("WinClosed", {
   end,
 })
 
-
-
 local function filepath()
   local bufname = vim.api.nvim_buf_get_name(0)
   local absolute_path = bufname:gsub("^oil://", "")
@@ -596,7 +593,7 @@ local function filepath()
     end
   end
 
-  local fpath = vim.fn.fnamemodify(vim.fn.expand "%", ":~:.:h")
+  local fpath = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.:h")
   if fpath == "" or fpath == "." then
     return ""
   end
@@ -688,7 +685,7 @@ function _G._statusline.fname()
   end
 
   -- Other special buffer types
-  local prefix, main = bufname:match "^%s*(%S+)://(.*)"
+  local prefix, main = bufname:match("^%s*(%S+)://(.*)")
   if prefix and main then
     return utils.stl.escape(
       string.format(
@@ -786,7 +783,7 @@ function _G._statusline.diag()
   end
   local str = ""
   local buf_cnt = vim.b.diag_cnt_cache or {}
-  for serverity_nr, severity in ipairs { "Error", "Warn", "INFO", "Hint" } do
+  for serverity_nr, severity in ipairs({ "Error", "Warn", "INFO", "Hint" }) do
     local cnt = buf_cnt[serverity_nr] ~= vim.NIL and buf_cnt[serverity_nr] or 0
     if cnt > 0 then
       local icon_text = get_diag_sign_text(serverity_nr)
@@ -797,7 +794,7 @@ function _G._statusline.diag()
         .. cnt
     end
   end
-  if str:find "%S" then
+  if str:find("%S") then
     str = str .. " "
   end
   vim.b.diag_str_cache = str
@@ -824,7 +821,7 @@ function _G._statusline.lsp_status()
     return ""
   end
 
-  local clients = vim.lsp.get_clients { bufnr = 0 }
+  local clients = vim.lsp.get_clients({ bufnr = 0 })
   if #clients == 0 then
     return ""
   end
@@ -1102,7 +1099,7 @@ local components = {
 }
 -- stylua: ignore end
 
-local stl = table.concat {
+local stl = table.concat({
   components.mode,
   components.flag,
   components.root,
@@ -1118,9 +1115,9 @@ local stl = table.concat {
   components.ft,
   components.truncate,
   components.lineinfo,
-}
+})
 
-local stl_nc = table.concat {
+local stl_nc = table.concat({
   components.padding,
   components.flag,
   components.root,
@@ -1128,7 +1125,7 @@ local stl_nc = table.concat {
   components.align,
   components.truncate,
   components.pos,
-}
+})
 
 setmetatable(_G._statusline, {
   ---Get statusline string

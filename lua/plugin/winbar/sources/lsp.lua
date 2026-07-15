@@ -1,7 +1,7 @@
-local utils = require('plugin.winbar.utils')
-local configs = require('plugin.winbar.configs')
-local bar = require('plugin.winbar.bar')
-local groupid = vim.api.nvim_create_augroup('winbar.sources.lsp', {})
+local utils = require("plugin.winbar.utils")
+local configs = require("plugin.winbar.configs")
+local bar = require("plugin.winbar.bar")
+local groupid = vim.api.nvim_create_augroup("winbar.sources.lsp", {})
 local initialized = false
 
 ---@type table<integer, winbar.sources.lsp.document_symbol[]>
@@ -87,10 +87,10 @@ local symbol_kind_names = setmetatable({
 ---@return winbar.sources.lsp.symbol_type? type symbol type
 local function symbol_type(symbols)
   if symbols[1] and symbols[1].location then
-    return 'SymbolInformation'
+    return "SymbolInformation"
   end
   if symbols[1] and symbols[1].range then
-    return 'DocumentSymbol'
+    return "DocumentSymbol"
   end
 end
 
@@ -114,12 +114,12 @@ local function convert_document_symbol(
     win = win,
     name = document_symbol.name,
     icon = configs.opts.icons.kinds.symbols[kind],
-    icon_hl = 'WinBarIconKind' .. kind,
+    icon_hl = "WinBarIconKind" .. kind,
     range = document_symbol.range,
     sibling_idx = idx,
   }, {
     __index = function(self, k)
-      if k == 'children' then
+      if k == "children" then
         if not document_symbol.children then
           return nil
         end
@@ -129,7 +129,7 @@ local function convert_document_symbol(
         return self.children
       end
 
-      if k == 'siblings' then
+      if k == "siblings" then
         if not siblings then
           return nil
         end
@@ -194,7 +194,7 @@ end
 ---@param symbols winbar.sources.lsp.symbol LSP symbols
 ---@return winbar.sources.lsp.document_symbol[]
 local function unify(symbols)
-  if symbol_type(symbols) == 'DocumentSymbol' or vim.tbl_isempty(symbols) then
+  if symbol_type(symbols) == "DocumentSymbol" or vim.tbl_isempty(symbols) then
     return symbols
   end
   -- Convert SymbolInformation[] to DocumentSymbol[]
@@ -244,7 +244,7 @@ local function update_symbols(buf, ttl)
   ---@type vim.lsp.Client
   local client = vim.lsp.get_clients({
     bufnr = buf,
-    method = 'textDocument/documentSymbol',
+    method = "textDocument/documentSymbol",
   })[1]
   if not client then
     defer_update()
@@ -260,7 +260,7 @@ local function update_symbols(buf, ttl)
   end
 
   local _, request_id = client:request(
-    'textDocument/documentSymbol',
+    "textDocument/documentSymbol",
     { textDocument = vim.lsp.util.make_text_document_params(buf) },
     function(err, symbols, _)
       if err or not symbols or vim.tbl_isempty(symbols) then
@@ -350,33 +350,33 @@ local function init()
     if
       not vim.tbl_isempty(vim.lsp.get_clients({
         bufnr = buf,
-        method = 'textDocument/documentSymbol',
+        method = "textDocument/documentSymbol",
       }))
     then
       attach(buf)
     end
   end
 
-  vim.api.nvim_create_autocmd({ 'LspAttach' }, {
-    desc = 'Attach LSP symbol getter to buffer when an LS that supports documentSymbol attaches.',
+  vim.api.nvim_create_autocmd({ "LspAttach" }, {
+    desc = "Attach LSP symbol getter to buffer when an LS that supports documentSymbol attaches.",
     group = groupid,
     callback = function(args)
       local client = vim.lsp.get_client_by_id(args.data.client_id)
-      if client and client:supports_method('textDocument/documentSymbol') then
+      if client and client:supports_method("textDocument/documentSymbol") then
         attach(args.buf)
       end
     end,
   })
 
-  vim.api.nvim_create_autocmd({ 'LspDetach' }, {
-    desc = 'Detach LSP symbol getter from buffer when no LS supporting documentSymbol is attached.',
+  vim.api.nvim_create_autocmd({ "LspDetach" }, {
+    desc = "Detach LSP symbol getter from buffer when no LS supporting documentSymbol is attached.",
     group = groupid,
     -- Schedule to wait for lsp that triggers `LspDetach` to actually detach
     callback = vim.schedule_wrap(function(args)
       if
         vim.tbl_isempty(vim.lsp.get_clients({
           bufnr = args.buf,
-          method = 'textDocument/documentSymbol',
+          method = "textDocument/documentSymbol",
         }))
       then
         detach(args.buf)
@@ -384,8 +384,8 @@ local function init()
     end),
   })
 
-  vim.api.nvim_create_autocmd({ 'BufDelete', 'BufUnload', 'BufWipeOut' }, {
-    desc = 'Detach LSP symbol getter from buffer on buffer delete/unload/wipeout.',
+  vim.api.nvim_create_autocmd({ "BufDelete", "BufUnload", "BufWipeOut" }, {
+    desc = "Detach LSP symbol getter from buffer on buffer delete/unload/wipeout.",
     group = groupid,
     callback = function(args)
       detach(args.buf)

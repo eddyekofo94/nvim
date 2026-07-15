@@ -56,7 +56,7 @@ return {
       "https://github.com/shumphrey/fugitive-gitlab.vim",
     },
     postload = function()
-      vim.cmd [[
+      vim.cmd([[
         " By default open the fugitive window in a split below current window instead
         " of at the bottom of screen, preventing it from being squeezed by windows
         " with `winfixheight` set
@@ -69,7 +69,7 @@ return {
         command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#LogComplete GcLog let g:fugitive_prevbuf=bufnr() | exe fugitive#LogCommand(<line1>,<count>,+"<range>",<bang>0,"<mods>",<q-args>, "c")
         command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#LogComplete Gllog let g:fugitive_prevbuf=bufnr() | exe fugitive#LogCommand(<line1>,<count>,+"<range>",<bang>0,"<mods>",<q-args>, "l")
         command! -bang -nargs=? -range=-1 -complete=customlist,fugitive#LogComplete GlLog let g:fugitive_prevbuf=bufnr() | exe fugitive#LogCommand(<line1>,<count>,+"<range>",<bang>0,"<mods>",<q-args>, "l")
-      ]]
+      ]])
 
       -- stylua: ignore start
       -- vim.keymap.set('n', '<Leader>gG',       '<Cmd>Git<CR>',                                  { desc = 'Git summary' })
@@ -120,7 +120,7 @@ return {
               vim.cmd.lclose()
               vim.cmd.buffer(vim.g.fugitive_prevbuf)
               vim.g.fugitive_prevbuf = nil
-              vim.cmd.bw { "#", bang = true, mods = { emsg_silent = true } }
+              vim.cmd.bw({ "#", bang = true, mods = { emsg_silent = true } })
             end
           end, { buffer = true })
         end,
@@ -152,7 +152,7 @@ return {
         group = group,
         pattern = "fugitiveblame",
         callback = function()
-          local win_alt = vim.fn.win_getid(vim.fn.winnr "#")
+          local win_alt = vim.fn.win_getid(vim.fn.winnr("#"))
           vim.opt_local.winbar = vim.api.nvim_win_is_valid(win_alt)
               and vim.wo[win_alt].winbar ~= ""
               and " "
@@ -242,14 +242,14 @@ return {
           vim.env.GIT_DIR = vim.env.DOT_DIR
           vim.env.GIT_WORK_TREE = vim.uv.os_homedir()
 
-          vim.cmd[fugitive_cmd] {
+          vim.cmd[fugitive_cmd]({
             args = a.fargs,
             mods = a.smods,
             bang = a.bang,
             reg = opts.register and a.reg,
             range = opts.range and { a.line1, a.line2 },
             count = opts.count and a.count,
-          }
+          })
 
           vim.b.git_dir = buf_git_dir
           vim.env.GIT_DIR = env_git_dir
@@ -257,7 +257,7 @@ return {
         end, opts)
       end
 
-      for _, cmd in ipairs { "D", "Dot" } do
+      for _, cmd in ipairs({ "D", "Dot" }) do
         create_dotfiles_cmd(cmd, "Git", {
           nargs = "?",
           ---@param arglead string leading portion of the argument being completed

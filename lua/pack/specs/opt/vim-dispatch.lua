@@ -1,14 +1,14 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/tpope/vim-dispatch',
+  src = "https://github.com/tpope/vim-dispatch",
   data = {
-    cmds = { 'Dispatch', 'Start', 'Focus', 'Make' },
+    cmds = { "Dispatch", "Start", "Focus", "Make" },
     postload = function()
       local handlers = vim.g.dispatch_handlers
       local job_handler ---@type string?
 
       for i, handler in ipairs(handlers) do
-        if handler == 'job' then
+        if handler == "job" then
           job_handler = table.remove(handlers, i)
           break
         end

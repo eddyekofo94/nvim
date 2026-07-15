@@ -1,24 +1,22 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/willothy/flatten.nvim',
+  src = "https://github.com/willothy/flatten.nvim",
   data = {
-    event = 'BufReadPre',
+    event = "BufReadPre",
     postload = function()
-      require('flatten').setup({
+      require("flatten").setup({
         window = {
-          open = 'current',
+          open = "current",
         },
         hooks = {
-          post_open = function(bufnr, winnr, ft, is_blocking)
-            if is_blocking then
-              -- If it's a git commit or similar, maybe stay in the terminal
-            else
+          post_open = function(_, winnr, _, is_blocking)
+            if not is_blocking then
               vim.api.nvim_set_current_win(winnr)
             end
           end,
           block_end = function()
             vim.schedule(function()
-              vim.cmd('unhide')
+              vim.cmd("unhide")
             end)
           end,
         },

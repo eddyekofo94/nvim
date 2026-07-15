@@ -1,7 +1,7 @@
-local bar = require('plugin.winbar.bar')
-local utils = require('plugin.winbar.utils')
-local groupid = vim.api.nvim_create_augroup('winbar.menu', {})
-local configs = require('plugin.winbar.configs')
+local bar = require("plugin.winbar.bar")
+local utils = require("plugin.winbar.utils")
+local groupid = vim.api.nvim_create_augroup("winbar.menu", {})
+local configs = require("plugin.winbar.configs")
 
 ---Lookup table for winbar menus
 ---@type table<integer, winbar.menu>
@@ -34,10 +34,10 @@ winbar_menu_entry.__index = winbar_menu_entry
 ---@return winbar.menu.entry
 function winbar_menu_entry:new(opts)
   local entry = setmetatable(
-    vim.tbl_deep_extend('force', {
+    vim.tbl_deep_extend("force", {
       separator = bar.winbar_symbol:new({
         icon = configs.opts.icons.ui.menu.separator,
-        icon_hl = 'WinBarIconUISeparatorMenu',
+        icon_hl = "WinBarIconUISeparatorMenu",
       }),
       padding = configs.opts.menu.entry.padding,
       components = {},
@@ -65,26 +65,26 @@ function winbar_menu_entry:cat()
     end
     table.insert(components_with_sep, component)
   end
-  local str = string.rep(' ', self.padding.left)
+  local str = string.rep(" ", self.padding.left)
   local hl_info = {}
   for _, component in ipairs(components_with_sep) do
     if component.icon_hl then
       table.insert(hl_info, {
         start = #str,
-        ['end'] = #str + #component.icon,
+        ["end"] = #str + #component.icon,
         hlgroup = component.icon_hl,
       })
     end
     if component.name_hl then
       table.insert(hl_info, {
         start = #str + #component.icon,
-        ['end'] = #str + #component.icon + #component.name,
+        ["end"] = #str + #component.icon + #component.name,
         hlgroup = component.name_hl,
       })
     end
     str = str .. component:cat(true)
   end
-  return str .. string.rep(' ', self.padding.right), hl_info
+  return str .. string.rep(" ", self.padding.right), hl_info
 end
 
 ---Get the display length of the winbar menu entry
@@ -109,7 +109,7 @@ function winbar_menu_entry:first_clickable(offset)
   for _, component in ipairs(self.components) do
     local col_end = col_start + component:bytewidth()
     if offset < col_end and component.on_click then
-      return component, { start = col_start, ['end'] = col_end }
+      return component, { start = col_start, ["end"] = col_end }
     end
     col_start = col_end + self.separator:bytewidth()
   end
@@ -130,7 +130,7 @@ function winbar_menu_entry:get_component_at(col, look_ahead)
       return component,
         {
           start = col_offset,
-          ['end'] = col_offset + component_len,
+          ["end"] = col_offset + component_len,
         }
     end
     col_offset = col_offset + component_len + self.separator:bytewidth()
@@ -149,7 +149,7 @@ function winbar_menu_entry:prev_clickable(col)
     local col_end = col_start + component:bytewidth()
     if col > col_end and component.on_click then
       prev_component = component
-      range = { start = col_start, ['end'] = col_end }
+      range = { start = col_start, ["end"] = col_end }
     end
     col_start = col_end + self.separator:bytewidth()
   end
@@ -165,7 +165,7 @@ function winbar_menu_entry:next_clickable(col)
   for _, component in ipairs(self.components) do
     local col_end = col_start + component:bytewidth()
     if col < col_start and component.on_click then
-      return component, { start = col_start, ['end'] = col_end }
+      return component, { start = col_start, ["end"] = col_end }
     end
     col_start = col_end + self.separator:bytewidth()
   end
@@ -209,7 +209,7 @@ winbar_menu.__index = winbar_menu
 ---@return winbar.menu
 function winbar_menu:new(opts)
   local menu = setmetatable(
-    vim.tbl_deep_extend('force', {
+    vim.tbl_deep_extend("force", {
       entries = {},
       win_configs = configs.opts.menu.win_configs,
     }, opts or {}),
@@ -270,7 +270,7 @@ function winbar_menu:eval_win_configs()
   -- replace non-nil with nil so if the default win config uses
   -- `relative` = 'win' (which it does), win will be set even if the menu-local
   -- win config doesn't set it.
-  if self._win_configs.relative ~= 'win' then
+  if self._win_configs.relative ~= "win" then
     self._win_configs.win = nil
   end
 end
@@ -342,20 +342,20 @@ function winbar_menu:update_hover_hl(pos)
   if not self.buf then
     return
   end
-  utils.hl.range_single(self.buf, 'WinBarMenuHoverSymbol')
-  utils.hl.range_single(self.buf, 'WinBarMenuHoverIcon')
-  utils.hl.range_single(self.buf, 'WinBarMenuHoverEntry')
+  utils.hl.range_single(self.buf, "WinBarMenuHoverSymbol")
+  utils.hl.range_single(self.buf, "WinBarMenuHoverIcon")
+  utils.hl.range_single(self.buf, "WinBarMenuHoverEntry")
   if not pos then
     return
   end
-  utils.hl.line_single(self.buf, 'WinBarMenuHoverEntry', pos[1])
+  utils.hl.line_single(self.buf, "WinBarMenuHoverEntry", pos[1])
   local component, range = self:get_component_at({ pos[1], pos[2] })
-  local hlgroup = component and component.name == '' and 'WinBarMenuHoverIcon'
-    or 'WinBarMenuHoverSymbol'
+  local hlgroup = component and component.name == "" and "WinBarMenuHoverIcon"
+    or "WinBarMenuHoverSymbol"
   if component and component.on_click and range then
     utils.hl.range_single(self.buf, hlgroup, {
       start = { line = pos[1] - 1, character = range.start },
-      ['end'] = { line = pos[1] - 1, character = range['end'] },
+      ["end"] = { line = pos[1] - 1, character = range["end"] },
     })
   end
 end
@@ -364,7 +364,7 @@ end
 ---@param linenr integer? 1-indexed line number
 function winbar_menu:update_current_context_hl(linenr)
   if self.buf then
-    utils.hl.line_single(self.buf, 'WinBarMenuCurrentContext', linenr)
+    utils.hl.line_single(self.buf, "WinBarMenuCurrentContext", linenr)
   end
 end
 
@@ -393,9 +393,9 @@ function winbar_menu:make_buf()
   for _, entry in ipairs(self.entries) do
     local sym = entry.components[2]
     if sym then
-      sym.icon = sym.icon or ''
+      sym.icon = sym.icon or ""
       sym.icon = sym.icon
-        .. string.rep(' ', max_sym_icon_len - vim.fn.strdisplaywidth(sym.icon))
+        .. string.rep(" ", max_sym_icon_len - vim.fn.strdisplaywidth(sym.icon))
     end
   end
 
@@ -424,7 +424,7 @@ function winbar_menu:make_buf()
     -- on at least one symbol when inside the menu
     local n = self._win_configs.width - entry:displaywidth()
     if n > 0 then
-      local pad = string.rep(' ', n)
+      local pad = string.rep(" ", n)
       local last_sym = entry.components[#entry.components]
       if last_sym then
         last_sym.name = last_sym.name .. pad
@@ -441,10 +441,10 @@ function winbar_menu:make_buf()
     for _, hl_symbol_info in ipairs(hl_line_info) do
       vim.hl.range(
         self.buf,
-        hl_symbol_info.ns or vim.api.nvim_create_namespace('WinBar'),
+        hl_symbol_info.ns or vim.api.nvim_create_namespace("WinBar"),
         hl_symbol_info.hlgroup,
         { linenr - 1, hl_symbol_info.start },
-        { linenr - 1, hl_symbol_info['end'] },
+        { linenr - 1, hl_symbol_info["end"] },
         {}
       )
     end
@@ -459,15 +459,15 @@ function winbar_menu:make_buf()
 
   -- Set buffer local options
   vim.bo[self.buf].ma = false
-  vim.bo[self.buf].ft = 'winbar_menu'
+  vim.bo[self.buf].ft = "winbar_menu"
 
   -- Set buffer-local keymaps
   -- Default modes: normal
   for key, mapping in pairs(configs.opts.menu.keymaps) do
     local mapping_type = type(mapping)
-    if mapping_type == 'function' or mapping_type == 'string' then
-      vim.keymap.set('n', key, mapping, { buffer = self.buf })
-    elseif mapping_type == 'table' then
+    if mapping_type == "function" or mapping_type == "string" then
+      vim.keymap.set("n", key, mapping, { buffer = self.buf })
+    elseif mapping_type == "table" then
       for mode, rhs in pairs(mapping) do
         vim.keymap.set(mode, key, rhs, { buffer = self.buf })
       end
@@ -475,7 +475,7 @@ function winbar_menu:make_buf()
   end
 
   -- Set buffer-local autocmds
-  vim.api.nvim_create_autocmd('WinClosed', {
+  vim.api.nvim_create_autocmd("WinClosed", {
     nested = true,
     group = groupid,
     buffer = self.buf,
@@ -485,7 +485,7 @@ function winbar_menu:make_buf()
       self:close()
     end,
   })
-  vim.api.nvim_create_autocmd('CursorMoved', {
+  vim.api.nvim_create_autocmd("CursorMoved", {
     group = groupid,
     buffer = self.buf,
     callback = function()
@@ -507,14 +507,14 @@ function winbar_menu:make_buf()
       self:update_scrollbar()
     end,
   })
-  vim.api.nvim_create_autocmd('WinScrolled', {
+  vim.api.nvim_create_autocmd("WinScrolled", {
     group = groupid,
     buffer = self.buf,
     callback = function()
       self:update_scrollbar()
     end,
   })
-  vim.api.nvim_create_autocmd('BufLeave', {
+  vim.api.nvim_create_autocmd("BufLeave", {
     group = groupid,
     buffer = self.buf,
     callback = function()
@@ -525,7 +525,7 @@ function winbar_menu:make_buf()
       -- If we've switched to a non-menu buffer, close all menus starting from
       -- root, this ensures proper cleanup when leaving menu navigation
       vim.schedule(function()
-        if vim.bo.ft ~= 'winbar_menu' then
+        if vim.bo.ft ~= "winbar_menu" then
           self:root():close()
         end
       end)
@@ -548,9 +548,9 @@ function winbar_menu:open_win()
   vim.wo[self.win].wrap = false
   vim.wo[self.win].winfixbuf = true
   vim.wo[self.win].winhl = table.concat({
-    'NormalFloat:WinBarMenuNormalFloat',
-    'FloatBorder:WinBarMenuFloatBorder',
-  }, ',')
+    "NormalFloat:WinBarMenuNormalFloat",
+    "FloatBorder:WinBarMenuFloatBorder",
+  }, ",")
 end
 
 ---Update the scrollbar's position and height, create a new scrollbar if
@@ -577,11 +577,11 @@ function winbar_menu:update_scrollbar()
 
   local thumb_height =
     math.max(1, math.floor(menu_win_configs.height ^ 2 / buf_height))
-  local offset = vim.fn.line('w$') == buf_height
+  local offset = vim.fn.line("w$") == buf_height
       and menu_win_configs.height - thumb_height
     or math.min(
       menu_win_configs.height - thumb_height,
-      math.floor(menu_win_configs.height * vim.fn.line('w0') / buf_height)
+      math.floor(menu_win_configs.height * vim.fn.line("w0") / buf_height)
     )
 
   if self.scrollbar and vim.api.nvim_win_is_valid(self.scrollbar.thumb) then
@@ -597,9 +597,9 @@ function winbar_menu:update_scrollbar()
       col = menu_win_configs.width,
       width = 1,
       height = menu_win_configs.height,
-      style = 'minimal',
-      border = 'none',
-      relative = 'win',
+      style = "minimal",
+      border = "none",
+      relative = "win",
       win = self.win,
       focusable = false,
       noautocmd = true,
@@ -610,7 +610,7 @@ function winbar_menu:update_scrollbar()
       false,
       win_configs
     )
-    vim.wo[self.scrollbar.background].winhl = 'NormalFloat:WinBarMenuSbar'
+    vim.wo[self.scrollbar.background].winhl = "NormalFloat:WinBarMenuSbar"
 
     win_configs.row = offset
     win_configs.height = thumb_height
@@ -620,7 +620,7 @@ function winbar_menu:update_scrollbar()
       false,
       win_configs
     )
-    vim.wo[self.scrollbar.thumb].winhl = 'NormalFloat:WinBarMenuThumb'
+    vim.wo[self.scrollbar.thumb].winhl = "NormalFloat:WinBarMenuThumb"
   end
 end
 
@@ -648,9 +648,9 @@ function winbar_menu:override(opts)
     return
   end
   for k, v in pairs(opts) do
-    if type(v) == 'table' then
-      if type(self[k]) == 'table' then
-        self[k] = vim.tbl_extend('force', self[k], v)
+    if type(v) == "table" then
+      if type(self[k]) == "table" then
+        self[k] = vim.tbl_extend("force", self[k], v)
       else
         self[k] = v
       end
@@ -689,7 +689,7 @@ function winbar_menu:open(opts)
       vim.api.nvim_win_set_cursor(self.win, self.prev_cursor)
     elseif self.cursor then
       vim.api.nvim_win_set_cursor(self.win, self.cursor)
-      vim.api.nvim_exec_autocmds('CursorMoved', { buffer = self.buf })
+      vim.api.nvim_exec_autocmds("CursorMoved", { buffer = self.buf })
     end
   end
   self:update_scrollbar()
@@ -779,7 +779,7 @@ function winbar_menu:quick_navigation(new_cursor)
     target_component, range =
       entry.components and entry.components[1], {
         start = entry.padding.left,
-        ['end'] = entry.padding.left,
+        ["end"] = entry.padding.left,
       }
   elseif self.prev_cursor[1] == new_cursor[1] then -- moved inside an entry
     if new_cursor[2] > self.prev_cursor[2] then -- moves right

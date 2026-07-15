@@ -8,7 +8,7 @@ local loaded = {}
 ---@param from string module to load from
 ---@param after_load fun(ft: string, ...)
 function M.ft_load_once(ft, from, after_load)
-  local mod_name = string.format('%s.%s', from, ft)
+  local mod_name = string.format("%s.%s", from, ft)
   if loaded[mod_name] then
     return
   end
@@ -24,7 +24,7 @@ function M.ft_load_once(ft, from, after_load)
   -- Only trigger FileType event when ft matches current buffer's ft, else
   -- it will mess up current buffer's hl and conceal
   if ft == vim.bo.ft then
-    vim.api.nvim_exec_autocmds('FileType', { pattern = ft })
+    vim.api.nvim_exec_autocmds("FileType", { pattern = ft })
   end
 end
 
@@ -41,9 +41,9 @@ function M.ft_auto_load_once(from, after_load)
     M.ft_load_once(vim.bo[buf].ft, from, after_load)
   end
 
-  vim.api.nvim_create_autocmd('FileType', {
-    desc = string.format('Load for filetypes from %s lazily.', from),
-    group = vim.api.nvim_create_augroup('ft_load.' .. from, {}),
+  vim.api.nvim_create_autocmd("FileType", {
+    desc = string.format("Load for filetypes from %s lazily.", from),
+    group = vim.api.nvim_create_augroup("ft_load." .. from, {}),
     callback = function(args)
       M.ft_load_once(args.match, from, after_load)
     end,
@@ -83,7 +83,7 @@ local function trig_loaders_fn(loaders)
     -- therefore enter other lazy-loader callbacks that try to replay the same
     -- event again. Let those callbacks load and delete themselves, but keep a
     -- single replay active per event/buffer across every loader group.
-    local replay_key = string.format('%s:%s', args.event, args.buf)
+    local replay_key = string.format("%s:%s", args.event, args.buf)
     if event_replays[replay_key] then
       return true
     end
@@ -143,7 +143,7 @@ function M.on_events(event_specs, name, load)
     event_specs = { event_specs } ---@cast event_specs load.event.spec[]
   end
   for i, spec in ipairs(event_specs) do
-    if type(spec) == 'string' then
+    if type(spec) == "string" then
       event_specs[i] = { event = spec }
     end
   end
@@ -160,7 +160,7 @@ function M.on_events(event_specs, name, load)
           buffer = spec.buffer,
           group = vim.api.nvim_create_augroup(
             string.format(
-              'load.on_events.event.%s.buf.%d',
+              "load.on_events.event.%s.buf.%d",
               spec.event,
               spec.buffer
             ),
@@ -176,7 +176,7 @@ function M.on_events(event_specs, name, load)
     if spec.pattern then
       for _, pat in
         ipairs(
-          type(spec.pattern) == 'table' and spec.pattern or { spec.pattern } --[[@as table]]
+          type(spec.pattern) == "table" and spec.pattern or { spec.pattern } --[[@as table]]
         )
       do
         local loaders = event_loaders[spec.event].pats[pat]
@@ -185,7 +185,7 @@ function M.on_events(event_specs, name, load)
             once = true,
             pattern = pat,
             group = vim.api.nvim_create_augroup(
-              string.format('load.on_events.event.%s.pat.%s', spec.event, pat),
+              string.format("load.on_events.event.%s.pat.%s", spec.event, pat),
               {}
             ),
             callback = trig_loaders_fn(loaders),
@@ -205,7 +205,7 @@ function M.on_events(event_specs, name, load)
         vim.api.nvim_create_autocmd(spec.event, {
           once = true,
           group = vim.api.nvim_create_augroup(
-            string.format('load.on_events.event.%s', spec.event),
+            string.format("load.on_events.event.%s", spec.event),
             {}
           ),
           callback = trig_loaders_fn(loaders),
@@ -228,7 +228,7 @@ function M.on_cmds(cmds, name, load)
     return
   end
 
-  if type(cmds) ~= 'table' then
+  if type(cmds) ~= "table" then
     cmds = { cmds }
   end
 
@@ -272,9 +272,9 @@ function M.on_cmds(cmds, name, load)
 
       if
         call_args.args
-        and call_args.args ~= ''
+        and call_args.args ~= ""
         and cmd_info.nargs
-        and cmd_info.nargs:find('[1?]')
+        and cmd_info.nargs:find("[1?]")
       then
         cmd_call_spec.args = { call_args.args }
       end
@@ -286,10 +286,10 @@ function M.on_cmds(cmds, name, load)
     end, {
       bang = true,
       range = true,
-      nargs = '*',
+      nargs = "*",
       complete = function(_, line)
         load_cmd()
-        return vim.fn.getcompletion(line, 'cmdline')
+        return vim.fn.getcompletion(line, "cmdline")
       end,
     })
   end
@@ -321,10 +321,10 @@ function M.on_keys(key_specs, name, load)
   end
   ---@cast key_specs load.key.structured_spec[]
   for i, spec in ipairs(key_specs) do
-    if type(spec) == 'string' then
-      key_specs[i] = { mode = { 'n' }, lhs = spec }
+    if type(spec) == "string" then
+      key_specs[i] = { mode = { "n" }, lhs = spec }
     else
-      spec.mode = spec.mode or { 'n' }
+      spec.mode = spec.mode or { "n" }
       if not vim.islist(spec.mode) then
         spec.mode = {
           spec.mode --[[@as string]],
@@ -373,8 +373,8 @@ function M.on_keys(key_specs, name, load)
         load()
       else
         -- Try to use pack.load if available (for lazy-loaded plugins)
-        local pack = require('utils.pack')
-        local specs = require('utils.pack').specs_registry
+        local pack = require("utils.pack")
+        local specs = require("utils.pack").specs_registry
         local plugin_spec = specs[name]
         if plugin_spec then
           pack.load(plugin_spec, pack.path(name))
@@ -384,12 +384,7 @@ function M.on_keys(key_specs, name, load)
       end
     end
 
-    vim.keymap.set(
-      spec.mode,
-      spec.lhs,
-      rhs,
-      spec.opts or {}
-    )
+    vim.keymap.set(spec.mode, spec.lhs, rhs, spec.opts or {})
   end
 end
 

@@ -1,4 +1,4 @@
-local utils = require('plugin.winbar.utils')
+local utils = require("plugin.winbar.utils")
 local icons = utils.static.icons
 local M = {}
 
@@ -10,12 +10,12 @@ M.opts = {
     },
     ui = {
       bar = {
-        separator = vim.g.has_nf and icons.ui.AngleRight or ' > ',
+        separator = vim.g.has_nf and icons.ui.AngleRight or " > ",
         extends = vim.opt.listchars:get().extends
           or vim.trim(icons.ui.Ellipsis),
       },
       menu = {
-        separator = ' ',
+        separator = " ",
         indicator = icons.ui.AngleRight,
       },
     },
@@ -50,7 +50,7 @@ M.opts = {
             end
             return sum
           end
-          win_configs.relative = 'win'
+          win_configs.relative = "win"
           win_configs.win = vim.api.nvim_get_current_win()
           win_configs.row = 0
           win_configs.col = symbol.bar.padding.left
@@ -83,8 +83,8 @@ M.opts = {
         return
       end
 
-      local menu = require('plugin.winbar.menu')
-      local configs = require('plugin.winbar.configs')
+      local menu = require("plugin.winbar.menu")
+      local configs = require("plugin.winbar.configs")
       symbol.menu = menu.winbar_menu:new({
         prev_win = prev_win,
         cursor = init_cursor,
@@ -95,15 +95,15 @@ M.opts = {
           local menu_indicator_on_click = nil
           if not sym.children or vim.tbl_isempty(sym.children) then
             menu_indicator_icon =
-              string.rep(' ', vim.fn.strdisplaywidth(menu_indicator_icon))
+              string.rep(" ", vim.fn.strdisplaywidth(menu_indicator_icon))
             menu_indicator_on_click = false
           end
           return menu.winbar_menu_entry:new({
             components = {
               sym:merge({
-                name = '',
+                name = "",
                 icon = menu_indicator_icon,
-                icon_hl = 'winbarIconUIIndicator',
+                icon_hl = "winbarIconUIIndicator",
                 on_click = menu_indicator_on_click,
               }),
               sym:merge({
@@ -150,33 +150,33 @@ M.opts = {
       local bt = vim.bo[buf].bt
       local ft = vim.bo[buf].ft
 
-      return vim.wo[win].winbar == ''
+      return vim.wo[win].winbar == ""
         and not vim.w[win].winbar_no_attach
         and not vim.b[buf].winbar_no_attach
-        and vim.fn.win_gettype(win) == ''
-        and bt ~= 'terminal'
-        and bt ~= 'quickfix'
-        and bt ~= 'prompt'
-        and ft ~= 'query'
-        and ft ~= 'help'
-        and ft ~= 'diff'
-        and ft ~= 'gitcommit'
-        and ft ~= 'gitrebase'
+        and vim.fn.win_gettype(win) == ""
+        and bt ~= "terminal"
+        and bt ~= "quickfix"
+        and bt ~= "prompt"
+        and ft ~= "query"
+        and ft ~= "help"
+        and ft ~= "diff"
+        and ft ~= "gitcommit"
+        and ft ~= "gitrebase"
         and (
-          ft == 'markdown'
+          ft == "markdown"
           or utils.ts.is_active(buf)
           or not vim.tbl_isempty(vim.lsp.get_clients({
             bufnr = buf,
-            method = 'textDocument/documentSymbol',
+            method = "textDocument/documentSymbol",
           }))
         )
     end,
     attach_events = {
-      'BufEnter',
-      'BufWinEnter',
-      'BufWritePost',
-      'FileType',
-      'LspAttach',
+      "BufEnter",
+      "BufWinEnter",
+      "BufWritePost",
+      "FileType",
+      "LspAttach",
     },
     -- Wait for a short time before updating the winbar, if another update
     -- request is received within this time, the previous request will be
@@ -185,25 +185,25 @@ M.opts = {
     update_debounce = 16,
     update_events = {
       win = {
-        'CursorMoved',
-        'WinResized',
+        "CursorMoved",
+        "WinResized",
       },
       buf = {
-        'BufModifiedSet',
-        'FileChangedShellPost',
-        'TextChanged',
-        'InsertLeave',
+        "BufModifiedSet",
+        "FileChangedShellPost",
+        "TextChanged",
+        "InsertLeave",
       },
       global = {
-        'DirChanged',
-        'VimResized',
+        "DirChanged",
+        "VimResized",
       },
     },
     hover = true,
     ---@type winbar.source[]|fun(buf: integer, win: integer): winbar.source[]
     sources = function(buf)
-      local sources = require('plugin.winbar.sources')
-      return vim.bo[buf].ft == 'markdown' and { sources.markdown }
+      local sources = require("plugin.winbar.sources")
+      return vim.bo[buf].ft == "markdown" and { sources.markdown }
         or {
           utils.source.fallback({
             sources.lsp,
@@ -216,7 +216,7 @@ M.opts = {
       right = 1,
     },
     pick = {
-      pivots = 'abcdefghijklmnopqrstuvwxyz',
+      pivots = "abcdefghijklmnopqrstuvwxyz",
     },
     gc = {
       interval = 60000,
@@ -241,13 +241,13 @@ M.opts = {
     },
     ---@type table<string, string|function|table<string, string|function>>
     keymaps = {
-      ['q'] = function()
+      ["q"] = function()
         local menu = utils.menu.get_current()
         if menu then
           menu:close()
         end
       end,
-      ['<LeftMouse>'] = function()
+      ["<LeftMouse>"] = function()
         local menu = utils.menu.get_current()
         if not menu then
           return
@@ -257,16 +257,16 @@ M.opts = {
         -- If clicked on a menu, invoke the corresponding click action,
         -- else close all menus and set the cursor to the clicked window
         if clicked_menu then
-          clicked_menu:click_at({ mouse.line, mouse.column - 1 }, nil, 1, 'l')
+          clicked_menu:click_at({ mouse.line, mouse.column - 1 }, nil, 1, "l")
           return
         end
-        utils.menu.exec('close')
-        utils.bar.exec('update_current_context_hl')
+        utils.menu.exec("close")
+        utils.bar.exec("update_current_context_hl")
         if vim.api.nvim_win_is_valid(mouse.winid) then
           vim.api.nvim_set_current_win(mouse.winid)
         end
       end,
-      ['<CR>'] = function()
+      ["<CR>"] = function()
         local menu = utils.menu.get_current()
         if not menu then
           return
@@ -274,10 +274,10 @@ M.opts = {
         local cursor = vim.api.nvim_win_get_cursor(menu.win)
         local component = menu.entries[cursor[1]]:first_clickable(cursor[2])
         if component then
-          menu:click_on(component, nil, 1, 'l')
+          menu:click_on(component, nil, 1, "l")
         end
       end,
-      ['<MouseMove>'] = function()
+      ["<MouseMove>"] = function()
         local menu = utils.menu.get_current()
         if not menu then
           return
@@ -295,8 +295,8 @@ M.opts = {
     ---@type table<string, winbar.menu.win_config>
     ---@see vim.api.nvim_open_win
     win_configs = {
-      style = 'minimal',
-      relative = 'win',
+      style = "minimal",
+      relative = "win",
       win = function(menu)
         return menu.prev_menu and menu.prev_menu.win
           or vim.fn.getmousepos().winid
@@ -304,7 +304,7 @@ M.opts = {
       row = function(menu)
         return menu.prev_menu
             and menu.prev_menu.clicked_at
-            and menu.prev_menu.clicked_at[1] - vim.fn.line('w0')
+            and menu.prev_menu.clicked_at[1] - vim.fn.line("w0")
           or 0
       end,
       ---@param menu winbar.menu
@@ -367,59 +367,59 @@ M.opts = {
       -- Types listed below must have corresponding icons
       -- in the `icons.kinds.symbols` table for the icon to be shown
       valid_types = {
-        'block_mapping_pair',
-        'break_statement',
-        'call',
-        'case_statement',
-        'class',
-        'constant',
-        'constructor',
-        'continue_statement',
-        'delete',
-        'do_statement',
-        'element',
-        'enum',
-        'enum_member',
-        'event',
-        'for_statement',
-        'function',
-        'goto_statement',
-        'if_statement',
-        'interface',
-        'keyword',
-        'macro',
-        'message',
-        'method',
-        'namespace',
-        'null',
-        'operator',
-        'package',
-        'pair',
-        'property',
-        'reference',
-        'repeat',
-        'return_statement',
-        'rpc',
-        'rule',
-        'rule_set',
-        'scope',
-        'section',
-        'service',
-        'specifier',
-        'struct',
-        'switch_statement',
-        'table',
-        'type',
-        'type_parameter',
-        'unit',
-        'value',
-        'variable',
-        'while_statement',
-        'declaration',
-        'field',
-        'identifier',
-        'object',
-        'statement',
+        "block_mapping_pair",
+        "break_statement",
+        "call",
+        "case_statement",
+        "class",
+        "constant",
+        "constructor",
+        "continue_statement",
+        "delete",
+        "do_statement",
+        "element",
+        "enum",
+        "enum_member",
+        "event",
+        "for_statement",
+        "function",
+        "goto_statement",
+        "if_statement",
+        "interface",
+        "keyword",
+        "macro",
+        "message",
+        "method",
+        "namespace",
+        "null",
+        "operator",
+        "package",
+        "pair",
+        "property",
+        "reference",
+        "repeat",
+        "return_statement",
+        "rpc",
+        "rule",
+        "rule_set",
+        "scope",
+        "section",
+        "service",
+        "specifier",
+        "struct",
+        "switch_statement",
+        "table",
+        "type",
+        "type_parameter",
+        "unit",
+        "value",
+        "variable",
+        "while_statement",
+        "declaration",
+        "field",
+        "identifier",
+        "object",
+        "statement",
         -- 'boolean',
         -- 'module',
         -- 'number',
@@ -434,32 +434,32 @@ M.opts = {
     lsp = {
       max_depth = 12,
       valid_symbols = {
-        'File',
-        'Module',
-        'Namespace',
-        'Package',
-        'Class',
-        'Method',
-        'Property',
-        'Field',
-        'Constructor',
-        'Enum',
-        'Interface',
-        'Function',
-        'Variable',
-        'Constant',
-        'String',
-        'Number',
-        'Boolean',
-        'Array',
-        'Object',
-        'Keyword',
-        'Null',
-        'EnumMember',
-        'Struct',
-        'Event',
-        'Operator',
-        'TypeParameter',
+        "File",
+        "Module",
+        "Namespace",
+        "Package",
+        "Class",
+        "Method",
+        "Property",
+        "Field",
+        "Constructor",
+        "Enum",
+        "Interface",
+        "Function",
+        "Variable",
+        "Constant",
+        "String",
+        "Number",
+        "Boolean",
+        "Array",
+        "Object",
+        "Keyword",
+        "Null",
+        "EnumMember",
+        "Struct",
+        "Event",
+        "Operator",
+        "TypeParameter",
       },
       request = {
         -- Times to retry a request before giving up
@@ -484,7 +484,7 @@ M.opts = {
 ---Set winbar options
 ---@param new_opts winbar.config.opts?
 function M.set(new_opts)
-  M.opts = vim.tbl_deep_extend('force', M.opts, new_opts or {})
+  M.opts = vim.tbl_deep_extend("force", M.opts, new_opts or {})
 end
 
 ---Evaluate a dynamic option value (with type T|fun(...): T)

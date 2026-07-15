@@ -15,7 +15,7 @@ end
 ---@param delim string? default to dot '.'
 ---@return table
 function M.unnest(input, delim)
-  delim = delim or '.'
+  delim = delim or "."
   local result = {}
 
   ---@param tbl table
@@ -25,7 +25,7 @@ function M.unnest(input, delim)
     -- for { a = { b = { 'apple', 'orange' } } }
     -- want: { 'a.b' = { 'apple', 'orange' } }
     -- not:  { 'a.b.1' = 'apple', 'a.b.2' = 'orange' }
-    if type(tbl) ~= 'table' or vim.islist(tbl) then -- base case
+    if type(tbl) ~= "table" or vim.islist(tbl) then -- base case
       assert(prefix)
       result[prefix] = tbl
       return
@@ -49,7 +49,7 @@ end
 function M.cache(cb, cache)
   return function(...)
     local params = vim.fn.sha256(
-      vim.iter({ ... }):map(tostring):map(vim.fn.sha256):join('')
+      vim.iter({ ... }):map(tostring):map(vim.fn.sha256):join("")
     )
     if not cache[params] then
       cache[params] = { val = cb(...) }

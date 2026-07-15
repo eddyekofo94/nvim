@@ -1,5 +1,5 @@
-local ffi = require('ffi')
-local utils = require('utils')
+local ffi = require("ffi")
+local utils = require("utils")
 
 ---Wrapper around `utils.stl.hl()` that forces apply hlgroup even in tty
 ---@param str? string sign symbol
@@ -81,7 +81,7 @@ ffi.cdef([[
 ---@return string
 function builders.signcol(data, filter, virtual)
   if not data.show_scl then
-    return ''
+    return ""
   end
   if data.virtnum ~= 0 and not virtual then
     goto signcol_ret_default
@@ -116,15 +116,15 @@ function builders.signcol(data, filter, virtual)
     end
   end
   ::signcol_ret_default::
-  return make_hl(' ', data.culhl and 'CursorLineSign' or 'SignColumn')
+  return make_hl(" ", data.culhl and "CursorLineSign" or "SignColumn")
 end
 
 ---@param data stc.shared_data
 ---@return string
 function builders.lnum(data)
-  local result = '' ---@type string|integer
+  local result = "" ---@type string|integer
   if not data.show_nu then
-    return ''
+    return ""
   end
   if data.virtnum ~= 0 then -- Drawing virtual line
     goto lnum_ret_default
@@ -139,7 +139,7 @@ function builders.lnum(data)
   end
   if data.relnum == 0 then
     return string.format(
-      '%%=%-' .. math.max(data.nuw - 1, data.lnumw or 0) .. 'd ',
+      "%%=%-" .. math.max(data.nuw - 1, data.lnumw or 0) .. "d ",
       data.lnum
     )
   end
@@ -147,7 +147,7 @@ function builders.lnum(data)
 
   ::lnum_ret_default::
   return string.format(
-    '%%=%' .. math.max(data.nuw - 1, data.lnumw or 0) .. 's ',
+    "%%=%" .. math.max(data.nuw - 1, data.lnumw or 0) .. "s ",
     result
   )
 end
@@ -156,7 +156,7 @@ end
 ---@return string
 function builders.foldcol(data)
   if not data.show_fdc then
-    return ''
+    return ""
   end
   local lnum = data.lnum --[[@as integer]]
   local foldinfo = ffi.C.fold_info(data.wp, lnum)
@@ -164,7 +164,7 @@ function builders.foldcol(data)
       and data.foldsep
     or foldinfo.lines == 0 and data.foldopen
     or data.foldclose
-  return make_hl(foldchar, data.culhl and 'CursorLineFold' or 'FoldColumn')
+  return make_hl(foldchar, data.culhl and "CursorLineFold" or "FoldColumn")
 end
 
 ---Get a valid name of an extmark sign
@@ -172,7 +172,7 @@ end
 ---@return string
 local function extsign_get_name(sign)
   local details = sign[4]
-  return details.sign_name or details.sign_hl_group or '' --[[@as string]]
+  return details.sign_name or details.sign_hl_group or "" --[[@as string]]
 end
 
 ---@param sign extmark.sign
@@ -180,11 +180,11 @@ end
 ---@return boolean
 local function gitsigns_filter(sign, data)
   local name = extsign_get_name(sign)
-  if not name:find('^Git') then
+  if not name:find("^Git") then
     return false
   end
   if data.virtnum ~= 0 then -- virtual lines, not showing git delete signs
-    return not name:find('[Dd]elete$')
+    return not name:find("[Dd]elete$")
   end
   return true
 end
@@ -192,7 +192,7 @@ end
 ---@param sign extmark.sign
 ---@return boolean
 local function nongitsigns_filter(sign)
-  return not extsign_get_name(sign):find('^Git')
+  return not extsign_get_name(sign):find("^Git")
 end
 
 ---Get number of digits of a decimal integer
@@ -214,7 +214,7 @@ function _G._statuscolumn()
   if not shared[win] then -- Initialize shared data
     shared[win] = {
       win = win,
-      wp = ffi.C.find_window_by_handle(win, ffi.new('Error')),
+      wp = ffi.C.find_window_by_handle(win, ffi.new("Error")),
     }
   end
 
@@ -235,18 +235,18 @@ function _G._statuscolumn()
     data.scl = wo.scl
     data.fdc = wo.fdc
     data.show_nu = data.nu or data.rnu
-    data.show_scl = data.scl ~= 'no'
-    data.show_fdc = data.fdc ~= '0'
-    data.foldopen = fcs.foldopen or '-'
-    data.foldclose = fcs.foldclose or '+'
-    data.foldsep = fcs.foldsep or '|'
+    data.show_scl = data.scl ~= "no"
+    data.show_fdc = data.fdc ~= "0"
+    data.foldopen = fcs.foldopen or "-"
+    data.foldclose = fcs.foldclose or "+"
+    data.foldsep = fcs.foldsep or "|"
     data.extsigns = vim.api.nvim_buf_get_extmarks(
       buf,
       -1,
       { wininfo.topline - 1, 0 },
       { wininfo.botline - 1, -1 },
       {
-        type = 'sign',
+        type = "sign",
         details = true,
       }
     )
@@ -268,30 +268,30 @@ function _G._statuscolumn()
   data.virtnum = vim.v.virtnum
 
   data.culhl = data.cul
-    and data.culopt:find('[ou]')
+    and data.culopt:find("[ou]")
     and data.lnum == data.cur[1]
 
   return builders.signcol(data, nongitsigns_filter)
-    .. (data.show_scl and ' ' or '')
+    .. (data.show_scl and " " or "")
     .. builders.lnum(data)
     .. builders.signcol(data, gitsigns_filter, true)
     .. builders.foldcol(data)
-    .. (data.show_fdc and ' ' or '')
+    .. (data.show_fdc and " " or "")
 end
 
-local augroup = vim.api.nvim_create_augroup('statuscolumn', {})
+local augroup = vim.api.nvim_create_augroup("statuscolumn", {})
 
-vim.api.nvim_create_autocmd('WinClosed', {
+vim.api.nvim_create_autocmd("WinClosed", {
   group = augroup,
-  desc = 'Clear per window shared data cache.',
+  desc = "Clear per window shared data cache.",
   callback = function(args)
     shared[tonumber(args.match)] = nil
   end,
 })
 
-vim.api.nvim_create_autocmd('BufDelete', {
+vim.api.nvim_create_autocmd("BufDelete", {
   group = augroup,
-  desc = 'Clear per buffer lnum width cache.',
+  desc = "Clear per buffer lnum width cache.",
   callback = function(args)
     lnumw_cache[args.buf] = nil
   end,

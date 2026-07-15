@@ -1,12 +1,12 @@
 return {
-  ['*.{c,h}'] = {
-    ['*.c'] = {
-      alternate = '{}.h',
-      type = 'source',
+  ["*.{c,h}"] = {
+    ["*.c"] = {
+      alternate = "{}.h",
+      type = "source",
     },
-    ['*.h'] = {
-      alternate = '{}.c',
-      type = 'header',
+    ["*.h"] = {
+      alternate = "{}.c",
+      type = "header",
     },
   },
 }

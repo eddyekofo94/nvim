@@ -31,4 +31,3 @@ return {
   folder_bg = "#78a9ff",
   lavender = "#c7d1ff",
 }
-

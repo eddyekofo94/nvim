@@ -1,20 +1,20 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim',
+  src = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim",
   data = {
     deps = {
-      { src = 'https://github.com/williamboman/mason.nvim' },
+      { src = "https://github.com/williamboman/mason.nvim" },
     },
-    cmds = { 'MasonToolsInstall', 'MasonToolsUpdate', 'MasonToolsClean' },
+    cmds = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsClean" },
     postload = function()
-      require('mason-tool-installer').setup({
+      require("mason-tool-installer").setup({
         ensure_installed = {
-          'lua-language-server',
-          'gopls',
-          'pyright',
-          'stylua',
-          'shfmt',
-          'prettier',
+          "lua-language-server",
+          "gopls",
+          "pyright",
+          "stylua",
+          "shfmt",
+          "prettier",
         },
         auto_install = true,
       })

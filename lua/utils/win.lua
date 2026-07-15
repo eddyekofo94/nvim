@@ -10,10 +10,10 @@ function M.win_safe_set_height(win, height)
   end
 
   local win_above = vim.api.nvim_win_call(win, function()
-    return vim.fn.win_getid(vim.fn.winnr('j'))
+    return vim.fn.win_getid(vim.fn.winnr("j"))
   end)
   local win_below = vim.api.nvim_win_call(win, function()
-    return vim.fn.win_getid(vim.fn.winnr('k'))
+    return vim.fn.win_getid(vim.fn.winnr("k"))
   end)
   if win_above == win and win_below == win then
     return
@@ -32,7 +32,7 @@ function M.save(save_method)
   ---@param wins? integer[] list of wins to restore, default to all windows in
   ---current tabpage
   return function(store, wins)
-    if type(store) == 'string' then
+    if type(store) == "string" then
       store = _G[store]
     end
     if not store then
@@ -57,7 +57,7 @@ function M.restore(restore_method)
   ---@param wins? integer[] list of wins to restore, default to all windows in
   ---current tabpage
   return function(store, wins)
-    if type(store) == 'string' then
+    if type(store) == "string" then
       store = _G[store]
     end
     if not store then
@@ -109,7 +109,7 @@ M.restore_ratio = M.restore(function(win, ratio)
   local h, vim_h = ratio.h[1], ratio.h[2]
   local w, vim_w = ratio.w[1], ratio.w[2]
 
-  if vim.fn.win_gettype(win) == '' then
+  if vim.fn.win_gettype(win) == "" then
     M.win_safe_set_height(win, vim.fn.round(vim.go.lines * h / vim_h))
     vim.api.nvim_win_set_width(win, vim.fn.round(vim.go.columns * w / vim_w))
     return
@@ -134,18 +134,18 @@ function M.is_empty(win)
   if not vim.api.nvim_win_is_valid(win) then
     return true
   end
-  return require('utils.buf').is_empty(vim.api.nvim_win_get_buf(win))
+  return require("utils.buf").is_empty(vim.api.nvim_win_get_buf(win))
 end
 
 --- Closes all windows in the current tab except the active one.
 M.only = function()
-  local success, err = pcall(vim.cmd, 'only')
+  local success, err = pcall(vim.cmd, "only")
 
   if success then
-    vim.api.nvim_echo({ { 'Focusing current window', 'Normal' } }, false, {})
+    vim.api.nvim_echo({ { "Focusing current window", "Normal" } }, false, {})
   else
     vim.notify(
-      'Could not close all windows: ' .. tostring(err),
+      "Could not close all windows: " .. tostring(err),
       vim.log.levels.ERROR
     )
   end
@@ -155,29 +155,29 @@ M.smart_close = function(force)
   local win_id = vim.api.nvim_get_current_win()
   local win_config = vim.api.nvim_win_get_config(win_id)
   local tab_wins = vim.api.nvim_tabpage_list_wins(0)
-  local buftype = vim.api.nvim_get_option_value('buftype', { buf = 0 })
-  local fs = require('utils.fs')
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
+  local fs = require("utils.fs")
 
-  if win_config.relative ~= '' then
+  if win_config.relative ~= "" then
     vim.api.nvim_win_close(win_id, false)
     return
   end
 
   if #tab_wins > 1 then
     local display_path = fs.get_project_path()
-    local cmd = (force or buftype == 'terminal') and 'hide' or 'confirm close'
+    local cmd = (force or buftype == "terminal") and "hide" or "confirm close"
 
     local success, _ = pcall(vim.cmd, cmd)
     if success then
       vim.api.nvim_echo({
-        { ' 󰖭  Closed Split: ', 'Special' },
-        { display_path, 'Directory' },
+        { " 󰖭  Closed Split: ", "Special" },
+        { display_path, "Directory" },
       }, false, {})
     end
     return
   end
 
-  require('utils.buf').close_tab()
+  require("utils.buf").close_tab()
 end
 
 M.close_others = function()
@@ -192,22 +192,22 @@ M.close_others = function()
         local n = vim.api.nvim_buf_get_name(b)
         table.insert(
           names_to_report,
-          (n ~= '') and vim.fn.fnamemodify(n, ':t') or '[No Name]'
+          (n ~= "") and vim.fn.fnamemodify(n, ":t") or "[No Name]"
         )
       end
     end
   end
 
   local ok = pcall(function()
-    vim.cmd('confirm only')
+    vim.cmd("confirm only")
   end)
 
   if ok and #names_to_report > 0 then
-    local chunks = { { ' 󰖭  Closed: ', 'Special' } }
+    local chunks = { { " 󰖭  Closed: ", "Special" } }
     for i, name in ipairs(names_to_report) do
-      table.insert(chunks, { name, 'Directory' })
+      table.insert(chunks, { name, "Directory" })
       if i < #names_to_report then
-        table.insert(chunks, { ', ', 'Normal' })
+        table.insert(chunks, { ", ", "Normal" })
       end
     end
     vim.api.nvim_echo(chunks, false, {})
@@ -220,14 +220,14 @@ M.close_special = function(k)
   local current_win = vim.api.nvim_get_current_win()
 
   -- Only close current win if it's a floating window
-  if vim.fn.win_gettype(current_win) == 'popup' then
+  if vim.fn.win_gettype(current_win) == "popup" then
     vim.api.nvim_win_close(current_win, true)
     return
   end
 
   -- Close help window if in help
-  if vim.bo.filetype == 'help' then
-    vim.cmd('close')
+  if vim.bo.filetype == "help" then
+    vim.cmd("close")
     return
   end
 
@@ -235,10 +235,10 @@ M.close_special = function(k)
   local floats = vim
     .iter(vim.api.nvim_tabpage_list_wins(0))
     :filter(function(win)
-      return vim.fn.win_gettype(win) == 'popup'
+      return vim.fn.win_gettype(win) == "popup"
         and vim.api.nvim_win_get_config(win).focusable
         and not vim.tbl_contains(
-          { 'cmd', 'dialog', 'msg', 'pager' },
+          { "cmd", "dialog", "msg", "pager" },
           vim.bo[vim.fn.winbufnr(win)].ft
         )
     end)
@@ -246,7 +246,7 @@ M.close_special = function(k)
   if not floats:peek() then
     vim.api.nvim_feedkeys(
       vim.api.nvim_replace_termcodes(k, true, true, true),
-      'n',
+      "n",
       false
     )
     return

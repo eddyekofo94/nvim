@@ -1,40 +1,40 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/vim-test/vim-test',
+  src = "https://github.com/vim-test/vim-test",
   data = {
-    deps = 'https://github.com/tpope/vim-dispatch',
+    deps = "https://github.com/tpope/vim-dispatch",
     keys = {
       {
-        lhs = '<Leader>tk',
-        opts = { desc = 'Run the first test class in current file' },
+        lhs = "<Leader>tk",
+        opts = { desc = "Run the first test class in current file" },
       },
       {
-        lhs = '<Leader>tf',
-        opts = { desc = 'Run all tests in current file' },
+        lhs = "<Leader>tf",
+        opts = { desc = "Run all tests in current file" },
       },
       {
-        lhs = '<Leader>tt',
-        opts = { desc = 'Run the test neartest to cursor' },
+        lhs = "<Leader>tt",
+        opts = { desc = "Run the test neartest to cursor" },
       },
-      { lhs = '<Leader>tr', opts = { desc = 'Run the last test' } },
-      { lhs = '<Leader>ts', opts = { desc = 'Run the whole test suite' } },
-      { lhs = '<Leader>to', opts = { desc = 'Go to last visited test file' } },
+      { lhs = "<Leader>tr", opts = { desc = "Run the last test" } },
+      { lhs = "<Leader>ts", opts = { desc = "Run the whole test suite" } },
+      { lhs = "<Leader>to", opts = { desc = "Go to last visited test file" } },
     },
     cmds = {
-      'TestClass',
-      'TestVisit',
-      'TestNearest',
-      'TestSuite',
-      'TestFile',
-      'TestLast',
+      "TestClass",
+      "TestVisit",
+      "TestNearest",
+      "TestSuite",
+      "TestFile",
+      "TestLast",
     },
     postload = function()
-      local strategies = vim.g['test#custom_strategies'] or {}
+      local strategies = vim.g["test#custom_strategies"] or {}
 
       ---Modify & confirm test command before running
       strategies.confirm = function(cmd)
         vim.ui.input(
-          { prompt = 'Test command: ', default = cmd },
+          { prompt = "Test command: ", default = cmd },
           function(input)
             cmd = input
           end
@@ -42,7 +42,7 @@ return {
         if not cmd then
           return
         end
-        return vim.fn['test#strategy#' .. (vim.g['test#confirm#strategy'] or 'basic')](
+        return vim.fn["test#strategy#" .. (vim.g["test#confirm#strategy"] or "basic")](
           cmd
         )
       end
@@ -60,14 +60,14 @@ return {
         )
       end
 
-      vim.g['test#custom_strategies'] = strategies
+      vim.g["test#custom_strategies"] = strategies
 
-      vim.g['test#strategy'] = 'dispatch'
-      vim.g['test#confirm#strategy'] = 'dispatch'
+      vim.g["test#strategy"] = "dispatch"
+      vim.g["test#confirm#strategy"] = "dispatch"
 
       -- Lazy-load test configs for each filetype
-      require('utils.load').ft_auto_load_once(
-        'pack.res.vim-test.tests',
+      require("utils.load").ft_auto_load_once(
+        "pack.res.vim-test.tests",
         function(ft, configs)
           if not configs then
             return
@@ -77,7 +77,7 @@ return {
           -- the test global variable.
           -- Also see: https://www.reddit.com/r/neovim/comments/jwd0qx/how_do_i_define_vim_variable_in_lua/
           vim
-            .iter(require('utils.lua').unnest({ test = { [ft] = configs } }, '#'))
+            .iter(require("utils.lua").unnest({ test = { [ft] = configs } }, "#"))
             :each(function(name, val)
               vim.g[name] = val
             end)

@@ -1,9 +1,9 @@
 local M = {}
 
-local REGEX_KW_START = vim.regex [=[^\s*[[:keyword:]]*]=]
-local REGEX_KW_END = vim.regex [=[[[:keyword:]]*\s*$]=]
-local REGEX_NONKW_START = vim.regex [=[^\s*[^[:keyword:][:space:]]*]=]
-local REGEX_NONKW_END = vim.regex [=[[^[:keyword:][:space:]]*\s*$]=]
+local REGEX_KW_START = vim.regex([=[^\s*[[:keyword:]]*]=])
+local REGEX_KW_END = vim.regex([=[[[:keyword:]]*\s*$]=])
+local REGEX_NONKW_START = vim.regex([=[^\s*[^[:keyword:][:space:]]*]=])
+local REGEX_NONKW_END = vim.regex([=[[^[:keyword:][:space:]]*\s*$]=])
 
 ---Check if string is empty
 ---@param str string
@@ -39,7 +39,7 @@ end
 ---Get current column number
 ---@return integer
 local function get_current_col()
-  return vim.fn.mode() == "c" and vim.fn.getcmdpos() or vim.fn.col "."
+  return vim.fn.mode() == "c" and vim.fn.getcmdpos() or vim.fn.col(".")
 end
 
 ---Get word after cursor
@@ -65,13 +65,13 @@ end
 ---Check if current line is the last line
 ---@return boolean
 local function last_line()
-  return vim.fn.mode() == "c" or vim.fn.line "." == vim.fn.line "$"
+  return vim.fn.mode() == "c" or vim.fn.line(".") == vim.fn.line("$")
 end
 
 ---Check if current line is the first line
 ---@return boolean
 local function first_line()
-  return vim.fn.mode() == "c" or vim.fn.line "." == 1
+  return vim.fn.mode() == "c" or vim.fn.line(".") == 1
 end
 
 ---Check if cursor is at the end of the line
@@ -119,7 +119,7 @@ local function small_del(text_deleted, forward)
       and vim.b.changedtick == vim.b._rl_changedtick
       and vim.deep_equal(vim.b._rl_del_pos, vim.fn.getcurpos())
   )
-  local reg_contents = reset and "" or vim.fn.getreg "-"
+  local reg_contents = reset and "" or vim.fn.getreg("-")
   local reg_new_contents = forward and reg_contents .. text_deleted
     or text_deleted .. reg_contents
   vim.fn.setreg("-", reg_new_contents)
@@ -151,7 +151,7 @@ local function small_del(text_deleted, forward)
   -- of the texts to be deleted then delete then with `<Del>` keys
   if not forward and not in_cmdline then
     vim.g._rl_ww = vim.go.ww
-    vim.opt.ww:append "["
+    vim.opt.ww:append("[")
     vim.api.nvim_create_autocmd("TextChangedI", {
       once = true,
       callback = function()
@@ -182,7 +182,7 @@ function M.setup()
   vim.g.loaded_readline = true
 
   vim.keymap.set("c", "<C-f>", function()
-    return vim.go.cedit == vim.keycode "<C-f>"
+    return vim.go.cedit == vim.keycode("<C-f>")
         and end_of_line()
         and vim.go.cedit
       or "<Right>"
@@ -223,7 +223,7 @@ function M.setup()
     local line_before = get_current_line():sub(1, get_current_col() - 1)
     return small_del(
       start_of_line() and not first_line() and "\n"
-        or line_before:match "%S" and line_before:gsub("^%s*", "")
+        or line_before:match("%S") and line_before:gsub("^%s*", "")
         or line_before,
       false
     )
@@ -233,8 +233,8 @@ function M.setup()
     local current_line = get_current_line()
     return "<Home>"
       .. (
-        current_line:sub(1, get_current_col() - 1):match "%S"
-          and string.rep("<Right>", #current_line:match "^%s*")
+        current_line:sub(1, get_current_col() - 1):match("%S")
+          and string.rep("<Right>", #current_line:match("^%s*"))
         or ""
       )
   end, { expr = true, desc = "Go to the beginning of the line" })
@@ -272,7 +272,7 @@ function M.setup()
       return string.rep("<Left>", #word_before)
     end
     -- No word before cursor and is in insert mode
-    local current_linenr = vim.fn.line "."
+    local current_linenr = vim.fn.line(".")
     local target_linenr = vim.fn.prevnonblank(current_linenr - 1)
     target_linenr = target_linenr ~= 0 and target_linenr or 1
     local line_str = vim.fn.getline(target_linenr) --[[@as string]]
@@ -290,9 +290,9 @@ function M.setup()
       return string.rep("<Right>", #word_after)
     end
     -- No word after cursor and is in insert mode
-    local current_linenr = vim.fn.line "."
+    local current_linenr = vim.fn.line(".")
     local target_linenr = vim.fn.nextnonblank(current_linenr + 1)
-    target_linenr = target_linenr ~= 0 and target_linenr or vim.fn.line "$"
+    target_linenr = target_linenr ~= 0 and target_linenr or vim.fn.line("$")
     local line_str = vim.fn.getline(target_linenr) --[[@as string]]
     return (current_linenr == target_linenr and "" or "<Home>")
       .. string.rep("<Down>", target_linenr - current_linenr)

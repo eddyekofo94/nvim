@@ -1,6 +1,6 @@
 ---@type lsp.config
 return {
-  filetypes = { 'markdown' },
-  cmd = { 'marksman' },
-  root_markers = { '.marksman.toml' },
+  filetypes = { "markdown" },
+  cmd = { "marksman" },
+  root_markers = { ".marksman.toml" },
 }

@@ -25,7 +25,7 @@ return {
     end,
     events = { "InsertEnter", "CmdlineEnter" },
     postload = function()
-      local icons = require "utils.static.icons"
+      local icons = require("utils.static.icons")
       local has_ls, ls = pcall(require, "luasnip")
       local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
@@ -73,7 +73,7 @@ return {
         return vim.endswith(path, "/") or vim.fn.isdirectory(path) == 1
       end
 
-      require("blink.cmp").setup {
+      require("blink.cmp").setup({
         enabled = function()
           return vim.fn.reg_recording() == "" and vim.fn.reg_executing() == ""
         end,
@@ -327,7 +327,7 @@ return {
                 get_prefix = function(context)
                   return context.line
                     :sub(1, context.cursor[2])
-                    :match "[%w_-]+$" or ""
+                    :match("[%w_-]+$") or ""
                 end,
               },
             },
@@ -364,7 +364,7 @@ return {
             },
           },
         },
-      }
+      })
 
       require("utils.hl").persist(function()
         -- stylua: ignore start

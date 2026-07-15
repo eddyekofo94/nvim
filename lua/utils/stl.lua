@@ -6,11 +6,11 @@ local M = {}
 ---@param restore? boolean restore highlight after the sign, default true
 ---@return string sign string representation of the sign with highlight
 function M.hl(str, hl, restore)
-  hl = hl or ''
-  str = str or ''
+  hl = hl or ""
+  str = str or ""
   restore = restore == nil or restore
-  return restore and table.concat({ '%#', hl, '#', str, '%*' })
-    or table.concat({ '%#', hl, '#', str })
+  return restore and table.concat({ "%#", hl, "#", str, "%*" })
+    or table.concat({ "%#", hl, "#", str })
 end
 
 ---Make a winbar string clickable
@@ -18,7 +18,7 @@ end
 ---@param callback string
 ---@return string
 function M.make_clickable(str, callback)
-  return string.format('%%@%s@%s%%X', callback, str)
+  return string.format("%%@%s@%s%%X", callback, str)
 end
 
 ---Escape '%' with '%' in a string to avoid it being treated as a statusline
@@ -26,7 +26,7 @@ end
 ---@param str string
 ---@return string
 function M.escape(str)
-  return (str:gsub('%%', '%%%%'))
+  return (str:gsub("%%", "%%%%"))
 end
 
 ---@type stl.spinner[]
@@ -55,19 +55,19 @@ M.spinner.default_opts = {
   frame_interval = 80,
   finish_timeout = 1000,
   icons = vim.g.has_nf and {
-    progress = { '⣷', '⣯', '⣟', '⡿', '⢿', '⣻', '⣽', '⣾' },
-    finish = vim.trim(require('utils.static.icons').Ok),
+    progress = { "⣷", "⣯", "⣟", "⡿", "⢿", "⣻", "⣽", "⣾" },
+    finish = vim.trim(require("utils.static.icons").Ok),
   } or {
     progress = {
-      '[    ]',
-      '[=   ]',
-      '[==  ]',
-      '[=== ]',
-      '[ ===]',
-      '[  ==]',
-      '[   =]',
+      "[    ]",
+      "[=   ]",
+      "[==  ]",
+      "[=== ]",
+      "[ ===]",
+      "[  ==]",
+      "[   =]",
     },
-    finish = '[done]',
+    finish = "[done]",
   },
 }
 
@@ -80,12 +80,12 @@ function M.spinner:new(opts)
   spinner_id = spinner_id + 1
 
   opts = not opts and M.spinner.default_opts
-    or vim.tbl_deep_extend('keep', opts, M.spinner.default_opts)
+    or vim.tbl_deep_extend("keep", opts, M.spinner.default_opts)
   spinners[spinner_id] = setmetatable({
     opts = opts,
     id = spinner_id,
-    icon = '',
-    status = 'idle',
+    icon = "",
+    status = "idle",
     timer = vim.uv.new_timer(),
     last_change = vim.uv.now(),
   }, { __index = self })
@@ -96,7 +96,7 @@ end
 ---Delete the spinner instance and clean up resources
 function M.spinner:del()
   spinners[self.id] = nil -- dereference self from the lookup table
-  if self.status == 'spinning' then
+  if self.status == "spinning" then
     self:finish()
   end
   self.timer:close()
@@ -115,7 +115,7 @@ function M.spinner:spin(on_spin)
   -- Don't interrupt finish state if it hasn't displayed for
   -- `finish_timeout` ms
   if
-    self.status == 'finish'
+    self.status == "finish"
     and now - self.changed_tick < self.opts.finish_timeout
   then
     return
@@ -127,8 +127,8 @@ function M.spinner:spin(on_spin)
   ) % #self.opts.icons.progress + 1]
 
   -- Start timer if not already spinning
-  if self.status ~= 'spinning' then
-    self.status = 'spinning'
+  if self.status ~= "spinning" then
+    self.status = "spinning"
     self.timer:start(
       0,
       self.opts.frame_interval,
@@ -151,10 +151,10 @@ function M.spinner:finish(on_finish)
   on_finish = on_finish or self.opts.on_finish
 
   -- Can only enter `finish` state from `spinning` state
-  if self.status ~= 'spinning' then
+  if self.status ~= "spinning" then
     return
   end
-  self.status = 'finish'
+  self.status = "finish"
   self.timer:stop()
 
   local now = vim.uv.now()
@@ -172,12 +172,12 @@ function M.spinner:finish(on_finish)
     local n = vim.uv.now()
     -- Don't clear if not in `finish` state or icon changed after this
     -- `spinner:finish()` call
-    if self.status ~= 'finish' or self.changed_tick ~= now then
+    if self.status ~= "finish" or self.changed_tick ~= now then
       return
     end
-    self.status = 'idle'
+    self.status = "idle"
     self.changed_tick = n
-    self.icon = ''
+    self.icon = ""
     self:redraw()
   end, self.opts.finish_timeout)
 end
@@ -226,7 +226,7 @@ function M.spinner:attach(buf)
   b.spinner_id = self.id
   self.attached_buf = buf
   if not self.attached_autocmd then
-    self.attached_autocmd = vim.api.nvim_create_autocmd('BufWipeout', {
+    self.attached_autocmd = vim.api.nvim_create_autocmd("BufWipeout", {
       once = true,
       buffer = buf,
       callback = function(args)

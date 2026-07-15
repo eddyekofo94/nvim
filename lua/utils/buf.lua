@@ -4,8 +4,8 @@ local M = {}
 ---@param bufnr integer? The buffer to check, default to current buffer
 ---@return boolean # Whether the buffer is valid or not
 function M.is_buf_valid(bufnr)
-  local buftype = vim.api.nvim_get_option_value('buftype', { buf = bufnr })
-  if buftype ~= '' and buftype ~= 'quickfix' then
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr })
+  if buftype ~= "" and buftype ~= "quickfix" then
     return false
   end
 
@@ -33,7 +33,7 @@ function M.is_empty(buf)
   local line_count = vim.api.nvim_buf_line_count(buf)
   return line_count == 0
     or line_count == 1
-      and vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] == ''
+      and vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] == ""
 end
 
 ---Get text within range in given buffer
@@ -65,34 +65,34 @@ M.close_buffer = function(force)
 
   if #listed_bufs <= 1 and not force then
     vim.api.nvim_echo({
-      { ' 󰈆  ', 'WarningMsg' },
-      { 'Last buffer—keeping it open.', 'Normal' },
+      { " 󰈆  ", "WarningMsg" },
+      { "Last buffer—keeping it open.", "Normal" },
     }, false, {})
     return
   end
 
-  local display_path = require('utils.fs').get_project_path()
-  local buftype = vim.api.nvim_get_option_value('buftype', { buf = bufnr })
+  local display_path = require("utils.fs").get_project_path()
+  local buftype = vim.api.nvim_get_option_value("buftype", { buf = bufnr })
 
-  local alt = vim.fn.bufnr('#')
+  local alt = vim.fn.bufnr("#")
   if alt > 0 and vim.api.nvim_buf_is_valid(alt) and vim.bo[alt].buflisted then
-    vim.cmd('buffer #')
+    vim.cmd("buffer #")
   else
-    if not pcall(vim.cmd, 'bnext') then
-      vim.cmd('enew')
+    if not pcall(vim.cmd, "bnext") then
+      vim.cmd("enew")
     end
   end
 
-  local cmd = (force or buftype == 'terminal') and 'bdelete!'
-    or 'confirm bdelete'
+  local cmd = (force or buftype == "terminal") and "bdelete!"
+    or "confirm bdelete"
   if
     pcall(function()
-      vim.cmd(string.format('silent! %s %d', cmd, bufnr))
+      vim.cmd(string.format("silent! %s %d", cmd, bufnr))
     end)
   then
     vim.api.nvim_echo({
-      { ' 󰆓  Closed: ', 'Special' },
-      { display_path, 'Directory' },
+      { " 󰆓  Closed: ", "Special" },
+      { display_path, "Directory" },
     }, false, {})
   end
 end
@@ -108,14 +108,14 @@ function M.close_tab(tabpage)
     local tab_nr = vim.api.nvim_tabpage_get_number(tabpage)
 
     local success, err = pcall(function()
-      vim.api.nvim_cmd({ cmd = 'tabclose', args = { tostring(tab_nr) } }, {})
+      vim.api.nvim_cmd({ cmd = "tabclose", args = { tostring(tab_nr) } }, {})
     end)
 
     if not success then
-      vim.notify('Tabclose failed: ' .. err, vim.log.levels.WARN)
+      vim.notify("Tabclose failed: " .. err, vim.log.levels.WARN)
     end
   else
-    vim.notify('Last tab cannot be closed', vim.log.levels.INFO)
+    vim.notify("Last tab cannot be closed", vim.log.levels.INFO)
   end
 end
 

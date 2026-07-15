@@ -1,14 +1,14 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/jmbuhr/otter.nvim',
+  src = "https://github.com/jmbuhr/otter.nvim",
   data = {
     events = {
-      event = 'FileType',
-      pattern = 'markdown',
+      event = "FileType",
+      pattern = "markdown",
     },
     postload = function()
-      local ot = require('otter')
-      local utils = require('utils')
+      local ot = require("otter")
+      local utils = require("utils")
 
       -- Wrap `ot.activate()` in `pcall()` to suppress error when opening git diff
       -- for markdown files: 'Vim(append):Error executing lua callback: Vim:E95:
@@ -30,10 +30,10 @@ return {
         },
       })
 
-      vim.api.nvim_create_autocmd('FileType', {
-        desc = 'Activate otter for filetypes with injections.',
-        group = vim.api.nvim_create_augroup('otter.activate', {}),
-        pattern = { 'markdown', 'norg', 'org' },
+      vim.api.nvim_create_autocmd("FileType", {
+        desc = "Activate otter for filetypes with injections.",
+        group = vim.api.nvim_create_augroup("otter.activate", {}),
+        pattern = { "markdown", "norg", "org" },
         callback = function(args)
           local buf = args.buf
           if vim.bo[buf].ma and utils.ts.is_active(buf) then

@@ -76,9 +76,9 @@ return {
       end
     end,
     postload = function()
-      local oil = require "oil"
-      local oil_config = require "oil.config"
-      local oil_view = require "oil.view"
+      local oil = require("oil")
+      local oil_config = require("oil.config")
+      local oil_view = require("oil.view")
       local icons = require("utils.static").icons
       local icon_file = vim.trim(icons.File)
       local icon_dir = vim.trim(icons.Folder)
@@ -172,7 +172,7 @@ return {
         if not vim.api.nvim_buf_is_valid(buf) then
           return
         end
-        return vim.fn.bufname(buf):match "oil_preview_%d+://(.*)"
+        return vim.fn.bufname(buf):match("oil_preview_%d+://(.*)")
       end
 
       ---Disable window options, e.g. spell, number, signcolumn, etc. in given window
@@ -252,7 +252,7 @@ return {
                 vim.api.nvim_buf_call(buf, function()
                   vim.treesitter.stop(buf)
                   vim.bo.syntax = ""
-                  vim.cmd [[
+                  vim.cmd([[
                     syn match OilDirPreviewHeader /^total.*/
                     syn match OilDirPreviewTypeFile /^-/ nextgroup=OilDirPreviewFilePerms skipwhite
                     syn match OilDirPreviewTypeDir /^d/ nextgroup=OilDirPreviewDirPerms skipwhite
@@ -332,7 +332,7 @@ return {
                     hi def link OilDirPreviewLinkHidden OilLinkHidden
                     hi def link OilDirPreviewLinkTargetHidden OilLinkTargetHidden
                     hi def link OilDirPreviewSocketHidden OilSocketHidden
-                  ]]
+                  ]])
                 end)
               end
               return
@@ -346,10 +346,10 @@ return {
               end
 
               local ft = vim.api.nvim_buf_call(buf, function()
-                return vim.filetype.match {
+                return vim.filetype.match({
                   buf = buf,
                   filename = path,
-                }
+                })
               end)
               if not ft then
                 vim.treesitter.stop(buf)
@@ -437,7 +437,7 @@ return {
 
         -- Preview directories
         if stat.type == "directory" then
-          if vim.fn.executable "ls" == 0 then
+          if vim.fn.executable("ls") == 0 then
             preview_win_set_lines(
               win,
               preview_msg(
@@ -498,7 +498,7 @@ return {
           )
         end
 
-        if vim.fn.executable "file" == 0 then
+        if vim.fn.executable("file") == 0 then
           preview_file()
           return
         end
@@ -512,7 +512,7 @@ return {
               return
             end
 
-            if obj.stdout:match "text" or obj.stdout:match "empty" then
+            if obj.stdout:match("text") or obj.stdout:match("empty") then
               preview_file()
               return
             end
@@ -548,11 +548,11 @@ return {
         then
           local oil_win_height = vim.api.nvim_win_get_height(oil_win)
           local oil_win_width = vim.api.nvim_win_get_width(oil_win)
-          vim.cmd.new {
+          vim.cmd.new({
             mods = {
               vertical = oil_win_width > 3 * oil_win_height,
             },
-          }
+          })
           preview_win = vim.api.nvim_get_current_win()
           preview_buf = vim.api.nvim_get_current_buf()
           preview_wins[oil_win] = preview_win
@@ -615,7 +615,7 @@ return {
           end
           -- Move cursor to the first line of the preview buffer, so that we always
           -- see the beginning of the file when we start previewing a new file
-          vim.cmd "0"
+          vim.cmd("0")
         end)
 
         -- Because we are reusing the same preview buffer for different files, we
@@ -721,7 +721,7 @@ return {
           for _, win in ipairs(vim.api.nvim_list_wins()) do
             local path = vim.fn
               .bufname(vim.api.nvim_win_get_buf(win))
-              :match "oil_preview_%d+://(.*)"
+              :match("oil_preview_%d+://(.*)")
             if path and vim.fn.isdirectory(path) == 1 then
               preview_set_lines(win)
             end
@@ -759,7 +759,7 @@ return {
         end,
       })
 
-      oil.setup {
+      oil.setup({
         columns = {
           {
             "type",
@@ -827,7 +827,7 @@ return {
           ["<C-P>"] = preview_mapping,
           ["<LocalLeader>0"] = {
             function()
-              local utils = require "utils"
+              local utils = require("utils")
               local current_dir = require("oil").get_current_dir()
               local root = utils.fs.cwd_dir(current_dir) or vim.fn.getcwd()
               require("oil").open(root)
@@ -861,8 +861,8 @@ return {
             buffer = true,
             desc = "Drag and drop entry under the cursor",
             callback = function()
-              local lnum_cur = vim.fn.line "."
-              local lnum_other = vim.fn.line "v"
+              local lnum_cur = vim.fn.line(".")
+              local lnum_other = vim.fn.line("v")
               local entries = {}
               for lnum = math.min(lnum_cur, lnum_other), math.max(lnum_cur, lnum_other) do
                 table.insert(entries, oil.get_entry_on_line(0, lnum))
@@ -871,14 +871,14 @@ return {
               if vim.tbl_isempty(entries) or not dir then
                 return
               end
-              if vim.fn.executable "dragon-drop" == 0 then
+              if vim.fn.executable("dragon-drop") == 0 then
                 vim.notify(
                   "[oil.nvim] `dragon-drop` is not executable",
                   vim.log.levels.WARN
                 )
                 return
               end
-              vim.system {
+              vim.system({
                 "dragon-drop",
                 unpack(vim
                   .iter(entries)
@@ -886,7 +886,7 @@ return {
                     return vim.fs.joinpath(dir, entry.name)
                   end)
                   :totable()),
-              }
+              })
             end,
           },
           ["go"] = {
@@ -910,8 +910,8 @@ return {
               if not response then
                 return
               end
-              print "\n"
-              vim.system { response, entry_path }
+              print("\n")
+              vim.system({ response, entry_path })
             end,
           },
           ["gy"] = {
@@ -959,7 +959,7 @@ return {
             winblend = 0,
           },
         },
-      }
+      })
 
       -- Override `-` to use `:Oil` to open parent dir, previously mapped in
       -- `core.keymaps`
@@ -1041,7 +1041,7 @@ return {
         end
 
         if vim.fn.isdirectory(vim.api.nvim_buf_get_name(buf)) == 1 then
-          vim.b[buf]._alt_file = vim.fn.bufnr "#"
+          vim.b[buf]._alt_file = vim.fn.bufnr("#")
         end
       end
 
@@ -1080,7 +1080,7 @@ return {
 
         -- Place cursor on the alternate buffer if we are opening
         -- the parent directory of the alternate buffer
-        local alt_file = vim.fn.bufnr "#"
+        local alt_file = vim.fn.bufnr("#")
         if not vim.api.nvim_buf_is_valid(alt_file) then
           return
         end
@@ -1130,7 +1130,7 @@ return {
       })
 
       require("utils.hl").persist(function()
-        local hl = require "utils.hl"
+        local hl = require("utils.hl")
 
         hl.set(0, "OilDir", { fg = "Directory" })
         hl.set(0, "OilDirIcon", { fg = "Directory" })

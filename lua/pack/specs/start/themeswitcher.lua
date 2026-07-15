@@ -4,7 +4,7 @@ return {
   data = {
     enabled = false,
     postload = function()
-      require("themeswitcher").setup {
+      require("themeswitcher").setup({
         themes = {
           "onedark",
           "everforest",
@@ -12,7 +12,7 @@ return {
           "catppuccin",
         },
         make_Color_cmd = true,
-      }
+      })
       vim.keymap.set("n", "<leader>tn", function()
         require("themeswitcher").open_window()
       end, { desc = "theme picker" })

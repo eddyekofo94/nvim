@@ -8,7 +8,7 @@ return {
   data = {
     events = { event = "FileType", pattern = "[^_]\\+" },
     postload = function()
-      require("nvim-treesitter-textobjects").setup {
+      require("nvim-treesitter-textobjects").setup({
         select = {
           lookahead = true,
           selection_modes = {
@@ -18,11 +18,11 @@ return {
             ["@header.inner"] = "V",
           },
         },
-      }
+      })
 
       -- local select = require "nvim-treesitter-textobjects.select"
-      local move = require "nvim-treesitter-textobjects.move"
-      local swap = require "nvim-treesitter-textobjects.swap"
+      local move = require("nvim-treesitter-textobjects.move")
+      local swap = require("nvim-treesitter-textobjects.swap")
 
       -- local sel = select.select_textobject
 

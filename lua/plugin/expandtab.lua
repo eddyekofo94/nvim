@@ -6,7 +6,7 @@ local function setup()
 
   vim.on_key(function(key)
     if
-      key ~= '\t'
+      key ~= "\t"
       or vim.bo.et
       or vim.fn.match(vim.fn.mode(), [[^i\|^R]]) == -1
     then
@@ -21,7 +21,7 @@ local function setup()
     local has_adjacent_tabs = vim.fn.match(
       line:sub(1, col),
       string.format([[\t\ \{,%d}$]], math.max(0, vim.bo.ts - 1))
-    ) >= 0 or line:sub(col + 1, col + 1) == '\t'
+    ) >= 0 or line:sub(col + 1, col + 1) == "\t"
 
     if not after_non_blank or has_adjacent_tabs then
       return
@@ -33,8 +33,8 @@ local function setup()
     vim.bo.et = true
   end)
 
-  vim.api.nvim_create_autocmd('TextChangedI', {
-    group = vim.api.nvim_create_augroup('expandtab', {}),
+  vim.api.nvim_create_autocmd("TextChangedI", {
+    group = vim.api.nvim_create_augroup("expandtab", {}),
     callback = function(args)
       -- Restore 'expandtab' setting
       if vim.b[args.buf].et == nil then

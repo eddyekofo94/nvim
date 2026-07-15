@@ -19,7 +19,7 @@ return {
       local function setup_ui_select()
         ---@diagnostic disable-next-line: duplicate-set-field
         vim.ui.select = function(...)
-          if vim.fn.executable "fzf" == 0 then
+          if vim.fn.executable("fzf") == 0 then
             vim.ui.select = ui_select
             vim.ui.select(...)
             return
@@ -27,7 +27,7 @@ return {
 
           require("utils.pack").load(spec, path)
 
-          local fzf_ui = require "fzf-lua.providers.ui_select"
+          local fzf_ui = require("fzf-lua.providers.ui_select")
           -- Register fzf as custom `vim.ui.select()` function if not yet
           -- registered
           if not fzf_ui.is_registered() then
@@ -112,19 +112,19 @@ return {
       end
     end,
     postload = function()
-      if vim.fn.executable "fzf" == 0 then
+      if vim.fn.executable("fzf") == 0 then
         vim.notify("[Fzf-lua] command `fzf` not found", vim.log.levels.ERROR)
         return
       end
 
-      local fzf = require "fzf-lua"
-      local actions = require "fzf-lua.actions"
-      local core = require "fzf-lua.core"
-      local path = require "fzf-lua.path"
-      local config = require "fzf-lua.config"
-      local fzf_utils = require "fzf-lua.utils"
-      local utils = require "utils"
-      local icons = require "utils.static.icons"
+      local fzf = require("fzf-lua")
+      local actions = require("fzf-lua.actions")
+      local core = require("fzf-lua.core")
+      local path = require("fzf-lua.path")
+      local config = require("fzf-lua.config")
+      local fzf_utils = require("fzf-lua.utils")
+      local utils = require("utils")
+      local icons = require("utils.static.icons")
 
       local _arg_del = actions.arg_del
       local _vimcmd_buf = actions.vimcmd_buf
@@ -151,14 +151,14 @@ return {
           cwd = fzf.config.__resume_data.opts.cwd,
         }
         ---@diagnostic disable-next-line: missing-fields
-        fzf.builtin {
+        fzf.builtin({
           actions = {
             ["enter"] = function(selected)
               fzf[selected[1]](opts)
             end,
             ["esc"] = actions.resume,
           },
-        }
+        })
       end
 
       -- Shared state for the files <-> grep ctrl-g toggle. We deliberately
@@ -260,7 +260,7 @@ return {
         local listfile = vim.fn.tempname()
         vim.fn.writefile(files, listfile)
 
-        if query ~= "" and vim.fn.executable "fzf" == 1 then
+        if query ~= "" and vim.fn.executable("fzf") == 1 then
           local filtered = vim.fn.tempname()
           local result = vim
             .system({
@@ -299,7 +299,7 @@ return {
         cleanup_toggle_list()
 
         local listfile = vim.fn.tempname()
-        local has_filter = query ~= "" and vim.fn.executable "fzf" == 1
+        local has_filter = query ~= "" and vim.fn.executable("fzf") == 1
         local filter = has_filter
             and string.format(
               " | fzf --no-sort --filter %s",
@@ -337,7 +337,7 @@ return {
       ---@return string
       local function grep_file_list_cmd(listfile)
         local rg_opts = config.setup_opts.grep.rg_opts or ""
-        if rg_opts:match "%s%-e%s*$" then
+        if rg_opts:match("%s%-e%s*$") then
           rg_opts =
             rg_opts:gsub("%s%-e%s*$", " --threads=1 --with-filename -e")
         else
@@ -391,12 +391,14 @@ return {
         end
         if
           opts.fd_opts
-          and (vim.fn.executable "fd" == 1 or vim.fn.executable "fdfind" == 1)
+          and (
+            vim.fn.executable("fd") == 1 or vim.fn.executable("fdfind") == 1
+          )
         then
-          local fd = vim.fn.executable "fd" == 1 and "fd" or "fdfind"
+          local fd = vim.fn.executable("fd") == 1 and "fd" or "fdfind"
           return fd .. " " .. opts.fd_opts
         end
-        if opts.rg_opts and vim.fn.executable "rg" == 1 then
+        if opts.rg_opts and vim.fn.executable("rg") == 1 then
           return "rg " .. opts.rg_opts
         end
         if opts.find_opts then
@@ -638,9 +640,9 @@ return {
       end
 
       local function extension_query(query)
-        local token = vim.trim(query or ""):match "%S+$" or ""
+        local token = vim.trim(query or ""):match("%S+$") or ""
         token = token:gsub("^'", ""):gsub("%$$", ""):gsub("^%*+", "")
-        token = token:match "%.([^./]+)$" or token:gsub("^%.", "")
+        token = token:match("%.([^./]+)$") or token:gsub("^%.", "")
         if token == "" then
           return query
         end
@@ -678,7 +680,7 @@ return {
         local cwd_in_home = utils.fs.contains("~", cwd)
         local cwd_root = cwd_in_home and "~/" or "/"
 
-        fzf.files {
+        fzf.files({
           cwd_prompt = false,
           prompt = "New cwd: " .. cwd_root,
           cwd = cwd_root,
@@ -691,15 +693,15 @@ return {
           cmd = string.format(
             "%s | sed '1i\\\n./\n'",
             (function()
-              local fd_cmd = vim.fn.executable "fd" == 1 and "fd"
-                or vim.fn.executable "fdfind" == 1 and "fdfind"
+              local fd_cmd = vim.fn.executable("fd") == 1 and "fd"
+                or vim.fn.executable("fdfind") == 1 and "fdfind"
                 or nil
 
               if not fd_cmd then
                 return [[find -L * -type d -print0 | xargs -0 ls -Fd]]
               end
 
-              local grep_cmd = vim.fn.executable "rg" == 1 and "rg" or "grep"
+              local grep_cmd = vim.fn.executable("rg") == 1 and "rg" or "grep"
               return string.format(
                 [[%s --hidden --follow --type d --type l | %s /$]],
                 fd_cmd,
@@ -756,7 +758,7 @@ return {
             ["alt-c"] = false,
             ["alt-/"] = false,
           },
-        }
+        })
       end
 
       ---Include directories, not only files when using the `files` picker
@@ -764,7 +766,7 @@ return {
       function actions.toggle_dir(_, opts)
         local flag ---@type string?
         local flag_cmd_idx ---@type integer?
-        local cmds = vim.iter(opts.cmd:gmatch "([^|;&]+[|;&]*)"):totable()
+        local cmds = vim.iter(opts.cmd:gmatch("([^|;&]+[|;&]*)")):totable()
 
         -- Handle multiple cmds in one string, e.g. fzf-lua-frecency uses two
         -- commands in a row: 'cat ... ; fd ...'
@@ -772,7 +774,7 @@ return {
         -- fzf-lua-frecency does not support overriding cmd passed in `opts` yet
         -- TODO: make a PR for it
         for i, cmd in ipairs(cmds) do
-          local exec = cmd:match "^%s*(%S+)"
+          local exec = cmd:match("^%s*(%S+)")
           if exec == "fd" or exec == "fdfind" then
             flag = "--type d"
             flag_cmd_idx = i
@@ -802,21 +804,21 @@ return {
       function actions.del_autocmd(selected)
         for _, line in ipairs(selected) do
           local event, group, pattern =
-            line:match "^.+:%d+:|(%w+)%s*│%s*(%S+)%s*│%s*(.-)%s*│"
+            line:match("^.+:%d+:|(%w+)%s*│%s*(%S+)%s*│%s*(.-)%s*│")
           if event and group and pattern then
-            vim.cmd.autocmd {
+            vim.cmd.autocmd({
               bang = true,
               args = { group, event, pattern },
               mods = { emsg_silent = true },
-            }
+            })
           end
         end
         local query = fzf.config.__resume_data.last_query
-        fzf.autocmds {
+        fzf.autocmds({
           fzf_opts = {
             ["--query"] = query ~= "" and query or nil,
           },
-        }
+        })
       end
 
       ---Search & select files then add them to arglist
@@ -827,7 +829,7 @@ return {
           cwd = fzf.config.__resume_data.opts.cwd,
         }
 
-        fzf.files {
+        fzf.files({
           cwd_header = true,
           cwd_prompt = false,
           prompt = "Argadd> ",
@@ -856,7 +858,7 @@ return {
           find_opts = [[-type f -not -path '*/\.git/*' -not -path '*/\.venv/*' -printf '%P\n']],
           fd_opts = [[--color=never --type f --type l --hidden --follow --exclude .git]],
           rg_opts = [[--color=never --files --hidden --follow -g '!.git']],
-        }
+        })
       end
 
       local _file_split = actions.file_split
@@ -963,7 +965,7 @@ return {
       ---@param notify? boolean whether to notify user when command does not exist
       ---@return boolean
       local function has_fugitive_gedit_cmd(notify)
-        if vim.fn.exists ":Gedit" == 2 then
+        if vim.fn.exists(":Gedit") == 2 then
           return true
         end
         if notify then
@@ -980,7 +982,7 @@ return {
         if not has_fugitive_gedit_cmd(true) or not selected[1] then
           return
         end
-        vim.cmd.Gedit(selected[1]:match "^%x+")
+        vim.cmd.Gedit(selected[1]:match("^%x+"))
       end
 
       ---Edit a git commit object in horizontal split with vim-fugitive
@@ -1125,10 +1127,10 @@ return {
       ---@diagnostic disable-next-line: inject-field
       function fzf.symbols(opts)
         if
-          vim.tbl_isempty(vim.lsp.get_clients {
+          vim.tbl_isempty(vim.lsp.get_clients({
             bufnr = 0,
             method = "textDocument/documentSymbol",
-          })
+          }))
         then
           return fzf.treesitter(opts)
         end
@@ -1181,7 +1183,7 @@ return {
       function fzf.z(opts)
         local has_z_plugin, z = pcall(require, "plugin.z")
         if not has_z_plugin then
-          vim.notify "[Fzf-lua] z plugin not found"
+          vim.notify("[Fzf-lua] z plugin not found")
           return
         end
 
@@ -1211,12 +1213,12 @@ return {
       function fzf.sessions(opts)
         local has_session_plugin, session = pcall(require, "plugin.session")
         if not has_session_plugin then
-          vim.notify "[Fzf-lua] session plugin not found"
+          vim.notify("[Fzf-lua] session plugin not found")
           return
         end
 
-        if vim.fn.executable "ls" == 0 then
-          vim.notify "[Fzf-lua] `ls` command not available"
+        if vim.fn.executable("ls") == 0 then
+          vim.notify("[Fzf-lua] `ls` command not available")
           return
         end
 
@@ -1266,7 +1268,7 @@ return {
       function fzf.complete_cmdline(opts)
         opts = opts or {}
         opts.query = vim.fn.getcmdline()
-        vim.api.nvim_feedkeys(vim.keycode "<C-\\><C-n>", "n", true)
+        vim.api.nvim_feedkeys(vim.keycode("<C-\\><C-n>"), "n", true)
 
         local type = vim.fn.getcmdtype()
         if type == ":" then
@@ -1360,7 +1362,7 @@ return {
         end
 
         local bufnr = vim.api.nvim_win_get_buf(winid)
-        for _, lhs in ipairs { "q", "<Esc>", "<M-q>", "<C-w>q", "<F5>" } do
+        for _, lhs in ipairs({ "q", "<Esc>", "<M-q>", "<C-w>q", "<F5>" }) do
           vim.keymap.set("n", lhs, _G.FzfLuaPreviewClose, {
             buffer = bufnr,
             nowait = true,
@@ -1473,9 +1475,9 @@ return {
 
       local function fzf_split()
         vim.g._fzf_active = true
-        local win = require "utils.win"
-        win.save_heights "_fzf_lua_win_heights"
-        win.save_views "_fzf_lua_win_views"
+        local win = require("utils.win")
+        win.save_heights("_fzf_lua_win_heights")
+        win.save_views("_fzf_lua_win_views")
 
         vim.g._fzf_vim_lines = vim.o.lines
         vim.g._fzf_leave_win = vim.api.nvim_get_current_win()
@@ -1596,7 +1598,7 @@ return {
         end
       end
 
-      fzf.setup {
+      fzf.setup({
         -- Default profile 'default-title' disables prompt in favor of title
         -- on nvim >= 0.9, but a fzf windows with split layout cannot have titles
         -- See https://github.com/ibhagwan/fzf-lua/issues/1739
@@ -1651,9 +1653,9 @@ return {
                 require("focus").resize()
               end)
             end, 50)
-            restore_global_opt "splitkeep"
-            restore_global_opt "cmdheight"
-            restore_global_opt "laststatus"
+            restore_global_opt("splitkeep")
+            restore_global_opt("cmdheight")
+            restore_global_opt("laststatus")
 
             restore_win_heights_and_views()
 
@@ -1684,9 +1686,9 @@ return {
               local win = vim.api.nvim_get_current_win()
 
               if vim.g._fzf_qfclosed then
-                vim.cmd[vim.g._fzf_qfclosed == "loclist" and "lopen" or "copen"] {
+                vim.cmd[vim.g._fzf_qfclosed == "loclist" and "lopen" or "copen"]({
                   count = vim.g._fzf_qfheight,
-                }
+                })
                 -- Restore window view & heights after re-opening quickfix windows
                 -- to avoid evidentially resizing windows with `winfixheight` set, e.g.
                 -- nvim-dap-ui windows
@@ -1711,21 +1713,19 @@ return {
             end)
           end,
           ---@diagnostic disable-next-line: missing-fields
-          preview = use_bottom_float_preview
-              and {
-                border = "rounded",
-                layout = "vertical",
-                vertical = "up:12",
-                hidden = true,
-                delay = 80,
-                scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
-              }
-            or {
-              border = "none",
-              layout = "horizontal",
-              hidden = true,
-              scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
-            },
+          preview = use_bottom_float_preview and {
+            border = "rounded",
+            layout = "vertical",
+            vertical = "up:12",
+            hidden = true,
+            delay = 80,
+            scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
+          } or {
+            border = "none",
+            layout = "horizontal",
+            hidden = true,
+            scrollbar = false, ---@diagnostic disable-line: assign-type-mismatch
+          },
         },
         previewers = {
           builtin = {
@@ -2103,7 +2103,7 @@ return {
             },
           },
         },
-      }
+      })
 
       ---Resume the last picker safely, stripping stale fzf-lua normalization
       ---markers before reopening so setup-level action bindings (ctrl-g,

@@ -3,7 +3,7 @@ local M = {}
 ---@type lsp.client_config
 ---@diagnostic disable-next-line: missing-fields
 M.default_config = {
-  root_markers = require('utils.fs').root_markers,
+  root_markers = require("utils.fs").root_markers,
 }
 
 ---@class (partial) lsp.config : vim.lsp.Config
@@ -23,14 +23,14 @@ local lsp_start = vim.lsp.start
 ---@param opts table?
 ---@return integer? client_id id of attached client or nil if failed
 function M.start(config, opts)
-  if not config or vim.bo.bt == 'nofile' then
+  if not config or vim.bo.bt == "nofile" then
     return
   end
 
   local cmd_type = type(config.cmd)
-  local cmd_exec = cmd_type == 'table' and config.cmd[1]
+  local cmd_exec = cmd_type == "table" and config.cmd[1]
   if
-    cmd_type == 'table' and vim.fn.executable(cmd_exec or '') == 0
+    cmd_type == "table" and vim.fn.executable(cmd_exec or "") == 0
     or vim.iter(config.requires or {}):any(function(e)
       return vim.fn.executable(e) == 0
     end)
@@ -52,19 +52,19 @@ function M.start(config, opts)
     -- For some special buffers like `fugitive:///xxx`, `vim.fs.root()`
     -- returns '.' as result, which is NOT a valid directory
     return dir ~= nil
-        and dir ~= ''
-        and dir ~= '.'
+        and dir ~= ""
+        and dir ~= "."
         and vim.fn.isdirectory(dir) == 1
         -- Some language servers e.g. lua-language-server, refuse
         -- to use home dir as its root dir and prints an error message
-        and not require('utils.fs').is_home_dir(dir)
-        and not require('utils.fs').is_root_dir(dir)
+        and not require("utils.fs").is_home_dir(dir)
+        and not require("utils.fs").is_root_dir(dir)
         and dir
       or nil
   end
 
   local root_dir = validate(
-    require('utils.fs').root(
+    require("utils.fs").root(
       bufname,
       vim.list_extend(
         config.root_markers or {},
@@ -74,7 +74,7 @@ function M.start(config, opts)
   ) or validate(vim.fs.dirname(bufname)) or vim.fn.getcwd(0)
 
   return lsp_start(
-    vim.tbl_deep_extend('keep', config or {}, {
+    vim.tbl_deep_extend("keep", config or {}, {
       name = name,
       root_dir = root_dir,
     }, M.default_config),
@@ -91,7 +91,7 @@ end
 ---@param client_or_id integer|vim.lsp.Client
 ---@param opts lsp.soft_stop.opts?
 function M.soft_stop(client_or_id, opts)
-  local client = type(client_or_id) == 'number'
+  local client = type(client_or_id) == "number"
       and vim.lsp.get_client_by_id(client_or_id)
     or client_or_id --[[@as vim.lsp.Client]]
   if not client then
@@ -122,7 +122,7 @@ end
 ---@param client_or_id integer|vim.lsp.Client
 ---@param opts { on_restart: fun(client_id: integer)? }?
 function M.restart(client_or_id, opts)
-  local client = type(client_or_id) == 'number'
+  local client = type(client_or_id) == "number"
       and vim.lsp.get_client_by_id(client_or_id)
     or client_or_id --[[@as vim.lsp.Client]]
   if not client then
@@ -163,12 +163,12 @@ end
 function M.range_contains(range1, range2, strict)
   local start_line1 = range1.start.line
   local start_char1 = range1.start.character
-  local end_line1 = range1['end'].line
-  local end_char1 = range1['end'].character
+  local end_line1 = range1["end"].line
+  local end_char1 = range1["end"].character
   local start_line2 = range2.start.line
   local start_char2 = range2.start.character
-  local end_line2 = range2['end'].line
-  local end_char2 = range2['end'].character
+  local end_line2 = range2["end"].line
+  local end_char2 = range2["end"].character
   -- stylua: ignore start
   return (
         start_line2 > start_line1
@@ -223,8 +223,8 @@ function M.range_contains_cursor(range, cursor, strict)
   local char = cursor[2]
   local start_line = range.start.line
   local start_char = range.start.character
-  local end_line = range['end'].line
-  local end_char = range['end'].character
+  local end_line = range["end"].line
+  local end_char = range["end"].character
   return (
     line > start_line
     or (

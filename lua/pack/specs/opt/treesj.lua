@@ -1,8 +1,8 @@
 ---@type pack.spec
 return {
-  src = 'https://github.com/Wansmer/treesj',
+  src = "https://github.com/Wansmer/treesj",
   data = {
-    cmds = { 'TSJToggle', 'TSJSplit', 'TSJJoin' },
+    cmds = { "TSJToggle", "TSJSplit", "TSJJoin" },
     keys = {
       -- stylua: ignore start
       { lhs = 'gsk',        opts = { desc = 'Join current treesitter node' } },
@@ -14,7 +14,7 @@ return {
       -- stylua: ignore end
     },
     postload = function()
-      local tsj = require('treesj')
+      local tsj = require("treesj")
 
       tsj.setup({
         use_default_keymaps = false,
@@ -24,9 +24,9 @@ return {
       ---@param preset table?
       ---@return nil
       function _G.tsj_split_recursive(_, preset)
-        require('treesj.format')._format(
-          'split',
-          vim.tbl_deep_extend('force', preset or {}, {
+        require("treesj.format")._format(
+          "split",
+          vim.tbl_deep_extend("force", preset or {}, {
             split = { recursive = true },
           })
         )
@@ -35,9 +35,9 @@ return {
       ---@param preset table?
       ---@return nil
       function _G.tsj_toggle_recursive(_, preset)
-        require('treesj.format')._format(
+        require("treesj.format")._format(
           nil,
-          vim.tbl_deep_extend('force', preset or {}, {
+          vim.tbl_deep_extend("force", preset or {}, {
             split = { recursive = true },
             join = { recursive = true },
           })
@@ -46,8 +46,8 @@ return {
 
       ---Split current treesitter node recursively
       local function tsj_split_recursive()
-        vim.opt.operatorfunc = 'v:lua.tsj_split_recursive'
-        vim.api.nvim_feedkeys('g@l', 'nx', true)
+        vim.opt.operatorfunc = "v:lua.tsj_split_recursive"
+        vim.api.nvim_feedkeys("g@l", "nx", true)
       end
 
       -- stylua: ignore start

@@ -96,7 +96,7 @@ function M.map(modes, lhs, rhs, opts)
         local path = existing.sid > 0
             and vim.fn.expand("<script:" .. existing.sid .. ">")
           or "Internal/Built-in"
-        local plugin_name = path:match "lazy/([^/]+)" or "User Config"
+        local plugin_name = path:match("lazy/([^/]+)") or "User Config"
         local action = (existing.rhs and existing.rhs ~= "") and existing.rhs
           or "Lua function"
         local description = existing.desc or "No description"
@@ -110,7 +110,6 @@ function M.map(modes, lhs, rhs, opts)
           action = action,
           desc = description,
         }
-
       end
     end
   end
@@ -160,7 +159,7 @@ function M.get_conflicts()
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, report)
 
   -- Open a horizontal split at the bottom
-  vim.cmd "botright split"
+  vim.cmd("botright split")
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, buf)
 
@@ -298,8 +297,14 @@ function M.report_warned()
   }
 
   for i, c in ipairs(warned) do
-    table.insert(report, string.format("## %d. [%s] in mode `%s`", i, c.lhs, c.mode))
-    table.insert(report, string.format("- Existing: `%s` (%s)", c.action, c.desc))
+    table.insert(
+      report,
+      string.format("## %d. [%s] in mode `%s`", i, c.lhs, c.mode)
+    )
+    table.insert(
+      report,
+      string.format("- Existing: `%s` (%s)", c.action, c.desc)
+    )
     table.insert(report, string.format("- Source: `%s`", c.plugin))
     table.insert(report, string.format("- File: %s:%s", c.path, c.line))
     table.insert(report, "")
@@ -308,7 +313,7 @@ function M.report_warned()
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, report)
 
-  vim.cmd "botright split"
+  vim.cmd("botright split")
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, buf)
 
@@ -407,7 +412,7 @@ end
 
 function M.clear_abbreviations()
   -- Helper to clear all abbreviations if needed
-  vim.cmd "abc" -- abbreviation clear
+  vim.cmd("abc") -- abbreviation clear
 end
 
 ---Generates a function that executes the original keymap logic
@@ -611,10 +616,10 @@ function M.universal_smart_toggle()
   local bufnr = vim.api.nvim_get_current_buf()
   -- Use 'ignore_injections = false' to work inside embedded languages (like JS in HTML)
   local node =
-    vim.treesitter.get_node { bufnr = bufnr, ignore_injections = false }
+    vim.treesitter.get_node({ bufnr = bufnr, ignore_injections = false })
 
   if not node then
-    print "No node found at cursor"
+    print("No node found at cursor")
     return
   end
 
@@ -625,20 +630,20 @@ function M.universal_smart_toggle()
   -- 1. Structural Toggles (Tree-sitter Booleans)
   -- Some parsers use 'boolean_literal', others just 'true' or 'false'
   if
-    node_type:find "boolean"
+    node_type:find("boolean")
     or node_text == "true"
     or node_text == "false"
     or node_text == "True"
     or node_text == "False"
   then
     if node_text:lower() == "true" then
-      replacement = (node_text:match "^T") and "False" or "false"
+      replacement = (node_text:match("^T")) and "False" or "false"
     else
-      replacement = (node_text:match "^F") and "True" or "true"
+      replacement = (node_text:match("^F")) and "True" or "true"
     end
 
   -- 2. Number Toggles (0 <-> 1)
-  elseif node_type:find "number" or node_type:find "integer" then
+  elseif node_type:find("number") or node_type:find("integer") then
     if node_text == "0" then
       replacement = "1"
     elseif node_text == "1" then
@@ -675,7 +680,6 @@ function M.universal_smart_toggle()
     )
   else
     -- Optional: If Tree-sitter fails, try a simple word toggle under cursor
-    local word = vim.fn.expand "<cword>"
     print("No toggle for: " .. node_text .. " (Type: " .. node_type .. ")")
   end
 end
