@@ -370,6 +370,12 @@ vim.g.loaded_zipPlugin = 0
 
 vim.g.loaded_remote_plugins = 0
 vim.g.loaded_python3_provider = 0
+vim.g.python3_host_prog = vim.fs.joinpath(
+  vim.fn.stdpath('data'),
+  'python3',
+  'bin',
+  'python'
+)
 
 require('utils.load').on_events(
   { 'FileType', 'BufReadPre', 'BufWritePost' },

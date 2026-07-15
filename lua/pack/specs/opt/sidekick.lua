@@ -2,7 +2,7 @@
 return {
   src = 'https://github.com/folke/sidekick.nvim',
   data = {
-    event = { event = 'VeryLazy' },
+    event = { event = 'User', pattern = 'VeryLazy' },
     deps = {
       { src = 'https://github.com/zbirenbaum/copilot.lua' },
     },

@@ -66,6 +66,7 @@ end
 ---Plugin loaders grouped by event, pattern, and buffers
 ---@type table<string, { all: load.event.handler[], pats: table<string, load.event.handler[]>, bufs: table<string, load.event.handler[]> }>
 local event_loaders = vim.defaulttable()
+local event_replays = {}
 
 ---Helper function that returns a function as event callback to trigger
 ---loaders given by `loaders`
@@ -77,12 +78,27 @@ local function trig_loaders_fn(loaders)
       loader(args)
       loaders[i] = nil
     end
-    vim.api.nvim_buf_call(args.buf, function()
-      vim.api.nvim_exec_autocmds(
-        args.event,
-        { pattern = args.match, data = args.data }
-      )
+
+    -- Autocmds are deleted only after their callbacks return true. A replay can
+    -- therefore enter other lazy-loader callbacks that try to replay the same
+    -- event again. Let those callbacks load and delete themselves, but keep a
+    -- single replay active per event/buffer across every loader group.
+    local replay_key = string.format('%s:%s', args.event, args.buf)
+    if event_replays[replay_key] then
+      return true
+    end
+
+    event_replays[replay_key] = true
+    local ok, err = pcall(vim.api.nvim_buf_call, args.buf, function()
+      vim.api.nvim_exec_autocmds(args.event, {
+        pattern = args.match,
+        data = args.data,
+      })
     end)
+    event_replays[replay_key] = nil
+    if not ok then
+      error(err)
+    end
     return true
   end
 end
@@ -263,7 +279,10 @@ function M.on_cmds(cmds, name, load)
         cmd_call_spec.args = { call_args.args }
       end
 
-      vim.cmd(cmd_call_spec)
+      -- Use the exact command name when replaying a lazy-load trigger.
+      -- Current Neovim resolves `vim.cmd({ cmd = ... })` like a typed command
+      -- abbreviation, so `Mason` becomes ambiguous beside MasonInstall, etc.
+      vim.api.nvim_cmd(cmd_call_spec, {})
     end, {
       bang = true,
       range = true,
@@ -356,9 +375,9 @@ function M.on_keys(key_specs, name, load)
         -- Try to use pack.load if available (for lazy-loaded plugins)
         local pack = require('utils.pack')
         local specs = require('utils.pack').specs_registry
-        local spec = specs[name]
-        if spec then
-          pack.load(spec, pack.path(name))
+        local plugin_spec = specs[name]
+        if plugin_spec then
+          pack.load(plugin_spec, pack.path(name))
         else
           M.load(name)
         end

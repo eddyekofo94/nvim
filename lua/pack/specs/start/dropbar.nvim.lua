@@ -109,14 +109,5 @@ return {
       end,
     })
 
-    _G.dropbar = setmetatable({}, {
-      __index = function(_, key)
-        local ok, mod = pcall(require, "dropbar")
-        if ok and mod then
-          return mod[key]
-        end
-        return function() end
-      end,
-    })
   end,
 }

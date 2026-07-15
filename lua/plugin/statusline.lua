@@ -263,6 +263,15 @@ local no_progress_servers = {
   copilot = true,
 }
 
+-- Safe redrawstatus helper: swallow Vim-level errors raised by statusline
+-- expressions (e.g. E363 from a bad search pattern hitting a long-line
+-- buffer) so they never abort the autocmd / timer that triggered them.
+local function safe_redrawstatus()
+  pcall(vim.cmd.redrawstatus, {
+    mods = { emsg_silent = true },
+  })
+end
+
 -- Track servers by LspAttach/LspDetach
 vim.api.nvim_create_autocmd("LspAttach", {
   group = groupid,
@@ -276,7 +285,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
       else
         server_progress[client.name] = true -- busy, waiting for "end"
       end
-      vim.cmd "redrawstatus"
+      safe_redrawstatus()
     end
   end,
 })
@@ -289,7 +298,7 @@ vim.api.nvim_create_autocmd("LspDetach", {
     if client then
       -- Server detached - remove from tracking
       server_progress[client.name] = nil
-      vim.cmd "redrawstatus"
+      safe_redrawstatus()
     end
   end,
 })
@@ -313,7 +322,7 @@ vim.api.nvim_create_autocmd("LspProgress", {
     if kind == "end" then
       -- Server finished initializing
       server_progress[client.name] = false
-      vim.cmd "redrawstatus"
+      safe_redrawstatus()
     end
   end,
 })
@@ -339,7 +348,7 @@ _G.LspSpinnerTimer:start(
     end
     if has_busy then
       spinner_idx = (spinner_idx % #spinner_frames) + 1
-      vim.cmd "redrawstatus"
+      safe_redrawstatus()
     end
   end)
 )
@@ -945,17 +954,56 @@ function _G._statusline.project_name()
 end
 
 -- Search count component
+--
+-- `vim.fn.searchcount()` evaluates the current search pattern (@/) against
+-- the buffer. With a complex/pathological pattern + long lines this blows
+-- `maxmempattern` and raises E363, which then aborts the entire
+-- `redrawstatus` (and any autocmd that triggered it, e.g. LspAttach).
+--
+-- Guards:
+--   1. Skip on `bigfile` buffers (consistent with wordcount() upstream).
+--   2. Skip when the current line is excessively long, since searchcount
+--      tends to choke proportionally to the longest matched run.
+--   3. Bound the timeout aggressively so a slow regex on any buffer doesn't
+--      stall the UI.
+--   4. pcall the whole call so a Vim-level regex error (E363, E383, etc.)
+--      degrades gracefully instead of breaking the statusline.
 function _G._statusline.search_count()
   if vim.v.hlsearch == 0 then
     return ''
   end
 
-  local result = vim.fn.searchcount({ maxcount = 999, timeout = 250 })
-  if next(result) == nil or result.incomplete == 1 or result.total == 0 then
+  if vim.b.bigfile then
     return ''
   end
 
-  return string.format('[%d/%d]', result.current, math.min(result.total, result.maxcount))
+  -- Cheap structural check: if the file is huge or any line is enormous,
+  -- searchcount will be slow at best and crash at worst.
+  local line_count = vim.api.nvim_buf_line_count(0)
+  if line_count > 50000 then
+    return ''
+  end
+  local longest = vim.fn.strdisplaywidth(vim.fn.getline('.') or '')
+  if longest > 5000 then
+    return ''
+  end
+
+  local ok, result = pcall(vim.fn.searchcount, { maxcount = 999, timeout = 100 })
+  if
+    not ok
+    or type(result) ~= 'table'
+    or next(result) == nil
+    or result.incomplete == 1
+    or (result.total or 0) == 0
+  then
+    return ''
+  end
+
+  return string.format(
+    '[%d/%d]',
+    result.current or 0,
+    math.min(result.total, result.maxcount or result.total)
+  )
 end
 
 function _G._statusline.section_location()

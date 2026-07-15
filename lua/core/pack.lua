@@ -45,12 +45,26 @@ else
   )
 end
 
+-- Provide the conventional lazy-plugin event without depending on lazy.nvim.
+vim.api.nvim_create_autocmd('UIEnter', {
+  once = true,
+  callback = function()
+    vim.schedule(function()
+      vim.api.nvim_exec_autocmds('User', { pattern = 'VeryLazy' })
+    end)
+  end,
+  desc = 'Emit the post-startup VeryLazy user event',
+})
+
 vim.api.nvim_create_user_command('PackInstallAll', function()
-  vim.pack.install(nil, { target = 'opt' })
-  vim.pack.install(nil, { target = 'start' })
+  utils.pack.add(
+    vim.list_extend(
+      collect_specs(specs_start_path),
+      collect_specs(specs_opt_path)
+    )
+  )
 end, {})
 
 vim.api.nvim_create_user_command('PackUpdateAll', function()
-  vim.pack.update(nil, { target = 'opt' })
-  vim.pack.update(nil, { target = 'start' })
+  vim.pack.update()
 end, {})

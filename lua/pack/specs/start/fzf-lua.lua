@@ -348,10 +348,7 @@ return {
         end
         if
           opts.fd_opts
-          and (
-            vim.fn.executable "fd" == 1
-            or vim.fn.executable "fdfind" == 1
-          )
+          and (vim.fn.executable "fd" == 1 or vim.fn.executable "fdfind" == 1)
         then
           local fd = vim.fn.executable "fd" == 1 and "fd" or "fdfind"
           return fd .. " " .. opts.fd_opts
@@ -502,8 +499,7 @@ return {
               )
               return
             end
-            local listfile =
-              write_filtered_file_list_from_cmd(cmd, query, cwd)
+            local listfile = write_filtered_file_list_from_cmd(cmd, query, cwd)
             if not listfile then
               vim.notify(
                 "[Fzf-lua] toggle: failed to gather file list",
@@ -580,9 +576,7 @@ return {
             query = _toggle_state.files_query,
             resume = false, -- always launch source picker fresh
           }, {
-            source_key
-              .. ": "
-              .. display_query(_toggle_state.files_query),
+            source_key .. ": " .. display_query(_toggle_state.files_query),
             "grep: " .. display_query(_toggle_state.grep_query),
           })
 
@@ -1501,6 +1495,73 @@ return {
         vim.bo.filetype = "fzf"
       end
 
+      local fzf_on_create = function(args)
+        vim.g._fzf_active = true
+        vim.g._fzf_win = args and args.winid or vim.api.nvim_get_current_win()
+        -- The new picker is now live; clear the transition flag so
+        -- any remaining deferred on_close cleanup from the OLD picker
+        -- is no longer suppressed (it will still bail via the
+        -- closing_win guard, but this unblocks unrelated deferred work).
+        vim.g._fzf_transitioning = nil
+        -- Suppress [Process exited 0] flash during toggle transitions.
+        -- Fires after fzf-lua's own terminal cleanup (registered earlier)
+        -- and closes the window synchronously before the next redraw.
+        local _term_win = vim.g._fzf_win
+        local _term_buf = args and args.bufnr or vim.api.nvim_get_current_buf()
+        vim.api.nvim_create_autocmd("TermClose", {
+          buffer = _term_buf,
+          once = true,
+          callback = function()
+            if
+              vim.g._fzf_transitioning
+              and vim.api.nvim_win_is_valid(_term_win)
+            then
+              pcall(vim.api.nvim_win_close, _term_win, true)
+            end
+          end,
+        })
+        vim.keymap.set(
+          "t",
+          "<F3>",
+          "<Cmd>lua _G.FzfLuaTogglePreviewWrap()<CR>",
+          {
+            nowait = true,
+            buffer = args and args.bufnr or true,
+            desc = "Toggle preview wrap",
+          }
+        )
+        vim.keymap.set(
+          "t",
+          "<F5>",
+          "<Cmd>lua _G.FzfLuaTogglePreviewMax()<CR>",
+          {
+            nowait = true,
+            buffer = args and args.bufnr or true,
+            desc = "Toggle large preview",
+          }
+        )
+        vim.keymap.set("t", "<F6>", "<Cmd>lua _G.FzfLuaFocusPreview()<CR>", {
+          nowait = true,
+          buffer = args and args.bufnr or true,
+          desc = "Focus preview",
+        })
+        vim.keymap.set(
+          "t",
+          "<C-r>",
+          [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']],
+          {
+            expr = true,
+            buffer = true,
+            desc = "Insert contents in a register",
+          }
+        )
+        -- Sometimes windows will shift/change size after closing quickfix window
+        -- and reopening fzf, maybe related to https://github.com/neovim/neovim/issues/30955
+        if vim.g._fzf_qfclosed then
+          restore_win_heights_and_views()
+        end
+      end
+
       fzf.setup {
         -- Default profile 'default-title' disables prompt in favor of title
         -- on nvim >= 0.9, but a fzf windows with split layout cannot have titles
@@ -1518,61 +1579,7 @@ return {
           row = 1,
           col = 0,
           border = "none",
-          on_create = function(args)
-            vim.g._fzf_active = true
-            vim.g._fzf_win = args and args.winid
-              or vim.api.nvim_get_current_win()
-            -- The new picker is now live; clear the transition flag so
-            -- any remaining deferred on_close cleanup from the OLD picker
-            -- is no longer suppressed (it will still bail via the
-            -- closing_win guard, but this unblocks unrelated deferred work).
-            vim.g._fzf_transitioning = nil
-            vim.keymap.set(
-              "t",
-              "<F3>",
-              "<Cmd>lua _G.FzfLuaTogglePreviewWrap()<CR>",
-              {
-                nowait = true,
-                buffer = args and args.bufnr or true,
-                desc = "Toggle preview wrap",
-              }
-            )
-            vim.keymap.set(
-              "t",
-              "<F5>",
-              "<Cmd>lua _G.FzfLuaTogglePreviewMax()<CR>",
-              {
-                nowait = true,
-                buffer = args and args.bufnr or true,
-                desc = "Toggle large preview",
-              }
-            )
-            vim.keymap.set(
-              "t",
-              "<F6>",
-              "<Cmd>lua _G.FzfLuaFocusPreview()<CR>",
-              {
-                nowait = true,
-                buffer = args and args.bufnr or true,
-                desc = "Focus preview",
-              }
-            )
-            vim.keymap.set(
-              "t",
-              "<C-r>",
-              [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']],
-              {
-                expr = true,
-                buffer = true,
-                desc = "Insert contents in a register",
-              }
-            )
-            -- Sometimes windows will shift/change size after closing quickfix window
-            -- and reopening fzf, maybe related to https://github.com/neovim/neovim/issues/30955
-            if vim.g._fzf_qfclosed then
-              restore_win_heights_and_views()
-            end
-          end,
+          on_create = fzf_on_create,
           on_close = function()
             -- Snapshot the closing picker's window id. If a NEW fzf picker
             -- (e.g. ctrl-g toggle) opens before our deferred / scheduled
@@ -1721,7 +1728,7 @@ return {
             ["<C-_>"] = "toggle-help",
             ["<F1>"] = "toggle-help",
             ["<F2>"] = "toggle-fullscreen",
-            ["<F3>"] = false,
+            ["<F3>"] = "",
             ["<F4>"] = "toggle-preview",
             ["<C-f>"] = "preview-page-down",
             ["<C-b>"] = "preview-page-up",
@@ -2210,18 +2217,13 @@ return {
 
       local smart_files_oldfiles_cache = {}
 
-      -- Temp files written per smart_files() call. All removed when Neovim
-      -- exits.
-      local _smart_files_tmpfiles = {}
-
-      local function smart_tmpfile_track(path)
-        table.insert(_smart_files_tmpfiles, path)
-        return path
-      end
+      -- Tmpfiles from the most recent smart_files() call. Deleted at the
+      -- start of the next call (fzf has already exited by then) and at exit.
+      local _smart_files_prev_tmpfiles = {}
 
       vim.api.nvim_create_autocmd("VimLeavePre", {
         callback = function()
-          for _, f in ipairs(_smart_files_tmpfiles) do
+          for _, f in ipairs(_smart_files_prev_tmpfiles) do
             pcall(vim.fn.delete, f)
           end
         end,
@@ -2344,6 +2346,13 @@ return {
         opts.__call_fn = nil
         opts.__resume_key = nil
 
+        -- fzf has closed since the last call, so its tmpfiles are no longer
+        -- needed. Delete them now rather than waiting until VimLeavePre.
+        for _, f in ipairs(_smart_files_prev_tmpfiles) do
+          pcall(vim.fn.delete, f)
+        end
+        _smart_files_prev_tmpfiles = {}
+
         local cwd = smart_files_cwd(opts)
         local real_cwd = vim.uv.fs_realpath(cwd) or cwd
         local cwd_oldfiles, other_oldfiles =
@@ -2385,14 +2394,14 @@ return {
         if #cwd_oldfiles > 0 then
           cwd_oldfiles_path = vim.fn.tempname()
           vim.fn.writefile(cwd_oldfiles, cwd_oldfiles_path)
-          smart_tmpfile_track(cwd_oldfiles_path)
+          table.insert(_smart_files_prev_tmpfiles, cwd_oldfiles_path)
         end
 
         local other_oldfiles_path
         if #other_oldfiles > 0 then
           other_oldfiles_path = vim.fn.tempname()
           vim.fn.writefile(other_oldfiles, other_oldfiles_path)
-          smart_tmpfile_track(other_oldfiles_path)
+          table.insert(_smart_files_prev_tmpfiles, other_oldfiles_path)
         end
 
         -- Source order is intentional:
@@ -2415,6 +2424,16 @@ return {
           .. "; } | awk '!a[$0]++'"
 
         local smart_actions = {
+          ["ctrl-r"] = function()
+            smart_files_oldfiles_cache = {}
+            vim.g._fzf_transitioning = true
+            vim.schedule(function()
+              fzf.smart_files {
+                cwd = cwd,
+                query = (fzf.config.__resume_data or {}).last_query or "",
+              }
+            end)
+          end,
           ["ctrl-e"] = actions.filter_extension,
           ["ctrl-g"] = actions.toggle_files_grep,
           ["enter"] = function(selected, o)
@@ -2477,6 +2496,10 @@ return {
         -- a caller-supplied opts blob must not override them.
         merged.raw_cmd = full_cmd
         merged.cmd = nil
+        -- fzf-lua's multiprocess wrapper adds another shell boundary around
+        -- raw commands. Keep this ordered/deduplicated pipeline in-process so
+        -- awk's `$0` reaches awk unchanged on current fzf-lua.
+        merged.multiprocess = false
         merged.__smart_files = true
         merged.__smart_full_cmd = full_cmd
 
@@ -2487,6 +2510,22 @@ return {
         merged.fd_opts = nil
         merged.rg_opts = nil
         merged.find_opts = nil
+
+        -- Per-picker on_create: run global setup then remove the <C-r>
+        -- register-insert terminal keymap so fzf can see ctrl-r and fire
+        -- the refresh action above via its normal --expect mechanism.
+        merged.winopts = merged.winopts or {}
+        merged.winopts.on_create = function(args)
+          fzf_on_create(args)
+          local bufnr = args and args.bufnr or vim.api.nvim_get_current_buf()
+          pcall(vim.keymap.del, "t", "<C-r>", { buffer = bufnr })
+          vim.keymap.set(
+            "t",
+            "<C-y>",
+            [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']],
+            { expr = true, buffer = bufnr, desc = "Insert contents in a register" }
+          )
+        end
 
         return fzf.files(merged)
       end

@@ -506,9 +506,6 @@ end
     map({ 'n', 'x' }, 'g}', goto_paragraph_lastline, { noremap = false, desc = 'Go to the last line of paragraph' })
     -- stylua: ignore end
 
-    -- Fzf keymaps
-    map("n", "<Leader>.", "<Cmd>FZF<CR>", { desc = "Find files" })
-    map("n", "<Leader>ff", "<Cmd>FZF<CR>", { desc = "Find files" })
     map(
       "n",
       "<leader>mm",

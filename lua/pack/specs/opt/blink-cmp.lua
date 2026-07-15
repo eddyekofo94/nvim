@@ -4,6 +4,7 @@ return {
   data = {
     optional = vim.g.vscode,
     deps = {
+      "https://github.com/saghen/blink.lib",
       {
         src = "https://github.com/niuiic/blink-cmp-rg.nvim",
         data = { optional = true },
@@ -17,21 +18,27 @@ return {
         data = { optional = true },
       },
     },
-    -- https://github.com/Saghen/blink.cmp/issues/145#issuecomment-2483686337
-    -- https://github.com/Saghen/blink.cmp/issues/145#issuecomment-2492759016
-    build = string.format(
-      "%s cargo build --release",
-      vim.env.TERMUX_VERSION
-          and 'RUSTC_BOOTSTRAP=1 RUSTFLAGS="-C link-args=-lluajit"'
-        or ""
-    ),
+    build = function()
+      vim.cmd.packadd("blink.lib")
+      vim.cmd.packadd("blink.cmp")
+      require("blink.cmp").build({ force = true }):pwait()
+    end,
     events = { "InsertEnter", "CmdlineEnter" },
     postload = function()
       local icons = require "utils.static.icons"
       local has_ls, ls = pcall(require, "luasnip")
       local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-      local blink_source_utils = require "blink.cmp.sources.lib.utils"
-      local blink_ctx = require "blink.cmp.completion.trigger.context"
+
+      ---Blink v2 moved command-line completion type detection into its
+      ---cmdline source. The renderer only needs the active Vim completion type.
+      ---@return string
+      local function get_cmdline_completion_type()
+        if vim.fn.getcmdtype() == "" then
+          return ""
+        end
+        local ok, completion_type = pcall(vim.fn.getcmdcompltype)
+        return ok and completion_type or ""
+      end
 
       ---@param ctx blink.cmp.DrawItemContext
       ---@return boolean
@@ -46,7 +53,7 @@ return {
           )
           or vim.tbl_contains(
             { "dir", "file", "file_in_path", "runtime" },
-            blink_source_utils.get_completion_type(blink_ctx.get_mode())
+            get_cmdline_completion_type()
           )
       end
 
@@ -56,7 +63,7 @@ return {
         return items[1] and items[1].source_id == "cmdline"
           or vim.tbl_contains(
             { "function", "expression" },
-            blink_source_utils.get_completion_type(blink_ctx.get_mode())
+            get_cmdline_completion_type()
           )
       end
 
@@ -244,14 +251,18 @@ return {
             ["<C-h>"] = { "scroll_documentation_down", "fallback" },
             ["<C-l>"] = { "scroll_documentation_up", "fallback" },
           },
-          sources = function()
-            local type = vim.fn.getcmdtype()
-            if type == "/" or type == "?" then
-              return { "buffer" }
-            else
-              return { "cmdline", "path" }
-            end
-          end,
+          -- Blink v2 applies mode-specific source overrides through the same
+          -- nested source schema as the default mode.
+          sources = {
+            default = function()
+              local type = vim.fn.getcmdtype()
+              if type == "/" or type == "?" then
+                return { "buffer" }
+              else
+                return { "cmdline", "path" }
+              end
+            end,
+          },
           completion = {
             list = {
               selection = {

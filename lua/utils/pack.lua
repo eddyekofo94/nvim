@@ -65,6 +65,35 @@ local loaded = {}
 ---@type table<string, boolean>
 local initialized = {}
 
+local structured_data_fields = {
+  'build',
+  'cmd',
+  'cmds',
+  'deps',
+  'event',
+  'events',
+  'exts',
+  'init',
+  'key',
+  'keys',
+  'lazy',
+  'load',
+  'optional',
+  'postload',
+  'preload',
+}
+
+---@param spec pack.structured_spec
+local function normalize_structured_data(spec)
+  spec.data = spec.data or {}
+  for _, field in ipairs(structured_data_fields) do
+    if spec[field] ~= nil and spec.data[field] == nil then
+      spec.data[field] = spec[field]
+      spec[field] = nil
+    end
+  end
+end
+
 ---Get plugin installation root dir
 ---@return string
 function M.root()
@@ -212,6 +241,7 @@ function M.register(specs, default)
     if type(spec) == 'string' then
       specs[i] = { src = spec }
     end
+    normalize_structured_data(specs[i])
   end
 
   -- Set default fields in the spec, prepare for merging and registration
@@ -328,6 +358,22 @@ end
 
 local pack_add = vim.pack.add
 
+---Return the subset of a structured spec owned by the native package manager.
+---
+---`vim.pack.Spec.data` is documented as arbitrary data, but PackChanged events
+---must cross the API boundary and therefore cannot contain Lua functions. Keep
+---loader callbacks in our private registry and only give `vim.pack` fields it
+---needs to clone and resolve a plugin.
+---@param spec pack.structured_spec
+---@return vim.pack.Spec
+local function native_spec(spec)
+  return {
+    name = spec.name,
+    src = spec.src,
+    version = spec.version,
+  }
+end
+
 ---Wrapper of `vim.pack.add()` that handles lazy-loading, dependencies, etc.
 ---via the `data` field
 ---@param specs pack.spec|pack.spec[]
@@ -341,25 +387,37 @@ function M.add(specs)
       if args.data.kind == 'delete' then
         return
       end
-      M.build(args.data.spec, args.data.path)
+      local spec = specs_registry[args.data.spec.src]
+      if spec then
+        M.build(spec, args.data.path)
+      end
     end,
   })
 
   specs = {}
   for _, spec in pairs(specs_registry) do
     if not spec.data or not spec.data.optional then
-      table.insert(specs, spec)
+      table.insert(specs, native_spec(spec))
     end
   end
 
   -- `vim.pack.add()` throws error if previous confirm is denied
   -- This happens if installation of plugins under `start` is denied
   -- first, then plugin specs under `opt` is collected and managed
-  pcall(pack_add, specs, {
+  local ok, err = pcall(pack_add, specs, {
     load = function(args)
-      M.lazy_load(args.spec, args.path)
+      local spec = specs_registry[args.spec.src]
+      if spec then
+        M.lazy_load(spec, args.path)
+      end
     end,
   })
+  if not ok then
+    vim.notify(
+      string.format('[utils.pack] Failed to add plugins: %s', err),
+      vim.log.levels.ERROR
+    )
+  end
 end
 
 return M
