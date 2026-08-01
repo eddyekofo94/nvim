@@ -242,7 +242,11 @@ return {
               "snippet_forward",
               "fallback",
             },
-            ["<CR>"] = { "select_accept_and_enter", "fallback" },
+            -- Only accept an item the user explicitly selected (<Tab>/<C-j>).
+            -- With nothing selected this returns false and falls back to a
+            -- native `<CR>`, so `:w<CR>` runs `:w` (not the first match `:wq`)
+            -- and cmdline abbreviations still expand.
+            ["<CR>"] = { "accept_and_enter", "fallback" },
             ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
             ["<Down>"] = { "select_next", "fallback" },
             ["<Up>"] = { "select_prev", "fallback" },
