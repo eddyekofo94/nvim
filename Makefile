@@ -24,3 +24,7 @@ test-lazy-loading:
 .PHONY: test-copilot-lifecycle
 test-copilot-lifecycle:
 	sh tools/test_copilot_lifecycle.sh
+
+.PHONY: test-cwd-files
+test-cwd-files:
+	NVIM_APPNAME=nvim nvim --headless '+packadd plenary.nvim' '+PlenaryBustedFile tests/cwd_files_spec.lua'

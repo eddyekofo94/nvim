@@ -34,11 +34,13 @@ NVIM_APPNAME=nvim nvim --headless -u NONE \
 make test-smart-files
 make test-lazy-loading
 make test-copilot-lifecycle
+make test-cwd-files
 
 luacheck -q \
   lua/core/options.lua \
   lua/core/pack.lua \
   lua/pack/specs/opt/blink-cmp.lua \
+  lua/plugin/blink-cwd-files.lua \
   lua/pack/specs/start/dropbar.nvim.lua \
   lua/utils/load.lua \
   lua/utils/pack.lua

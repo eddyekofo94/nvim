@@ -262,9 +262,13 @@ return {
               local type = vim.fn.getcmdtype()
               if type == "/" or type == "?" then
                 return { "buffer" }
-              else
-                return { "cmdline", "path" }
               end
+              -- `@` tags a project file, same as in a buffer. Blink's
+              -- one-directory `path` source keeps `/`, `./` and `~/`.
+              if require("plugin.blink-cwd-files").is_active() then
+                return { "cwd_files" }
+              end
+              return { "cmdline", "path" }
             end,
           },
           completion = {
@@ -278,14 +282,22 @@ return {
           },
         },
         sources = {
-          default = {
-            "snippets",
-            "lsp",
-            "lazydev",
-            "path",
-            "buffer",
-            "ripgrep",
-          },
+          default = function()
+            -- `@` tags a project file, the way Claude/Codex/Pi do it: recursive
+            -- fuzzy completion over the whole project tree. Nothing else stays
+            -- enabled, so the menu is only files.
+            if require("plugin.blink-cwd-files").is_active() then
+              return { "cwd_files" }
+            end
+            return {
+              "snippets",
+              "lsp",
+              "lazydev",
+              "path",
+              "buffer",
+              "ripgrep",
+            }
+          end,
           min_keyword_length = 0,
           providers = {
             lsp = {
@@ -365,6 +377,12 @@ return {
                   return vim.fn.getcwd()
                 end,
               },
+            },
+            -- fzf `<C-t>`-style recursive path completion, see
+            -- `lua/plugin/blink-cwd-files.lua`
+            cwd_files = {
+              name = "CWD",
+              module = "plugin.blink-cwd-files",
             },
           },
         },
