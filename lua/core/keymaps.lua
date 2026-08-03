@@ -43,20 +43,31 @@ require("utils.load").on_events(
     map({ 'x', 'n' }, '<M-g>F', '<C-w>gF', { desc = 'Edit file under cursor in new tab and jump to line' })
     map({ 'x', 'n' }, '<M-g>t', '<C-w>gt', { desc = 'Go to next tab' })
     map({ 'x', 'n' }, '<M-g>T', '<C-w>gT', { desc = 'Go to previous tab' })
-    map({ 'x', 'n' }, '<M-h>', '<C-w><C-h>', { desc = 'Go to the left window' })
+    -- Seamless nvim<->Herdr navigation: move the nvim window; if already at the
+    -- edge, hand off to the neighboring Herdr pane. Replaces the old tmux path,
+    -- since Herdr globally intercepts Alt+h/j/k/l and forwards it here.
+    local herdr_dir = { h = 'left', j = 'down', k = 'up', l = 'right' }
+    local function herdr_nav(dir)
+      local cur = vim.fn.winnr()
+      vim.cmd.wincmd(dir)
+      if vim.fn.winnr() == cur and vim.fn.executable('herdr') == 1 then
+        vim.fn.system({ 'herdr', 'pane', 'focus', '--direction', herdr_dir[dir], '--current' })
+      end
+    end
+    map({ 'x', 'n' }, '<M-h>', function() herdr_nav('h') end, { desc = 'Go to left window or Herdr pane' })
     map({ 'x', 'n' }, '<M-j>', function()
       if _G.FzfLuaFocus and _G.FzfLuaFocus() then
         return
       end
-      vim.cmd.wincmd('j')
-    end, { desc = 'Go to the window below' })
+      herdr_nav('j')
+    end, { desc = 'Go to window below or Herdr pane' })
     map({ 'x', 'n' }, '<M-k>', function()
       if _G.FzfLuaFocus and _G.FzfLuaFocus() then
         return
       end
-      vim.cmd.wincmd('k')
-    end, { desc = 'Go to the window above' })
-    map({ 'x', 'n' }, '<M-l>', '<C-w><C-l>', { desc = 'Go to the right window' })
+      herdr_nav('k')
+    end, { desc = 'Go to window above or Herdr pane' })
+    map({ 'x', 'n' }, '<M-l>', function() herdr_nav('l') end, { desc = 'Go to right window or Herdr pane' })
     map({ 'x', 'n' }, '<M-Left>', '<C-w><Left>', { desc = 'Go to the left window' })
     map({ 'x', 'n' }, '<M-Down>', '<C-w><Down>', { desc = 'Go to the window below' })
     map({ 'x', 'n' }, '<M-Up>', '<C-w><Up>', { desc = 'Go to the window above' })
