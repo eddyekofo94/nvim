@@ -840,11 +840,11 @@ function _G._statusline.lsp_status()
       indicator =
         string.format("%%#LspSpinner#%s%%*", spinner_frames[spinner_idx])
     else
-      indicator = string.format("%%#LspReady#%s%%*", "󰄬 ")
+      indicator = string.format("%%#LspReady#%s%%*", "󰄬")
     end
 
     local server_name = utils.stl.hl(client.name, "StatusLineDimmed")
-    table.insert(parts, string.format("%s %s", server_name, indicator))
+    table.insert(parts, string.format("%s %s ", server_name, indicator))
   end
 
   local result = table.concat(parts, ", ")
