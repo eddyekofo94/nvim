@@ -25,6 +25,10 @@ test-lazy-loading:
 test-copilot-lifecycle:
 	sh tools/test_copilot_lifecycle.sh
 
+.PHONY: test-cursor-blink
+test-cursor-blink:
+	NVIM_APPNAME=nvim nvim --headless '+packadd plenary.nvim' '+PlenaryBustedFile tests/cursor_blink_spec.lua'
+
 .PHONY: test-cwd-files
 test-cwd-files:
 	NVIM_APPNAME=nvim nvim --headless '+packadd plenary.nvim' '+PlenaryBustedFile tests/cwd_files_spec.lua'
