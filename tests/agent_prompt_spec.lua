@@ -105,6 +105,91 @@ describe("agent prompt editor", function()
     vim.env.AGENT_PROMPT_SEED_FILE = saved.seed
   end)
 
+  it("accepts a prompt file under /tmp, outside $TMPDIR", function()
+    -- Claude Code writes under /tmp (/private/tmp once resolved), a different
+    -- tree from the /var/folders $TMPDIR Codex and Pi use
+    local claude_root = "/tmp/agent-prompt-spec-claude"
+    assert.are.equal(1, vim.fn.mkdir(claude_root, "p"))
+    local claude_prompt = vim.fs.joinpath(claude_root, "prompt.md")
+    write(claude_prompt, {})
+
+    assert.is_not_nil(
+      agent_prompt.detect_prompt_file({
+        args = { claude_prompt },
+        agent = true,
+      }),
+      "a /tmp prompt file was rejected, so its window falls back to auto_cwd"
+    )
+
+    vim.fn.delete(claude_root, "rf")
+  end)
+
+  it("guards the cwd even when no closeout was captured", function()
+    assert.is_nil(
+      agent_prompt.detect({
+        args = { prompt_file },
+        closeout = vim.fs.joinpath(tmproot, "absent.md"),
+        tmpdir = tmproot,
+      }),
+      "a missing closeout must not produce a split"
+    )
+
+    assert.are.equal(
+      vim.uv.fs_realpath(prompt_file),
+      agent_prompt.detect_prompt_file({
+        args = { prompt_file },
+        tmpdir = tmproot,
+        agent = true,
+      })
+    )
+  end)
+
+  it("ignores a lone temp file outside an agent launch", function()
+    assert.is_nil(agent_prompt.detect_prompt_file({
+      args = { prompt_file },
+      tmpdir = tmproot,
+      agent = false,
+    }))
+  end)
+
+  it("recognises every agent runtime, not just Claude Code", function()
+    -- Only Claude Code exports AI_AGENT, so each of the others has to be
+    -- recognised on a marker of its own.
+    local markers = {
+      { AI_AGENT = "claude-code_2-1-220_agent" },
+      { CLAUDECODE = "1" },
+      { CLAUDE_CODE_ENTRYPOINT = "cli" },
+      { CODEX_THREAD_ID = "0199abcd" },
+      { OPENCODE = "1" },
+      { OPENCODE_CLIENT = "acp" },
+      { PI_CODING_AGENT_DIR = "/tmp/pi/config" },
+      { PI_PILOT_CONTROL_DIR = "/tmp/pi/control" },
+      { CURSOR_AGENT = "1" },
+      { GEMINI_CLI = "1" },
+      { AIDER_MODEL = "gpt" },
+    }
+    for _, env in ipairs(markers) do
+      local name = next(env)
+      assert.is_not_nil(
+        agent_prompt.detect_prompt_file({
+          args = { prompt_file },
+          tmpdir = tmproot,
+          env = env,
+        }),
+        ("%s was not recognised as an agent launch"):format(name)
+      )
+    end
+  end)
+
+  it("ignores an environment with no agent marker", function()
+    assert.is_nil(agent_prompt.detect_prompt_file({
+      args = { prompt_file },
+      tmpdir = tmproot,
+      -- variables that merely share a prefix with an agent's own
+      env = { EDITOR = "nvim", PI_HOLE = "1", CODEXIS = "1", HOME = "/home" },
+    }))
+  end)
+
   it("rejects an ordinary file outside $TMPDIR", function()
     local ordinary = "/tmp/agent-prompt-spec-ordinary.md"
     assert.is_nil(agent_prompt.detect({

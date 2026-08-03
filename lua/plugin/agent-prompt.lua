@@ -59,17 +59,139 @@ local function is_empty(buf)
   return #lines == 0 or (#lines == 1 and lines[1] == "")
 end
 
+---Environment variables an agent runtime exports into its own children. Every
+---descendant of an agent shell inherits these, so they can only ever narrow a
+---decision that is already pinned to a lone prompt file under a temp root.
+---
+---`AI_AGENT` is the cross-vendor convention — a runtime sets it to
+---`<name>_<version>_agent` and leaves a foreign value alone — but only Claude
+---Code actually writes it today. Every other runtime is recognised by its own
+---marker, or detection would be Claude-only.
+local agent_env = {
+  "AI_AGENT",
+  "CLAUDECODE", -- Claude Code
+  "OPENCODE", -- OpenCode
+  "CURSOR_AGENT", -- Cursor
+  "GEMINI_CLI", -- Gemini CLI
+}
+
+---Only the Claude Code markers are confirmed against a real ctrl+g launch. The
+---rest are read off each runtime's binary or launcher and stay unverified until
+---an actual launch proves them; every one of them fails closed to plain Neovim.
+---
+---Runtimes that export a family of variables rather than one marker. Matched
+---against the whole environment so a renamed session variable still registers:
+---these names are vendor-exclusive, and a stray match can at worst let through
+---a launch that still has to look exactly like an agent prompt file.
+local agent_env_prefixes = {
+  "CLAUDE_CODE_", -- Claude Code
+  "CODEX_", -- Codex, which exports no single stable marker
+  "OPENCODE_",
+  "PI_CODING_AGENT", -- Pi, exported by `pilot.sh` before the binary starts
+  "PI_PILOT_",
+  "AIDER_",
+}
+
+---@param opts? { agent?: boolean, env?: table<string, string> }
+---@return boolean
+local function launched_by_agent(opts)
+  if opts and opts.agent ~= nil then
+    return opts.agent
+  end
+
+  local env = opts and opts.env
+  for _, name in ipairs(agent_env) do
+    local value = (env or vim.env)[name]
+    if value and value ~= "" then
+      return true
+    end
+  end
+
+  -- Prefix matching needs the whole environment, so it only runs once every
+  -- cheap exact name has missed.
+  for name, value in pairs(env or vim.fn.environ()) do
+    if value ~= "" then
+      for _, prefix in ipairs(agent_env_prefixes) do
+        if name:sub(1, #prefix) == prefix then
+          return true
+        end
+      end
+    end
+  end
+
+  return false
+end
+
+---Temp roots agents write prompt files into. `$TMPDIR` covers Codex and Pi;
+---Claude Code writes under `/tmp` (`/private/tmp` once resolved), which is a
+---different tree entirely on macOS.
+---@param opts? { tmpdir?: string, tmpdirs?: string[] }
+---@return string[]
+local function tmp_roots(opts)
+  opts = opts or {}
+  -- A single explicit root means "only this one" — it is how a spec pins
+  -- detection to a scratch directory without the real temp trees leaking in.
+  local roots = opts.tmpdirs or (opts.tmpdir and { opts.tmpdir })
+  if not roots then
+    roots = { vim.env.TMPDIR, "/tmp" }
+  end
+
+  local resolved = {}
+  for _, root in ipairs(roots) do
+    if root and root ~= "" then
+      table.insert(resolved, resolve(root))
+    end
+  end
+  return resolved
+end
+
+---Resolve the lone prompt file this Neovim was launched to edit, if any.
+---
+---Deliberately weaker than `M.detect`: it does not require a captured
+---closeout. The closeout split is a bonus, but the window's cwd has to stay on
+---the agent's repo whether or not the capture succeeded — otherwise `@`
+---completion, `:e` and fzf-lua all point at the temp tree.
+---@param opts? { args?: string[], tmpdir?: string, tmpdirs?: string[], agent?: boolean, env?: table<string, string> }
+---@return string? file Resolved path of the prompt file
+function M.detect_prompt_file(opts)
+  opts = opts or {}
+
+  if not launched_by_agent(opts) then
+    return nil
+  end
+
+  local args = opts.args or vim.fn.argv()
+  if type(args) ~= "table" or #args ~= 1 or args[1] == "" then
+    return nil
+  end
+
+  local roots = tmp_roots(opts)
+  if #roots == 0 then
+    return nil
+  end
+
+  -- Resolve both sides: on macOS $TMPDIR is a symlinked /var/folders path and
+  -- /tmp is a symlink to /private/tmp, so an unresolved compare would reject
+  -- every real prompt file.
+  local file = resolve(vim.fn.fnamemodify(args[1], ":p"))
+  for _, root in ipairs(roots) do
+    if is_under(root, file) then
+      return file
+    end
+  end
+  return nil
+end
+
 ---@class AgentPrompt.Target
 ---@field file string Resolved path of the prompt file
 ---@field closeout string Path of the captured closeout
 ---@field seed string? Path of the captured ready-to-paste block
 
----Decide whether this Neovim was launched as an agent's prompt editor.
+---Decide whether this Neovim can show the closeout beside the prompt.
 ---
 ---`$AGENT_CLOSEOUT_FILE` is the load-bearing signal: only the shim sets it, and
----only after a closeout was actually extracted. `$AI_AGENT` and `$CLAUDECODE`
----are deliberately not used — every child of an agent shell inherits those.
----@param opts? { args?: string[], closeout?: string, seed?: string, tmpdir?: string }
+---only after a closeout was actually extracted.
+---@param opts? { args?: string[], closeout?: string, seed?: string, tmpdir?: string, tmpdirs?: string[], agent?: boolean, env?: table<string, string> }
 ---@return AgentPrompt.Target?
 function M.detect(opts)
   opts = opts or {}
@@ -79,21 +201,12 @@ function M.detect(opts)
     return nil
   end
 
-  local args = opts.args or vim.fn.argv()
-  if type(args) ~= "table" or #args ~= 1 or args[1] == "" then
-    return nil
-  end
-
-  local tmpdir = opts.tmpdir or vim.env.TMPDIR
-  if not tmpdir or tmpdir == "" then
-    return nil
-  end
-
-  -- Agents write the prompt file under $TMPDIR. Resolve both sides: on macOS
-  -- $TMPDIR is a symlinked /var/folders path, and an unresolved compare would
-  -- reject every real prompt file.
-  local file = resolve(vim.fn.fnamemodify(args[1], ":p"))
-  if not is_under(resolve(tmpdir), file) then
+  -- The shim only exports a closeout for a real agent launch, so an explicit
+  -- one stands in for the inherited agent variables a spec cannot rely on.
+  local file = M.detect_prompt_file(vim.tbl_extend("keep", opts, {
+    agent = opts.closeout ~= nil or launched_by_agent(opts),
+  }))
+  if not file then
     return nil
   end
 
@@ -152,18 +265,7 @@ function M.open(target, cwd)
   local prompt_buf = vim.api.nvim_win_get_buf(prompt_win)
 
   M.mark(prompt_buf)
-
-  -- The window, not the process: `@` completion, `:e`, `:grep` and fzf-lua all
-  -- read the window's cwd, and without this they point at $TMPDIR.
-  cwd = cwd or startup_cwd
-  if cwd and vim.fn.isdirectory(cwd) == 1 then
-    vim.api.nvim_win_call(prompt_win, function()
-      pcall(vim.cmd.lcd, {
-        cwd,
-        mods = { silent = true, emsg_silent = true },
-      })
-    end)
-  end
+  M.anchor_cwd(prompt_win, cwd)
 
   -- Only an empty buffer is seeded, and as one change: `u` clears it for the
   -- write-from-scratch case. A prompt the agent handed over with content is
@@ -183,8 +285,29 @@ function M.open(target, cwd)
   return closeout_win
 end
 
+---Pin a window to the agent's cwd. The window, not the process: `@`
+---completion, `:e`, `:grep` and fzf-lua all read the window's cwd, and without
+---this they point at the temp tree the prompt file lives in.
+---@param win integer
+---@param cwd? string Defaults to Neovim's startup cwd
+function M.anchor_cwd(win, cwd)
+  cwd = cwd or startup_cwd
+  if not cwd or vim.fn.isdirectory(cwd) ~= 1 then
+    return
+  end
+  if not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  vim.api.nvim_win_call(win, function()
+    pcall(vim.cmd.lcd, {
+      cwd,
+      mods = { silent = true, emsg_silent = true },
+    })
+  end)
+end
+
 ---Exempt a buffer from the `auto_cwd` autocmd, which would otherwise `lcd` the
----prompt window to the prompt file's directory under `$TMPDIR`.
+---prompt window to the prompt file's directory under the agent's temp root.
 ---@param buf integer
 function M.mark(buf)
   vim.b[buf].agent_prompt = true
@@ -197,8 +320,11 @@ function M.is_prompt_buf(buf)
 end
 
 function M.setup()
-  local target = M.detect()
-  if not target then
+  -- Keyed on the prompt file alone, not on a captured closeout: the capture is
+  -- best-effort (no herdr, no closeout in the scrollback, an agent whose first
+  -- turn has nothing to quote), and losing it must not also lose the cwd.
+  local file = M.detect_prompt_file()
+  if not file then
     return
   end
 
@@ -208,7 +334,7 @@ function M.setup()
   -- window before anything can opt out.
   vim.api.nvim_create_autocmd({ "BufReadPre", "BufNewFile" }, {
     group = group,
-    pattern = target.file,
+    pattern = file,
     callback = function(args)
       M.mark(args.buf)
     end,
@@ -219,10 +345,20 @@ function M.setup()
     once = true,
     callback = function()
       local buf = vim.api.nvim_get_current_buf()
-      if resolve(vim.api.nvim_buf_get_name(buf)) ~= target.file then
+      if resolve(vim.api.nvim_buf_get_name(buf)) ~= file then
         return
       end
-      M.open(target)
+
+      local target = M.detect()
+      if target then
+        M.open(target)
+        return
+      end
+
+      -- No closeout to show: the prompt keeps the whole window, still rooted
+      -- on the repo the agent was launched from.
+      M.mark(buf)
+      M.anchor_cwd(vim.api.nvim_get_current_win())
     end,
   })
 end
