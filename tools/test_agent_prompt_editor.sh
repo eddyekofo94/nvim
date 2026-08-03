@@ -62,9 +62,13 @@ run_shim() {
   out=$tmpdir/$case_name.env
   rm -f "$out"
   # This suite usually runs inside a real agent pane, whose HERDR_PANE_ID and
-  # AI_AGENT would otherwise leak into the negative cases and make them pass
-  # for the wrong reason.
-  env -u HERDR_PANE_ID -u AI_AGENT \
+  # agent markers would otherwise leak into the negative cases and make them
+  # pass for the wrong reason. The markers are whatever the *host* agent
+  # exports, so the unset list is computed rather than spelled out.
+  unsets=$(env | sed -n -E \
+    's/^(AI_AGENT|CLAUDECODE|OPENCODE|CURSOR_AGENT|GEMINI_CLI|CLAUDE_CODE_[A-Za-z0-9_]*|CODEX_[A-Za-z0-9_]*|OPENCODE_[A-Za-z0-9_]*|PI_CODING_AGENT[A-Za-z0-9_]*|PI_PILOT_[A-Za-z0-9_]*|AIDER_[A-Za-z0-9_]*)=.*/-u \1/p')
+  # shellcheck disable=SC2086 # the unset list is deliberately word-split
+  env $unsets -u HERDR_PANE_ID \
     -u AGENT_CLOSEOUT_FILE -u AGENT_PROMPT_SEED_FILE \
     PATH="$tmpdir/bin:$PATH" \
     TMPDIR="$tmpdir" \
@@ -120,6 +124,21 @@ else
   fail "closeout permissions are $mode"
 fi
 
+# --- the same launch under the other agent runtimes -------------------------
+# Only Claude Code exports AI_AGENT, so each of these has to be recognised on
+# its own marker or the feature would never fire outside Claude.
+for marker in OPENCODE=1 CODEX_THREAD_ID=0199abcd PI_CODING_AGENT_DIR=/tmp/pi \
+    CLAUDE_CODE_ENTRYPOINT=cli CURSOR_AGENT=1 AIDER_MODEL=gpt; do
+  name=${marker%%=*}
+  out=$(run_shim "marker-$name" HERDR_PANE_ID=w4:p2 "$marker" \
+    STUB_CAPTURE="$fixture")
+  if [ -s "$(field "$out" CLOSEOUT)" ]; then
+    pass "$name alone identifies an agent launch"
+  else
+    fail "$name did not register as an agent launch"
+  fi
+done
+
 # --- everything that must fall through to plain nvim ------------------------
 assert_bare() {
   name=$1
@@ -134,7 +153,7 @@ assert_bare() {
 assert_bare 'no HERDR_PANE_ID falls through to plain nvim' \
   "$(run_shim nopane AI_AGENT=claude STUB_CAPTURE="$fixture")"
 
-assert_bare 'no AI_AGENT falls through to plain nvim' \
+assert_bare 'no agent marker at all falls through to plain nvim' \
   "$(run_shim noagent HERDR_PANE_ID=w4:p2 STUB_CAPTURE="$fixture")"
 
 assert_bare 'a failing pane read falls through to plain nvim' \

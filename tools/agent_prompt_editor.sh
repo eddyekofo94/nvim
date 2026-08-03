@@ -24,9 +24,29 @@ CAPTURE_LINES=${AGENT_PROMPT_CAPTURE_LINES:-2000}
 # is worse than no closeout at all.
 unset AGENT_CLOSEOUT_FILE AGENT_PROMPT_SEED_FILE
 
+# Mirror of `agent_env` / `agent_env_prefixes` in lua/plugin/agent-prompt.lua.
+# `AI_AGENT` is the cross-vendor convention but only Claude Code writes it, so
+# gating on it alone would make this a Claude-only feature.
+AGENT_MARKERS="AI_AGENT CLAUDECODE OPENCODE CURSOR_AGENT GEMINI_CLI"
+AGENT_MARKER_PREFIXES="CLAUDE_CODE_ CODEX_ OPENCODE_ PI_CODING_AGENT PI_PILOT_ AIDER_"
+
+launched_by_agent() {
+    for name in $AGENT_MARKERS; do
+        [ -n "${!name:-}" ] && return 0
+    done
+    for name in $(compgen -e); do
+        for prefix in $AGENT_MARKER_PREFIXES; do
+            case $name in
+                "$prefix"*) [ -n "${!name}" ] && return 0 ;;
+            esac
+        done
+    done
+    return 1
+}
+
 capture_closeout() {
     [ -n "${HERDR_PANE_ID:-}" ] || return 1
-    [ -n "${AI_AGENT:-}" ] || return 1
+    launched_by_agent || return 1
     [ -r "$READY_PROMPT" ] || return 1
     command -v "$HERDR_BIN" >/dev/null 2>&1 || return 1
 
