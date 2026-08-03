@@ -1,6 +1,7 @@
 vim.bo.sw = 4
 vim.bo.cindent = false
 vim.bo.smartindent = false
+vim.opt.wrap = true
 vim.bo.commentstring = "<!-- %s -->"
 
 ---Don't join title/first line of list item with previous lines when yanking

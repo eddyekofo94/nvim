@@ -34,6 +34,7 @@ NVIM_APPNAME=nvim nvim --headless -u NONE \
 make test-smart-files
 make test-lazy-loading
 make test-copilot-lifecycle
+make test-cursor-blink
 make test-cwd-files
 
 luacheck -q \

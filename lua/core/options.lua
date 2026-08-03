@@ -392,6 +392,7 @@ require("utils.load").on_cmds("UpdateRemotePlugins", "load_runtime", function()
 end)
 
 vim.opt.gcr = {
+  "a:blinkwait500-blinkon400-blinkoff300",
   "c-ci-ve:blinkoff500-blinkon500-block",
   "i-ci:ver30-Cursor-blinkwait500-blinkon400-blinkoff300",
   "n-v:block-Cursor/lCursor",
