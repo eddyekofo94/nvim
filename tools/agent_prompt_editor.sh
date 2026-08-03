@@ -44,18 +44,26 @@ launched_by_agent() {
     return 1
 }
 
+# Every failure below falls through to a plain editor, which on screen is
+# indistinguishable from "the feature is broken". Point AGENT_PROMPT_DEBUG at a
+# file and the shim records which precondition actually failed.
+note() {
+    [ -n "${AGENT_PROMPT_DEBUG:-}" ] || return 0
+    printf '%s %s\n' "$(date +%H:%M:%S)" "$1" >>"$AGENT_PROMPT_DEBUG" 2>/dev/null || true
+}
+
 capture_closeout() {
-    [ -n "${HERDR_PANE_ID:-}" ] || return 1
-    launched_by_agent || return 1
-    [ -r "$READY_PROMPT" ] || return 1
-    command -v "$HERDR_BIN" >/dev/null 2>&1 || return 1
+    [ -n "${HERDR_PANE_ID:-}" ] || { note "no HERDR_PANE_ID; not in a Herdr pane"; return 1; }
+    launched_by_agent || { note "no agent marker in env"; return 1; }
+    [ -r "$READY_PROMPT" ] || { note "parser unreadable: $READY_PROMPT"; return 1; }
+    command -v "$HERDR_BIN" >/dev/null 2>&1 || { note "herdr not on PATH: $HERDR_BIN"; return 1; }
 
     case "$CAPTURE_LINES" in
-        ""|*[!0-9]*|0) return 1 ;;
+        ""|*[!0-9]*|0) note "bad CAPTURE_LINES: $CAPTURE_LINES"; return 1 ;;
     esac
 
     base=${TMPDIR:-/tmp}
-    [ -d "$base" ] || return 1
+    [ -d "$base" ] || { note "no temp dir: $base"; return 1; }
     # Pane ids carry `:`; keep the slug filesystem-safe and pane-scoped so
     # concurrent agents never read each other's closeout.
     slug=$(printf '%s' "$HERDR_PANE_ID" | tr -c '[:alnum:]._-' '_')
@@ -68,15 +76,18 @@ capture_closeout() {
     if ! "$HERDR_BIN" pane read "$HERDR_PANE_ID" \
         --source recent-unwrapped --lines "$CAPTURE_LINES" \
         >"$capture_file" 2>/dev/null; then
+        note "herdr pane read failed for $HERDR_PANE_ID"
         rm -f -- "$capture_file"
         return 1
     fi
 
     if ! bash "$READY_PROMPT" --extract-closeout "$capture_file" \
         >"$closeout_file" 2>/dev/null || [ ! -s "$closeout_file" ]; then
+        note "no closeout in the last $CAPTURE_LINES lines of scrollback"
         rm -f -- "$capture_file" "$closeout_file"
         return 1
     fi
+    note "captured closeout: $closeout_file"
     export AGENT_CLOSEOUT_FILE=$closeout_file
 
     # The seed is optional: detection keys on the closeout alone, and a prompt

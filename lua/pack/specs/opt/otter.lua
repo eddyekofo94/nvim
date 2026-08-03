@@ -30,6 +30,12 @@ return {
         },
       })
 
+      -- Without an explicit list otter activates every injected language it
+      -- finds, starting a language server per fenced block. Restrict it to the
+      -- languages worth completing in prose: lua for this config's own docs,
+      -- python for molten notebook cells.
+      local languages = { "lua", "python" }
+
       vim.api.nvim_create_autocmd("FileType", {
         desc = "Activate otter for filetypes with injections.",
         group = vim.api.nvim_create_augroup("otter.activate", {}),
@@ -38,7 +44,7 @@ return {
           local buf = args.buf
           if vim.bo[buf].ma and utils.ts.is_active(buf) then
             -- Enable completion only, disable diagnostics
-            ot.activate(nil, nil, false)
+            ot.activate(languages, nil, false)
           end
         end,
       })
