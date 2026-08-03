@@ -32,3 +32,8 @@ test-cursor-blink:
 .PHONY: test-cwd-files
 test-cwd-files:
 	NVIM_APPNAME=nvim nvim --headless '+packadd plenary.nvim' '+PlenaryBustedFile tests/cwd_files_spec.lua'
+
+.PHONY: test-agent-prompt
+test-agent-prompt:
+	NVIM_APPNAME=nvim nvim --headless '+packadd plenary.nvim' '+PlenaryBustedFile tests/agent_prompt_spec.lua'
+	bash tools/test_agent_prompt_editor.sh

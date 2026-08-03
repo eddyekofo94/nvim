@@ -1,0 +1,9 @@
+⏺ A turn that answered a question and stopped without a closeout.
+
+  The answer is 42. Nothing here is a handoff, and there is no label.
+
+──────────────────────────────────────────────────────────────────────
+
+❯
+
+──────────────────────────────────────────────────────────────────────

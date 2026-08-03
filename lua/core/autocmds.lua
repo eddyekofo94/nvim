@@ -196,6 +196,13 @@ do
           return
         end
 
+        -- An agent prompt file lives under $TMPDIR; rooting on it would point
+        -- `@` completion, `:e` and fzf-lua at the temp tree instead of the
+        -- repo the agent was launched from.
+        if vim.b[buf].agent_prompt then
+          return
+        end
+
         local fs_utils = require("utils.fs")
         local root_dir =
           fs_utils.root(file, vim.b.root_markers or fs_utils.root_markers)
@@ -873,6 +880,10 @@ augroup("change_to_cur_dir", {
         info.file == ""
         or info.file:match("://")
         or vim.bo[info.buf].bt ~= ""
+        -- see the `auto_cwd` group above: an agent prompt file keeps the
+        -- window on the agent's cwd. This one is scheduled, so it would
+        -- otherwise land after the prompt editor has already laid out.
+        or vim.b[info.buf].agent_prompt
       then
         return
       end
@@ -885,6 +896,9 @@ augroup("change_to_cur_dir", {
           not vim.api.nvim_buf_is_valid(buf)
           or not vim.api.nvim_win_is_valid(win)
           or vim.api.nvim_win_get_buf(win) ~= buf
+          -- re-checked here, not only at schedule time: the buffer can be
+          -- claimed as an agent prompt between the two
+          or vim.b[buf].agent_prompt
         then
           return
         end

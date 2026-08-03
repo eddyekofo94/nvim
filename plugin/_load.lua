@@ -8,6 +8,10 @@ end
 
 local load = require("utils.load")
 
+-- agent prompt editor: must register before argument files are read, so the
+-- prompt buffer is marked before `auto_cwd` sees its first BufEnter
+require("plugin.agent-prompt").setup()
+
 -- expandtab
 load.on_events("InsertEnter", "plugin.expandtab", function()
   require("plugin.expandtab").setup()
