@@ -1,0 +1,48 @@
+⏺ An earlier turn wrote some files and closed out.
+
+  **Status:** PARTIAL — older run.
+
+  Artifacts: `lua/core/options.lua`.
+
+  Verification: older checks.
+
+  Risks: stale.
+
+  **Next move:** do the older thing.
+
+  **Ready-to-paste prompt:**
+
+  ```
+  OLDER PROMPT BODY
+  ```
+
+──────────────────────────────────────────────────────────────────────
+
+❯
+
+──────────────────────────────────────────────────────────────────────
+
+⏺ A later turn did the real work.
+
+  Some prose about the work that is not part of the closeout.
+
+  **Status:** DONE — newer run.
+
+  Artifacts: `tools/agent_prompt_editor.sh`, `lua/plugin/agent-prompt.lua`.
+
+  Verification: parser fixture and nvim specs passed. NOT run: manual QA.
+
+  Risks: none known.
+
+  **Next move:** run the newer thing.
+
+  **Ready-to-paste prompt:**
+
+  ```
+  NEWER PROMPT BODY LINE ONE
+  NEWER PROMPT BODY LINE TWO
+  ```
+
+──────────────────────────────────────────────────────────────────────
+
+❯

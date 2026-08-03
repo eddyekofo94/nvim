@@ -36,8 +36,10 @@ make test-lazy-loading
 make test-copilot-lifecycle
 make test-cursor-blink
 make test-cwd-files
+make test-agent-prompt
 
 luacheck -q \
+  lua/plugin/agent-prompt.lua \
   lua/core/options.lua \
   lua/core/pack.lua \
   lua/pack/specs/opt/blink-cmp.lua \
