@@ -37,6 +37,7 @@ return {
         "diff",
         "xml",
         "toml",
+        "swift",
       }
 
       -- 1. Configure the installer

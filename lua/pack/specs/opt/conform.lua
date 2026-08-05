@@ -12,6 +12,7 @@ return {
       "sh",
       "zsh",
       "fish",
+      "swift",
     },
     postload = function()
       vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
@@ -39,6 +40,7 @@ return {
           },
           zsh = { "beautysh" },
           fish = { "fish_indent" },
+          swift = { "swift_format" },
           ["*"] = { "codespell" },
           ["_"] = { "trim_whitespace", "trim_newlines", "squeeze_blanks" },
         },
@@ -82,7 +84,21 @@ return {
         end,
         log_level = vim.log.levels.ERROR,
         notify_on_error = true,
-        formatters = {},
+        formatters = {
+          -- swift-format lives in the Xcode toolchain, not on `$PATH`, so
+          -- override conform's builtin to go through `xcrun`.
+          swift_format = {
+            command = "xcrun",
+            args = {
+              "swift-format",
+              "format",
+              "--assume-filename",
+              "$FILENAME",
+              "-",
+            },
+            stdin = true,
+          },
+        },
       })
 
       local map = require("utils.key").map
