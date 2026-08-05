@@ -75,6 +75,13 @@ describe("agent prompt editor", function()
   end)
 
   after_each(function()
+    -- A live closeout autocmd outlasting its test would fire on the teardown
+    -- below and quit the whole run, taking the remaining specs with it.
+    for _, au in ipairs(vim.api.nvim_get_autocmds({ event = "WinClosed" })) do
+      if au.group_name and au.group_name:find("AgentPromptCloseout", 1, true) then
+        pcall(vim.api.nvim_del_augroup_by_id, au.group)
+      end
+    end
     vim.cmd("silent! only!")
     vim.cmd("silent! %bwipeout!")
     vim.fn.delete(tmproot, "rf")
@@ -336,14 +343,113 @@ describe("agent prompt editor", function()
     assert.is_false(vim.bo[buf].buflisted)
     assert.are.equal("nofile", vim.bo[buf].buftype)
 
+    -- Default placement is below: a prompt is written in long lines, so a
+    -- right-hand split halves the width available to both halves.
+    local prompt_row = unpack(vim.api.nvim_win_get_position(prompt_win))
+    local closeout_row = unpack(vim.api.nvim_win_get_position(closeout_win))
+    assert.is_true(
+      closeout_row > prompt_row,
+      "closeout window is not below the prompt"
+    )
+
+    -- focus never leaves the prompt
+    assert.are.equal(prompt_win, vim.api.nvim_get_current_win())
+  end)
+
+  it("restores the closeout's share of the frame after a resize", function()
+    local prompt_win = open_prompt()
+    local closeout_win = agent_prompt.open(target())
+    assert.is_not_nil(closeout_win)
+    ---@cast closeout_win integer
+
+    local frame = vim.api.nvim_win_get_height(closeout_win)
+      + vim.api.nvim_win_get_height(prompt_win)
+    local want = vim.api.nvim_win_get_height(closeout_win)
+
+    -- Stands in for the squeeze a Herdr split forces on a pane too short to
+    -- honour `winfixheight`: the closeout loses rows it never gets back.
+    vim.api.nvim_win_set_height(closeout_win, 2)
+    assert.are_not.equal(want, vim.api.nvim_win_get_height(closeout_win))
+
+    vim.cmd("doautocmd VimResized")
+    vim.wait(200, function()
+      return vim.api.nvim_win_get_height(closeout_win) ~= 2
+    end)
+
+    local got = vim.api.nvim_win_get_height(closeout_win)
+    assert.is_true(
+      math.abs(got - want) <= 1,
+      ("closeout kept %d of %d rows, wanted about %d"):format(got, frame, want)
+    )
+  end)
+
+  it("closes the closeout when the prompt window closes", function()
+    local prompt_win = open_prompt()
+    -- An extra window stands in for "not the last one on screen", so the
+    -- close path is exercised without quitting the test session. It has to
+    -- come after open_prompt, which starts with `only!`.
+    vim.cmd.split({ mods = { silent = true } })
+    vim.api.nvim_set_current_win(prompt_win)
+
+    local closeout_win = agent_prompt.open(target())
+    assert.is_not_nil(closeout_win)
+    ---@cast closeout_win integer
+
+    vim.api.nvim_win_close(prompt_win, true)
+    vim.wait(200, function()
+      return not vim.api.nvim_win_is_valid(closeout_win)
+    end)
+
+    assert.is_false(
+      vim.api.nvim_win_is_valid(closeout_win),
+      "closeout outlived the prompt window"
+    )
+  end)
+
+  it("treats a float as no company when the prompt window closes", function()
+    -- A notification, picker or diagnostic float is counted by
+    -- `nvim_tabpage_list_wins` but cannot hold the pane open. Counting one as
+    -- company left `:q` on the prompt with the closeout still on screen and
+    -- Neovim still running -- the reference stranded, which is what Eddy hit.
+    local prompt_win = open_prompt()
+    vim.cmd.split({ mods = { silent = true } })
+    vim.api.nvim_set_current_win(prompt_win)
+
+    local closeout_win = agent_prompt.open(target())
+    assert.is_not_nil(closeout_win)
+    ---@cast closeout_win integer
+
+    local float = vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), false, {
+      relative = "editor",
+      row = 1,
+      col = 1,
+      width = 10,
+      height = 3,
+    })
+
+    vim.api.nvim_win_close(prompt_win, true)
+    vim.wait(200, function()
+      return not vim.api.nvim_win_is_valid(closeout_win)
+    end)
+    pcall(vim.api.nvim_win_close, float, true)
+
+    assert.is_false(
+      vim.api.nvim_win_is_valid(closeout_win),
+      "a float kept the closeout alive after the prompt closed"
+    )
+  end)
+
+  it("puts the closeout on the right when asked", function()
+    vim.g.agent_prompt_split = "right"
+    local prompt_win = vim.api.nvim_get_current_win()
+    local closeout_win = agent_prompt.open(target())
+    vim.g.agent_prompt_split = nil
+
     local _, prompt_col = unpack(vim.api.nvim_win_get_position(prompt_win))
     local _, closeout_col = unpack(vim.api.nvim_win_get_position(closeout_win))
     assert.is_true(
       closeout_col > prompt_col,
       "closeout window is not right of the prompt"
     )
-
-    -- focus never leaves the prompt
-    assert.are.equal(prompt_win, vim.api.nvim_get_current_win())
   end)
 end)
