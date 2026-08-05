@@ -30,4 +30,30 @@ Still worth confirming during normal service- and language-dependent use:
 - DAP and Molten operate against configured debuggers and kernels.
 - Terminals and the complete interaction set feel unchanged in normal use.
 
+## Swift
+
+Verified in an isolated real TTY (`script -q /dev/null nvim …`) on 2026-08-06,
+against two throwaway git fixtures — a SwiftPM package and an `xcodegen`
+`.xcodeproj` macOS tool target. Both passed identically:
+
+- `sourcekit` attached via `xcrun sourcekit-lsp`, with `root_dir` resolved to
+  the package/project directory, and answered `textDocument/documentSymbol`,
+  `hover`, and cross-file `definition`.
+- Treesitter parsed the buffer as `swift` and produced real captures
+  (`keyword`, `type`, `function.method`, `variable.member`, `string`, …).
+- `swift_format` resolved to `xcrun` and reformatted the changed hunk on save
+  (`let    name  :String` → `let name: String`) via `format_after_save`, which
+  only formats lines present in `git diff`, so the file must be tracked.
+
+`.xcodeproj`/`.xcworkspace` extras:
+
+- `xcode-build-server config -project X.xcodeproj -scheme X` must have been run,
+  otherwise compiler flags cover only the open file.
+- `xcode-build-server` serves flags parsed from the newest `.xcactivitylog`
+  build log. After adding or removing source files, an *incremental* build
+  leaves stale per-file flags and cross-file symbols fail with `cannot find
+  type … in scope`. Re-run `xcodebuild … clean build`, then re-run
+  `xcode-build-server config`. This was observed and reproduced during this QA
+  pass — it is the expected failure mode, not a config bug.
+
 Record any failure in `bugs_fixes/ENGINEERING_LOG.md` before another repair loop.
