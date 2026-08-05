@@ -1,7 +1,11 @@
----Agent prompt editing: prompt left, the agent's closeout right.
+---Agent prompt editing: prompt left, the agent's last message right.
+---
+---The reference is the whole final message -- body and closeout -- because the
+---questions a prompt answers live above the `Status:` line. `$AGENT_CLOSEOUT_FILE`
+---keeps its name as the shim/Neovim contract; only its contents grew.
 ---
 ---An agent's ctrl+g hands its follow-up prompt to `$EDITOR` as a temporary
----file. The closeout that prompt answers is only in the pane's scrollback, and
+---file. The message that prompt answers is only in the pane's scrollback, and
 ---Neovim cannot read it: the alternate screen is claimed before `--cmd` runs,
 ---and `herdr pane read` then reports the Neovim window instead. So the capture
 ---happens in `tools/agent_prompt_editor.sh` before this process starts, and
@@ -237,8 +241,16 @@ local function open_closeout(target)
   vim.bo[buf].modifiable = false
   vim.bo[buf].modified = false
 
+  -- Bottom by default: a prompt is written in long lines, and a right-hand
+  -- split halves the width available for both it and the closeout. Set
+  -- `vim.g.agent_prompt_split` to "right" for the side-by-side layout.
+  local placement = vim.g.agent_prompt_split
+  if placement ~= "right" and placement ~= "below" then
+    placement = "below"
+  end
+
   local win = vim.api.nvim_open_win(buf, false, {
-    split = "right",
+    split = placement,
     win = 0,
   })
   vim.wo[win].number = false
@@ -246,13 +258,156 @@ local function open_closeout(target)
   vim.wo[win].signcolumn = "no"
   vim.wo[win].wrap = true
   vim.wo[win].spell = false
-  vim.wo[win].winfixwidth = true
+  -- Pin whichever dimension the placement owns, so later splits do not squeeze
+  -- the reference out of shape.
+  if placement == "right" then
+    vim.wo[win].winfixwidth = true
+  else
+    vim.wo[win].winfixheight = true
+  end
 
   -- Read-only reference, but still a real window: yankable, searchable and
   -- scrollable on its own.
   vim.keymap.set("n", "q", "<C-w>c", { buffer = buf, nowait = true })
 
+  vim.w[win].agent_prompt_placement = placement
   return win
+end
+
+---Give the closeout its share of the frame back after the pane is resized.
+---
+---A Herdr split (Alt+s and friends) shrinks the pane under Neovim.
+---`winfix{height,width}` holds the closeout steady only while the rows or
+---columns last; past that Neovim shrinks it anyway, and when the pane grows
+---back the fix that protected it is exactly what stops it growing again. So
+---record the share it opened with and restore that share on every resize.
+---@param prompt_win integer
+---@param closeout_win integer
+local function keep_share(prompt_win, closeout_win)
+  local vertical = vim.w[closeout_win].agent_prompt_placement == "right"
+  local get = vertical and vim.api.nvim_win_get_width
+    or vim.api.nvim_win_get_height
+  local set = vertical and vim.api.nvim_win_set_width
+    or vim.api.nvim_win_set_height
+
+  local closeout_buf = vim.api.nvim_win_get_buf(closeout_win)
+  local total = get(closeout_win) + get(prompt_win)
+  if total < 2 then
+    return
+  end
+  local share = get(closeout_win) / total
+
+  vim.api.nvim_create_autocmd("VimResized", {
+    group = vim.api.nvim_create_augroup(
+      "AgentPromptCloseoutSize" .. closeout_win,
+      { clear = true }
+    ),
+    callback = function()
+      -- Window ids are recycled; a closeout showing another buffer is a
+      -- different window, and the autocmd has outlived its purpose.
+      if
+        not vim.api.nvim_win_is_valid(closeout_win)
+        or not vim.api.nvim_win_is_valid(prompt_win)
+        or vim.api.nvim_win_get_buf(closeout_win) ~= closeout_buf
+      then
+        return true
+      end
+      -- Deferred: Neovim redistributes rows after VimResized, and a size set
+      -- from inside the callback is overwritten by that pass.
+      vim.schedule(function()
+        if
+          not vim.api.nvim_win_is_valid(closeout_win)
+          or not vim.api.nvim_win_is_valid(prompt_win)
+        then
+          return
+        end
+        local frame = get(closeout_win) + get(prompt_win)
+        pcall(set, closeout_win, math.max(1, math.floor(frame * share + 0.5)))
+      end)
+    end,
+  })
+end
+
+---Tie the closeout window's lifetime to the prompt window's.
+---
+---The closeout is a reference, not a second document: `:wq` on the prompt means
+---"hand this back to the agent", and leaving the reference behind keeps Neovim
+---on screen for a window the user is done with. Closing the prompt therefore
+---closes the closeout, and with it the last window, which returns the pane to
+---the agent.
+---@param prompt_win integer
+---@param closeout_win integer
+local function close_closeout_with_prompt(prompt_win, closeout_win)
+  -- Window ids are recycled, so identity is checked against the buffer this
+  -- window was opened for, not the handle alone.
+  local closeout_buf = vim.api.nvim_win_get_buf(closeout_win)
+  local prompt_buf = vim.api.nvim_win_get_buf(prompt_win)
+  local group = vim.api.nvim_create_augroup(
+    "AgentPromptCloseout" .. prompt_win,
+    { clear = true }
+  )
+
+  local function drop_closeout()
+    if
+      not vim.api.nvim_win_is_valid(closeout_win)
+      or vim.api.nvim_win_get_buf(closeout_win) ~= closeout_buf
+    then
+      return false
+    end
+    return (pcall(vim.api.nvim_win_close, closeout_win, true))
+  end
+
+  -- QuitPre runs before the window is taken down, so dropping the reference
+  -- here leaves `:q`/`:wq`/`ZZ` quitting the last window: Neovim exits on that
+  -- command itself instead of surviving into a scheduled callback with the
+  -- closeout alone on screen.
+  vim.api.nvim_create_autocmd("QuitPre", {
+    group = group,
+    callback = function()
+      if vim.api.nvim_get_current_win() ~= prompt_win then
+        return
+      end
+      -- An unwritten prompt is the user's text. `:q` would hide rather than
+      -- discard it, so leave the layout alone and let Vim's own rules apply.
+      if vim.bo[prompt_buf].modified then
+        return
+      end
+      drop_closeout()
+    end,
+  })
+
+  -- Backstop for the closes QuitPre never sees: `:close`, `nvim_win_close`, a
+  -- window closed by something else entirely.
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = group,
+    pattern = tostring(prompt_win),
+    once = true,
+    callback = function()
+      -- Deferred: WinClosed fires while the window is still being torn down,
+      -- so closing another one from inside the callback is refused.
+      vim.schedule(function()
+        -- Floats -- notifications, pickers, diagnostics -- are counted by
+        -- `nvim_tabpage_list_wins` but cannot hold the pane open. Counting them
+        -- as company left the closeout as the last real window with no path to
+        -- quitting, which is exactly the reference stranded on screen.
+        local real = 0
+        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+          if vim.api.nvim_win_get_config(win).relative == "" then
+            real = real + 1
+          end
+        end
+        if real <= 1 and vim.api.nvim_win_is_valid(closeout_win) then
+          -- Nothing left to close the reference *into*. Forcing the quit is
+          -- safe only because a modified prompt was excluded above; here it
+          -- may still be modified, so let Vim refuse rather than discard it.
+          local bang = not vim.bo[prompt_buf].modified
+          pcall(vim.cmd.quitall, { bang = bang, mods = { silent = true } })
+          return
+        end
+        drop_closeout()
+      end)
+    end,
+  })
 end
 
 ---Lay out the prompt editor. Operates on the current window, so a spec can
@@ -279,6 +434,8 @@ function M.open(target, cwd)
 
   local closeout_win = open_closeout(target)
   if closeout_win and vim.api.nvim_win_is_valid(prompt_win) then
+    close_closeout_with_prompt(prompt_win, closeout_win)
+    keep_share(prompt_win, closeout_win)
     vim.api.nvim_set_current_win(prompt_win)
   end
 
@@ -359,6 +516,19 @@ function M.setup()
       -- on the repo the agent was launched from.
       M.mark(buf)
       M.anchor_cwd(vim.api.nvim_get_current_win())
+
+      -- Say so. A silent fall-through is identical on screen to the feature
+      -- being broken, and that ambiguity has cost real debugging time: the
+      -- usual cause is simply a pane whose agent has not printed a closeout
+      -- yet. Deferred so it survives startup's message clearing.
+      local reason = vim.env.AGENT_PROMPT_REASON
+      vim.schedule(function()
+        vim.notify(
+          "agent-prompt: no closeout — "
+            .. (reason ~= nil and reason ~= "" and reason or "the shim did not run"),
+          vim.log.levels.INFO
+        )
+      end)
     end,
   })
 end

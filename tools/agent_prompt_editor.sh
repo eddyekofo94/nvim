@@ -19,10 +19,11 @@ NVIM_BIN=${AGENT_PROMPT_NVIM:-nvim}
 HERDR_BIN=${AGENT_PROMPT_HERDR:-herdr}
 READY_PROMPT=${AGENT_PROMPT_READY_PROMPT:-$HOME/.dotfiles/herdr/prototype/ready_prompt_parser.sh}
 CAPTURE_LINES=${AGENT_PROMPT_CAPTURE_LINES:-2000}
+TRANSCRIPT_READER=${AGENT_PROMPT_TRANSCRIPT_READER:-$HOME/.dotfiles/agent-config/claude/closeout_capture.py}
 
 # Never inherit another launch's files: a stale closeout beside a fresh prompt
 # is worse than no closeout at all.
-unset AGENT_CLOSEOUT_FILE AGENT_PROMPT_SEED_FILE
+unset AGENT_CLOSEOUT_FILE AGENT_PROMPT_SEED_FILE AGENT_PROMPT_REASON
 
 # Mirror of `agent_env` / `agent_env_prefixes` in lua/plugin/agent-prompt.lua.
 # `AI_AGENT` is the cross-vendor convention but only Claude Code writes it, so
@@ -44,12 +45,34 @@ launched_by_agent() {
     return 1
 }
 
+# Only Claude Code writes ~/.claude/projects transcripts, and the reader falls
+# back to the *project's* newest one when the pane carries no session id. In any
+# other runtime that fallback is guaranteed to be some Claude pane's work, so
+# the transcript is only ever consulted for a Claude pane.
+launched_by_claude_code() {
+    case "${AI_AGENT:-}" in
+        claude*) return 0 ;;
+    esac
+    [ -n "${CLAUDECODE:-}" ] && return 0
+    for name in $(compgen -e); do
+        case $name in
+            CLAUDE_CODE_*) [ -n "${!name}" ] && return 0 ;;
+        esac
+    done
+    return 1
+}
+
 # Every failure below falls through to a plain editor, which on screen is
 # indistinguishable from "the feature is broken". Point AGENT_PROMPT_DEBUG at a
 # file and the shim records which precondition actually failed.
 note() {
-    [ -n "${AGENT_PROMPT_DEBUG:-}" ] || return 0
-    printf '%s %s\n' "$(date +%H:%M:%S)" "$1" >>"$AGENT_PROMPT_DEBUG" 2>/dev/null || true
+    # Always exported, so Neovim can say *why* rather than just "no closeout".
+    # A reason the user can read beats one only a debug flag would have caught.
+    export AGENT_PROMPT_REASON=$1
+    # Logged unconditionally: gating this on a debug variable meant the sessions
+    # that actually failed were the ones that recorded nothing.
+    printf '%s [%s] %s\n' "$(date +%H:%M:%S)" "${HERDR_PANE_ID:-no-pane}" "$1" \
+        >>"${AGENT_PROMPT_DEBUG:-/tmp/agent-prompt-debug.log}" 2>/dev/null || true
 }
 
 capture_closeout() {
@@ -72,6 +95,73 @@ capture_closeout() {
     seed_file=$base/agent-prompt-seed.$slug.txt
 
     rm -f -- "$closeout_file" "$seed_file"
+
+    # Best source: the agent's own end-of-turn record -- the whole final
+    # message, closeout included -- written by the Stop hook under this pane's
+    # slug *and* its session id. The pane keeps two agents side by side apart;
+    # the session keeps a finished agent from handing its message to whoever
+    # inherits the pane id next.
+    turn_file=
+    if [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then
+        # Knowing the session, accept nothing else. A record under this pane's
+        # slug but another session id belongs to the pane's previous occupant,
+        # which is precisely what must not be shown.
+        session_slug=$(printf '%s' "$CLAUDE_CODE_SESSION_ID" | tr -c '[:alnum:]._-' '_')
+        candidate=$base/agent-prompt-turn-closeout.$slug.$session_slug.md
+        [ -s "$candidate" ] && turn_file=$candidate
+    else
+        # No session id is normal -- ctrl+g can land in a pane that never
+        # inherited the agent's environment. Fall back to the newest record for
+        # this pane: the Stop hook drops the others when it claims the pane, and
+        # SessionEnd removes its own, so what remains is the live session's.
+        for candidate in "$base/agent-prompt-turn-closeout.$slug."*.md; do
+            [ -s "$candidate" ] || continue
+            [ -z "$turn_file" ] || [ "$candidate" -nt "$turn_file" ] || continue
+            turn_file=$candidate
+        done
+    fi
+
+    # Fallback: the agent's transcript on disk, which also covers sessions
+    # predating the Stop hook. It is keyed on cwd and can resolve to the whole
+    # project's newest transcript, so it gets its own pane-scoped file --
+    # writing it into $turn_file would let one pane's project-wide match
+    # overwrite another pane's own recorded closeout.
+    transcript_file=$base/agent-prompt-transcript.$slug.md
+    rm -f -- "$transcript_file"
+
+    source_file=
+    if [ -n "$turn_file" ]; then
+        note "using this session's own recorded closeout"
+        source_file=$turn_file
+    elif ! launched_by_claude_code; then
+        note "no recorded closeout for $HERDR_PANE_ID, and transcripts are Claude-only"
+    elif [ ! -r "$TRANSCRIPT_READER" ]; then
+        note "transcript reader unreadable: $TRANSCRIPT_READER"
+    else
+        # No session id is normal, not fatal: ctrl+g can land in a pane that
+        # never inherited the agent's environment. The reader then falls back
+        # to the project's newest transcript, keyed on this pane's cwd.
+        reader_err=$(python3 "$TRANSCRIPT_READER" --print \
+            "${CLAUDE_CODE_SESSION_ID:-}" "$PWD" 2>&1 >"$transcript_file")
+        if [ -s "$transcript_file" ]; then
+            note "using the agent's transcript"
+            source_file=$transcript_file
+        else
+            note "transcript had no closeout${reader_err:+: $reader_err}"
+            rm -f -- "$transcript_file"
+        fi
+    fi
+
+    if [ -n "$source_file" ]; then
+        export AGENT_CLOSEOUT_FILE=$source_file
+        if bash "$READY_PROMPT" --extract "$source_file" \
+            >"$seed_file" 2>/dev/null && [ -s "$seed_file" ]; then
+            export AGENT_PROMPT_SEED_FILE=$seed_file
+        else
+            rm -f -- "$seed_file"
+        fi
+        return 0
+    fi
 
     if ! "$HERDR_BIN" pane read "$HERDR_PANE_ID" \
         --source recent-unwrapped --lines "$CAPTURE_LINES" \

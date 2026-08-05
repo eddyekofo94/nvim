@@ -76,6 +76,7 @@ run_shim() {
     AGENT_PROMPT_NVIM="$tmpdir/bin/nvim" \
     AGENT_PROMPT_HERDR="$tmpdir/bin/herdr" \
     AGENT_PROMPT_READY_PROMPT="$ready_prompt" \
+    AGENT_PROMPT_TRANSCRIPT_READER="${STUB_TRANSCRIPT_READER:-$tmpdir/missing-reader.py}" \
     "$@" bash "$shim" "$tmpdir/prompt-$case_name.md"
   printf '%s' "$out"
 }
@@ -170,6 +171,109 @@ assert_bare 'an inherited AGENT_CLOSEOUT_FILE is cleared when capture fails' \
   "$(run_shim inherited AI_AGENT=claude STUB_CAPTURE="$fixture" \
     AGENT_CLOSEOUT_FILE=/nonexistent/stale.md \
     AGENT_PROMPT_SEED_FILE=/nonexistent/stale.txt)"
+
+# --- source precedence: pane record, then transcript, then scrape -----------
+# The Stop hook writes a closeout under the pane's own slug. The transcript
+# reader is keyed on cwd and falls back to the *project's* newest transcript
+# whenever the pane carries no session id -- so it is the weaker source, and it
+# must never be written into the pane-scoped file.
+reader="$tmpdir/bin/reader.py"
+cat >"$reader" <<'PY'
+import sys
+sys.stdout.write("**Status:** DONE\n**Next move:** from the PROJECT transcript\n")
+PY
+
+turn_file() {
+  printf '%s/agent-prompt-turn-closeout.%s.%s.md' "$tmpdir" "$1" "$2"
+}
+
+# Two Claude panes in one repository. Both resolve to the same project
+# transcript; each must still be shown the closeout its own turn recorded.
+printf '**Status:** DONE\n**Next move:** pane one work\n' >"$(turn_file w1_p1 sessA)"
+printf '**Status:** DONE\n**Next move:** pane two work\n' >"$(turn_file w1_p2 sessB)"
+
+for pane in 'w1:p1|w1_p1|sessA|pane one work' 'w1:p2|w1_p2|sessB|pane two work'; do
+  id=${pane%%|*}
+  rest=${pane#*|}
+  slug=${rest%%|*}
+  rest=${rest#*|}
+  session=${rest%%|*}
+  want=${rest#*|}
+  out=$(STUB_TRANSCRIPT_READER="$reader" run_shim "twopane-$slug" \
+    HERDR_PANE_ID="$id" AI_AGENT=claude CLAUDE_CODE_SESSION_ID="$session" \
+    STUB_CAPTURE=/nonexistent)
+  got=$(field "$out" CLOSEOUT)
+  if [ -n "$got" ] && grep -q "$want" "$got" 2>/dev/null && \
+      ! grep -q 'PROJECT transcript' "$got" 2>/dev/null; then
+    pass "$id is shown its own recorded closeout, not the project transcript"
+  else
+    fail "$id was shown [$(cat "$got" 2>/dev/null)]"
+  fi
+  if grep -q "$want" "$(turn_file "$slug" "$session")"; then
+    pass "$id's recorded closeout survives the run"
+  else
+    fail "$id's recorded closeout was overwritten"
+  fi
+done
+
+# --- a reused pane id -------------------------------------------------------
+# The exact failure Eddy hit: a pane whose previous occupant left a record. A
+# session that knows its own id must never accept another session's file, even
+# in its own pane. Nothing recorded yet means the transcript, then the scrape.
+printf '**Status:** DONE\n**Next move:** the DEAD session\n' >"$(turn_file w7_p7 old)"
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim reused \
+  HERDR_PANE_ID=w7:p7 AI_AGENT=claude CLAUDE_CODE_SESSION_ID=new \
+  STUB_CAPTURE=/nonexistent)
+got=$(field "$out" CLOSEOUT)
+if [ -n "$got" ] && ! grep -q 'DEAD session' "$got" 2>/dev/null; then
+  pass 'a reused pane id never serves the previous session record'
+else
+  fail "reused pane was shown [$(cat "$got" 2>/dev/null)]"
+fi
+
+# Without a session id there is no other identity to key on, so the pane's
+# newest record is still the best available answer.
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim nosession \
+  HERDR_PANE_ID=w7:p7 AI_AGENT=claude STUB_CAPTURE=/nonexistent)
+if grep -q 'DEAD session' "$(field "$out" CLOSEOUT)" 2>/dev/null; then
+  pass "a pane with no session id falls back to that pane's newest record"
+else
+  fail "no-session fallback found nothing: [$(field "$out" CLOSEOUT)]"
+fi
+
+# With no recorded closeout the transcript is still preferred over scraping,
+# and must work with no session id: ctrl+g lands in panes that never inherited
+# the agent's environment, which is precisely where scraping already fails.
+transcript_log=$tmpdir/transcript.log
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim transcript \
+  HERDR_PANE_ID=w9:p9 AI_AGENT=claude STUB_CAPTURE=/nonexistent \
+  AGENT_PROMPT_DEBUG="$transcript_log")
+if grep -q 'PROJECT transcript' "$(field "$out" CLOSEOUT)" 2>/dev/null && \
+    grep -q "using the agent's transcript" "$transcript_log" 2>/dev/null; then
+  pass 'a transcript closeout is used when the pane recorded none'
+else
+  fail "transcript path not taken: $(cat "$transcript_log" 2>/dev/null)"
+fi
+
+leaked=$(find "$tmpdir" -maxdepth 1 -name 'agent-prompt-turn-closeout.w9_p9.*' -print)
+if [ -z "$leaked" ]; then
+  pass 'the transcript is never written into the pane-scoped record'
+else
+  fail "the transcript was written into the pane-scoped record: $leaked"
+fi
+
+# A non-Claude pane has no ~/.claude transcript of its own, so reading one
+# would hand it whichever Claude pane last wrote in this directory.
+claude_only_log=$tmpdir/claude-only.log
+assert_bare 'a non-Claude pane never reads the Claude transcript' \
+  "$(STUB_TRANSCRIPT_READER="$reader" run_shim codex \
+    HERDR_PANE_ID=w8:p8 CODEX_THREAD_ID=0199abcd STUB_CAPTURE=/nonexistent \
+    AGENT_PROMPT_DEBUG="$claude_only_log")"
+if grep -q 'transcripts are Claude-only' "$claude_only_log" 2>/dev/null; then
+  pass 'the non-Claude pane records why it read no transcript'
+else
+  fail "no Claude-only note: $(cat "$claude_only_log" 2>/dev/null)"
+fi
 
 printf '1..%d\n' "$((passed + failed))"
 if [ "$failed" -ne 0 ]; then
