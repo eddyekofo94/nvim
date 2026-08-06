@@ -54,6 +54,15 @@ require("utils.load").on_events(
         vim.fn.system({ 'herdr', 'pane', 'focus', '--direction', herdr_dir[dir], '--current' })
       end
     end
+    -- Insert mode too. Writing an agent prompt means sitting in insert mode,
+    -- where an unmapped Alt+h/j/k/l falls through to Herdr, which hops to a
+    -- neighbouring pane instead of the split sitting right beside the cursor.
+    for lhs, dir in pairs({ ['<M-h>'] = 'h', ['<M-j>'] = 'j', ['<M-k>'] = 'k', ['<M-l>'] = 'l' }) do
+      map('i', lhs, function()
+        vim.cmd.stopinsert()
+        herdr_nav(dir)
+      end, { desc = 'Go to the ' .. herdr_dir[dir] .. ' window or Herdr pane' })
+    end
     map({ 'x', 'n' }, '<M-h>', function() herdr_nav('h') end, { desc = 'Go to left window or Herdr pane' })
     map({ 'x', 'n' }, '<M-j>', function()
       if _G.FzfLuaFocus and _G.FzfLuaFocus() then
