@@ -103,7 +103,12 @@ end
 function M.get(path)
   -- Normalize `path` to a valid directory
   if not path then
+    -- Empty when the window's directory is gone or unreadable, which would
+    -- otherwise name the session after `.` and save one per such window.
     path = vim.fn.getcwd(0)
+    if path == "" then
+      return ""
+    end
   else
     while vim.fn.isdirectory(path) == 0 do
       path = vim.fs.dirname(path)
@@ -136,6 +141,11 @@ end
 function M.save(session, notify)
   if not session then
     session = vim.g._session_loaded or M.get()
+  end
+  -- No directory to name a session after: nothing worth saving, and `mksession`
+  -- on an empty name is an error on every autosave event.
+  if session == "" then
+    return
   end
 
   vim.cmd.mksession({

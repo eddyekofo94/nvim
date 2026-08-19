@@ -197,4 +197,15 @@ capture_closeout() {
 umask 077
 capture_closeout || true
 
+# Neovim resolves relative paths against its working directory, and `uv.cwd()`
+# fails outright once that directory is deleted underneath the pane -- a swept
+# worktree is the usual way. Every `vim.fs.find`/`vim.fs.root` call that takes
+# no explicit path then throws, on *every* autocmd: session autosave and the
+# Copilot root lookup both fire on InsertEnter, so the editor is unusable. Land
+# somewhere that exists instead; a wrong-but-live cwd beats a dead one.
+if ! pwd -P >/dev/null 2>&1; then
+    note "working directory is gone; starting Neovim in $HOME"
+    cd -- "$HOME" || true
+fi
+
 exec "$NVIM_BIN" "$@"

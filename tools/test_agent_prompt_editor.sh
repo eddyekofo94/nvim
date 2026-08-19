@@ -41,6 +41,7 @@ cat >"$tmpdir/bin/nvim" <<'STUB'
   printf 'CLOSEOUT=%s\n' "${AGENT_CLOSEOUT_FILE:-}"
   printf 'SEED=%s\n' "${AGENT_PROMPT_SEED_FILE:-}"
   printf 'ARGS=%s\n' "$*"
+  printf 'PWD=%s\n' "$(pwd -P 2>/dev/null || printf '<gone>')"
 } >"$STUB_ENV_OUT"
 STUB
 chmod +x "$tmpdir/bin/nvim"
@@ -273,6 +274,28 @@ if grep -q 'transcripts are Claude-only' "$claude_only_log" 2>/dev/null; then
   pass 'the non-Claude pane records why it read no transcript'
 else
   fail "no Claude-only note: $(cat "$claude_only_log" 2>/dev/null)"
+fi
+
+# A pane whose checkout was swept still has ctrl+g bound. Neovim inheriting the
+# deleted directory makes `uv.cwd()` fail, and every path-less `vim.fs.find` or
+# `vim.fs.root` then throws on each autocmd -- InsertEnter included.
+swept=$tmpdir/swept
+swept_log=$tmpdir/swept.log
+mkdir -p "$swept"
+out=$(cd "$swept" && rm -rf "$swept" && run_shim swept \
+  HERDR_PANE_ID=w6:p6 AI_AGENT=claude STUB_CAPTURE="$fixture" \
+  AGENT_PROMPT_DEBUG="$swept_log")
+if [ "$(field "$out" PWD)" = "$(CDPATH= cd -- "$HOME" && pwd -P)" ]; then
+  pass 'a deleted working directory is replaced before Neovim starts'
+else
+  fail "Neovim inherited a dead cwd: [$(field "$out" PWD)]"
+fi
+
+# The swept pane still gets its closeout: the cwd fix must not cost the feature.
+if [ -s "$(field "$out" CLOSEOUT)" ]; then
+  pass 'a swept pane still gets its closeout'
+else
+  fail "swept pane lost its closeout: $(cat "$swept_log" 2>/dev/null)"
 fi
 
 printf '1..%d\n' "$((passed + failed))"

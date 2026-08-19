@@ -36,7 +36,20 @@ M.root_markers = {
   },
 }
 
-local fs_root = vim.fs.root
+---`vim.fs.root()`, minus the hard failure on a working directory that is gone.
+---
+---A relative source is resolved against `uv.cwd()`, and `vim.fs.abspath()`
+---asserts on it rather than returning nil. A pane whose directory was deleted
+---or turned unreadable underneath it -- a swept worktree, a revoked folder
+---permission -- therefore turns every root lookup into an error, and anything
+---that runs on an autocmd (session autosave) repeats it on every event.
+---@param source integer|string
+---@param marker string|string[]|fun(name: string, path: string): boolean
+---@return string?
+local function fs_root(source, marker)
+  local ok, root = pcall(vim.fs.root, source, marker)
+  return ok and root or nil
+end
 
 ---Wrapper of `vim.fs.root()` that accepts layered root markers like
 ---`vim.lsp.Config.root_markers`
