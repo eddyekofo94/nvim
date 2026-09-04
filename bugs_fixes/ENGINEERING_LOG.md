@@ -1,5 +1,48 @@
 # Engineering log
 
+## 2026-09-04 - Neovim 0.13 upgrade, phase 1 (config-owned deprecations)
+
+Branch `chore/nvim-0.13-upgrade`, phase 1 of `docs/NVIM_0.13_UPGRADE_PLAN.md`.
+No plugin versions changed.
+
+- Replaced the removed `BufModifiedSet` event with `OptionSet` matching the
+  `modified` option in `plugin/intro.lua`. This was a hard `Invalid 'event'`
+  error on every interactive no-argument start. Applied the same swap in the
+  disabled `lua/plugin/winbar/` fork through a new `update_events.buf_options`
+  list, so the winbar keeps a filtered `OptionSet` autocmd instead of an
+  unfiltered one on every option write.
+- Renamed the `vim.diagnostic.config()` jump field `callback` to the documented
+  `on_jump(diagnostic, bufnr)`. `]d` / `[d` never opened the float before this.
+- `vim.F.npcall` -> `vim.npcall` in 8 files (deprecated 0.13, removed 0.15).
+- `vim.highlight.on_yank` -> `vim.hl.hl_op` (deprecated, removal in 0.14).
+- `vim.loop.os_uname` -> `vim.uv.os_uname` in `after/lsp/eslint.lua`.
+- Rebuilt the `:Lsp` subcommands on the 0.13 capability API:
+  `semantic_tokens.start/stop` and `codelens.clear/display/save/on_codelens/
+  refresh` are gone, replaced by `*_enable`, `*_disable`, `*_toggle`, and
+  `*_is_enabled` over `enable(bool, filter)`. `codelens_get` now takes a filter
+  table and prints its result.
+- Deleted the `vim.treesitter.get_parser` monkey patch in `lua/core/autocmds.lua`
+  that called the private `vim.treesitter._create_parser`. Big-file protection
+  still comes from the existing `vim.treesitter.stop()` autocmd and the
+  `foldexpr` guard, which were kept.
+- Fixed the two callers that relied on `get_parser` throwing. On 0.13 it returns
+  `nil, err`, so a bare `pcall` always succeeded: `lua/plugin/statusline.lua`
+  showed the ` TS` indicator for every buffer and
+  `lua/pack/specs/start/dropbar.nvim.lua` attached Dropbar to every buffer.
+  Both now test the returned parser, and the statusline also skips big files.
+- Added two checks to `tools/verify.sh`: a UI-less probe that sources
+  `plugin/intro.lua` with `vim.g.has_ui` stubbed (the existing headless runs
+  never reached its autocmds), and a `:checkhealth vim.deprecated` gate that
+  fails on any traceback pointing back into this repository.
+
+Automated status: `tools/verify.sh` passes. `:checkhealth vim.deprecated`
+reports no deprecated functions. The intro probe was negative-tested by
+re-adding `BufModifiedSet` and confirming it fails.
+
+Known baseline, unchanged: whole-repository `make format-check` fails on
+pre-existing drift in `lua/plugin/agent-prompt.lua`. `stylua --check` is clean
+on every file this phase touched.
+
 ## 2026-07-15 - Neovim HEAD and plugin compatibility refresh
 
 - Updated Neovim from `v0.13.0-dev-3729+g0bb2f5cc08` to

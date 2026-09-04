@@ -48,6 +48,33 @@ luacheck -q \
   lua/utils/load.lua \
   lua/utils/pack.lua
 
+# `plugin/intro.lua` only registers its autocmds under a UI with no file args,
+# so the headless runs above never reach them. Source it with `vim.g.has_ui`
+# stubbed to catch events removed in Neovim 0.13 (e.g. `BufModifiedSet`).
+intro_log="$tmpdir/intro-events.log"
+if ! NVIM_APPNAME=nvim nvim --headless -u NONE \
+  '+lua vim.g.has_ui = true; vim.g.loaded_intro = nil; dofile("plugin/intro.lua")' \
+  +qa >"$intro_log" 2>&1; then
+  cat "$intro_log"
+  exit 1
+fi
+if rg -n "Invalid 'event'|E[0-9]{3,}" "$intro_log"; then
+  cat "$intro_log"
+  exit 1
+fi
+
+# `:checkhealth vim.deprecated` reports every deprecated API reachable from the
+# loaded config. Config-owned tracebacks must be zero; plugin-owned ones are
+# tracked in docs/NVIM_0.13_UPGRADE_PLAN.md until upstream migrates.
+deprecated_log="$tmpdir/checkhealth-deprecated.log"
+NVIM_APPNAME=nvim nvim --headless \
+  '+checkhealth vim.deprecated' \
+  "+w! $deprecated_log" +qa! >/dev/null 2>&1
+if rg -n "^ +${repo}/" "$deprecated_log"; then
+  printf 'Config-owned deprecated API calls remain (see above).\n' >&2
+  exit 1
+fi
+
 fail_on_nvim_errors empty +qa
 fail_on_nvim_errors lua lua/utils/pack.lua '+doautocmd InsertEnter' '+sleep 1' +qa
 fail_on_nvim_errors markdown README.md '+sleep 1' +qa

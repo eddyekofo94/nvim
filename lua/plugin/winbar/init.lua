@@ -120,6 +120,20 @@ local function setup(opts)
     })
   end
 
+  if not vim.tbl_isempty(configs.opts.bar.update_events.buf_options or {}) then
+    vim.api.nvim_create_autocmd("OptionSet", {
+      group = groupid,
+      pattern = configs.opts.bar.update_events.buf_options,
+      callback = function(args)
+        if vim.g.loaded_fzf then
+          return
+        end
+        utils.bar.exec("update", { buf = args.buf })
+      end,
+      desc = "Update all winbars associated with buf.",
+    })
+  end
+
   if not vim.tbl_isempty(configs.opts.bar.update_events.global) then
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.global, {
       group = groupid,

@@ -189,10 +189,14 @@ M.opts = {
         "WinResized",
       },
       buf = {
-        "BufModifiedSet",
         "FileChangedShellPost",
         "TextChanged",
         "InsertLeave",
+      },
+      -- 'BufModifiedSet' was removed in Neovim 0.13; buffer-local options are
+      -- now reported through OptionSet, matched by option name.
+      buf_options = {
+        "modified",
       },
       global = {
         "DirChanged",
