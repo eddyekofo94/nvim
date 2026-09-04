@@ -231,3 +231,43 @@ Automated status: `tools/verify.sh` passes, including `tools/check_pack_lock.lua
 (no lockfile entry lacks a spec) and the dirty-checkout scan over all 78 plugin
 directories. `make format-check` and `make lint` not run in this phase. No
 real-TTY QA yet.
+
+## 2026-09-04 - Neovim 0.13 upgrade phase 4: plugin-side migrations
+
+- `nvim-treesitter`: dropped the `cmds` lazy trigger (README: "This plugin does
+  not support lazy-loading") and the inert `ft` field, deleted
+  `install.prefer_git` / `install.compilers` which no longer exist in
+  `install.lua`, and made `build` wait on the async
+  `require("nvim-treesitter").update()`. `:TSInstall` and friends now come
+  from the plugin's own `plugin/nvim-treesitter.lua`.
+- `nvim-treesitter-textobjects` needed no change. Rejected the plan's
+  conditional `vim.g.no_plugin_maps = true`: runtime `ftplugin/help.lua`,
+  `markdown.lua` and `checkhealth.lua` map `]]`/`[[` without consulting the
+  flag, so it fixes nothing there, while it silently drops `K` in `:Man` and
+  `<CR>`/`<C-]>` in `:help`. The `]m`/`[m` shadowing by 18 runtime ftplugins is
+  real but predates 0.13 and wants per-filetype `vim.g.no_<ft>_maps`.
+- LuaSnip: removed the `vimversion.ge` memoization. Upstream `ge()` is now
+  arithmetic over a module-level `vim.version()` table, so the wrapper was pure
+  overhead. Expansion retested: `snip_expand` inserts the node text and
+  `in_snippet()` / `jumpable(1)` are true.
+- `nvim-surround` pinned to `vim.version.range("4.x")`. This exposed a wrapper
+  bug: `utils.pack.register` merges with `vim.tbl_deep_extend`, which rebuilds
+  a table both sides define and loses its metatable, so the second registration
+  of a spec turned the range into a plain table and `vim.pack` rejected it
+  ("spec.version: expected string or vim.VersionRange, got table"). `version`
+  is now carried by reference.
+- Renamed 81 `buffer =` keys to `buf =` in keymap and autocmd opts. Kept
+  `buffer` where it is not Neovim's: blink-cmp's source name, oil's keymap
+  schema (`tbl_extend('keep', { buffer = bufnr }, opts)` in the plugin), and
+  `maparg()`'s Vimscript return dict. Found and fixed a latent bug on the way:
+  `core/lsp.lua:241` filtered `vim.lsp.get_clients` on `buffer`, a key that API
+  ignores, so it matched every client instead of the attached ones; the
+  documented key is `bufnr`.
+- Migrated ten `nvim_win_set_height` / `nvim_win_set_width` calls to
+  `nvim_win_resize(win, width, height)` with `-1` for the unchanged axis. Two
+  sites passed the setter as a value and now wrap it.
+
+Automated status: `tools/verify.sh` passes after each of the six commits.
+`make format-check` still reports only the two pre-existing diffs in
+`lua/plugin/agent-prompt.lua` and `tests/agent_prompt_spec.lua`. `make lint`
+not run separately; `luacheck` runs inside `tools/verify.sh`. No real-TTY QA.
