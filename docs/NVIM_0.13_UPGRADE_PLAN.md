@@ -110,8 +110,18 @@ directories, then `:PackInstallAll`.
    `ts_install.compilers` (lines 45-46; fields no longer exist in `install.lua`);
    make `build` call `require("nvim-treesitter").update():wait()`. Keep
    `version = "main"`.
-2. `lua/pack/specs/opt/nvim-treesitter-textobjects.lua`: already on `main`; set
-   `vim.g.no_plugin_maps = true` if ftplugin maps clash after update.
+2. `lua/pack/specs/opt/nvim-treesitter-textobjects.lua`: already on `main`, so
+   nothing to migrate. Verified 2026-09-04: do **not** set
+   `vim.g.no_plugin_maps`. Runtime `ftplugin/help.lua`, `markdown.lua` and
+   `checkhealth.lua` map `]]`/`[[` unconditionally and ignore the flag, so it
+   would not fix those, while it *would* silently drop `K` in `:Man` and
+   `<CR>`/`<C-]>` in `:help`, which this config does not redefine
+   (`after/ftplugin/{man,help}.lua` only set options and `d`/`u`).
+   The real clash predates 0.13: `ftplugin/python.vim` and 17 other runtime
+   ftplugins map `]m`/`[m`/`]]`/`[[` buffer-locally, so the regex motion beats
+   the treesitter one in those filetypes. Fixing it means per-filetype
+   `vim.g.no_<ft>_maps` in `lua/core/options.lua`. Eddy's call — it is a
+   preference about which motion wins, not a 0.13 correctness bug.
 3. `lua/pack/specs/opt/luasnip.lua:10-16`: the `vimversion` cache patch targets
    issue #1393 (closed 2025-10); remove and retest snippet expansion.
 4. `lua/pack/specs/opt/nvim-surround.lua`: optional `version = vim.version.range("4.x")`.
