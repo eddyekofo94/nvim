@@ -3,11 +3,12 @@ return {
   src = "https://github.com/folke/lazydev.nvim",
   data = {
     ft = "lua",
-    dependencies = { "Bilal2453/luvit-meta" },
     postload = function()
       require("lazydev").setup({
         library = {
-          { path = "luvit-meta/library", words = { "vim%.uv" } },
+          -- Neovim ships the luv type definitions, so the archived
+          -- `Bilal2453/luvit-meta` plugin is no longer a dependency.
+          { path = "${3rd}/luv/library", words = { "vim%.uv" } },
         },
       })
     end,

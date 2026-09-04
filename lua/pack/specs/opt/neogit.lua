@@ -2,12 +2,11 @@
 return {
   src = "https://github.com/NeogitOrg/neogit",
   data = {
-    branch = "master",
     cmd = "Neogit",
     enabled = true,
-    dependencies = {
-      "sindrets/diffview.nvim",
-      "nvim-lua/plenary.nvim",
+    deps = {
+      "https://github.com/sindrets/diffview.nvim",
+      "https://github.com/nvim-lua/plenary.nvim",
     },
     postload = function()
       vim.opt.fillchars = { diff = " " }

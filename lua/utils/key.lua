@@ -47,6 +47,26 @@ function M.get(mode, lhs)
     }
   end
 
+  -- Neovim's own default maps (e.g. |v_an|) are registered under the merged
+  -- Visual+Select mode, so `nvim_get_keymap('x')` never lists them while
+  -- `maparg()` resolves them. Ask `maparg()` before giving up, otherwise
+  -- `M.amend()` silently replaces a built-in instead of wrapping it.
+  local arg = vim.fn.maparg(lhs, mode, false, true)
+  if not vim.tbl_isempty(arg) then
+    return {
+      lhs = arg.lhs,
+      rhs = arg.rhs or "",
+      expr = arg.expr == 1,
+      callback = arg.callback,
+      desc = arg.desc,
+      noremap = arg.noremap == 1,
+      silent = arg.silent == 1,
+      nowait = arg.nowait == 1,
+      buffer = arg.buffer == 1,
+      replace_keycodes = arg.replace_keycodes == 1,
+    }
+  end
+
   -- Return default identity mapping (fallback to self)
   return { lhs = lhs, rhs = lhs, noremap = true, buffer = false }
 end
@@ -422,7 +442,16 @@ function M.fallback_fn(key_def)
   return function()
     if key_def.callback then
       -- It's a Lua function
-      key_def.callback()
+      local result = key_def.callback()
+      -- An `expr` mapping returns the keys to type rather than acting itself
+      if key_def.expr and type(result) == "string" then
+        vim.api.nvim_feedkeys(
+          key_def.replace_keycodes == false and result
+            or vim.api.nvim_replace_termcodes(result, true, true, true),
+          key_def.noremap and "n" or "m",
+          false
+        )
+      end
     elseif key_def.rhs then
       -- It's a string command/mapping
       local keys =

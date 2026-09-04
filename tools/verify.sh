@@ -75,6 +75,10 @@ if rg -n "^ +${repo}/" "$deprecated_log"; then
   exit 1
 fi
 
+# `vim.pack` reinstalls every lockfile entry on its first call, so a lock entry
+# whose spec was deleted silently returns after `:restart`.
+NVIM_APPNAME=nvim nvim --headless -u NONE -l tools/check_pack_lock.lua
+
 fail_on_nvim_errors empty +qa
 fail_on_nvim_errors lua lua/utils/pack.lua '+doautocmd InsertEnter' '+sleep 1' +qa
 fail_on_nvim_errors markdown README.md '+sleep 1' +qa

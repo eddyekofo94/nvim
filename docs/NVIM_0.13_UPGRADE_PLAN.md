@@ -62,7 +62,7 @@ stubbed), and `:checkhealth vim.deprecated` must report no config-owned tracebac
 |---|---|---|
 | `lua/pack/specs/opt/nvim-treesitter-incremental-selection.lua` | Repo archived; author points to incselect.nvim | Built-in `v_an` / `v_in` / `v_]n` / `v_[n` (0.12); keep the spec's LSP `selectionRange` preference by mapping `vim.lsp.buf.selection_range` first. Resolve the `an`/`in` clash: mini.ai overrides them on purpose (`lua/pack/specs/opt/mini_ai.lua:12-13`); pick one owner |
 | `lua/pack/specs/opt/nvterm.lua` | Unmaintained, moved, and `enabled = false` is inert in the wrapper | `lua/plugin/term.lua` already owns terminals |
-| Lock-only orphans `lsp-timeout.nvim`, `nvim-lspconfig`, `smart-motion.nvim`, `snacks.nvim`, `volt`, `mini.icons` | No spec references them; `after/lsp/*.lua` uses native `vim.lsp.config` | `:packdel <name>` each, or `vim.pack.del({...})`, then commit the lock |
+| Lock-only orphans `lsp-timeout.nvim`, `nvim-lspconfig`, `smart-motion.nvim`, `snacks.nvim`, `volt`, `mini.icons`, `oil.nvim` | No spec references them; `after/lsp/*.lua` uses native `vim.lsp.config`. `oil.nvim` is a seventh orphan the first count missed: `lua/pack/specs/start/oil.lua` points at the `canola.nvim` fork, which ships the same `oil` module | `:packdel <name>` each, or `vim.pack.del({...})`, then commit the lock |
 
 Decide, not required: `nvim-colorizer.lua` silently disables the built-in
 `vim.lsp.document_color`; set `display.disable_document_color = false` to let
@@ -71,12 +71,18 @@ Neovim own LSP colours. `copilot.lua` suggestions can move to
 question unverified, so leave copilot.lua as is in this pass.
 
 Wrapper gap to close in the same commit: `lua/utils/pack.lua` ignores
-lazy.nvim-style `enabled`, `dependencies`, and `branch`. Seven specs set
-`enabled = false` (fluoride, noice, nvterm, sidekick, termite, themeswitcher,
-which-key) and still load. Either implement `data.enabled` in the wrapper or
-delete those specs. Convert `dependencies` → `deps` in `diffview.lua:5`,
-`lazydev.lua:6`, `neogit.lua:5`, `noice.lua:5`, `triptych.lua:7`; drop
-`branch` in `neogit.lua:8`.
+lazy.nvim-style `enabled`, `dependencies`, and `branch`. Four specs set
+`enabled = false` at spec level (fluoride, nvterm, termite, themeswitcher) and
+still load; noice, sidekick, and which-key only set `enabled` inside their own
+setup tables, so they were miscounted here. Either implement `data.enabled` in
+the wrapper or delete those specs. Convert `dependencies` → `deps` in
+`diffview.lua:5`, `lazydev.lua:6`, `neogit.lua:5`, `noice.lua:5`,
+`triptych.lua:7`; drop `branch` in `neogit.lua:8`.
+
+Resolved 2026-09-04: built-in |v_an| / |v_in| own `an`/`in`; mini.ai's next and
+last textobjects moved to `aN`/`iN`/`aL`/`iL`. `data.enabled` is implemented,
+so fluoride, termite, and themeswitcher stay installed but no longer load —
+decide in Phase 5 whether to `:packdel` them too.
 
 ## Phase 3 — Move plugins whose repositories moved (one commit, re-clones)
 

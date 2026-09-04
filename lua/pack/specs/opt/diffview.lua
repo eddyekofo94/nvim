@@ -2,6 +2,6 @@
 return {
   src = "https://github.com/sindrets/diffview.nvim",
   data = {
-    dependencies = { "nvim-lua/plenary.nvim" },
+    deps = { "https://github.com/nvim-lua/plenary.nvim" },
   },
 }

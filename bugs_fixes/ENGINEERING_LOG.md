@@ -162,3 +162,41 @@ startup, and repeated Copilot process-lifecycle checks pass. Real-TTY QA showed
 Copilot `Online` and attached with an inline suggestion and `<C-j>` mapping;
 Sidekick's live 18-entry CLI selector opened normally. Every QA exit left zero
 Copilot language-server orphans.
+
+## 2026-09-04 - Neovim 0.13 upgrade phase 2: plugin and lockfile removals
+
+- Deleted `nvim-treesitter-incremental-selection` (archived upstream) and
+  `nvterm` (unmaintained; `lua/plugin/term.lua` already owns terminals).
+- Gave Neovim's built-in |v_an| / |v_in| ownership of visual `an` / `in`, and
+  moved mini.ai's next/last textobjects to `aN`/`iN`/`aL`/`iL` as
+  |MiniAi-default-an-in| recommends, freeing 0.13's `al`/`il` as well.
+- Kept the removed plugin's LSP preference in `lua/core/keymaps.lua`:
+  `an`/`in` call `vim.lsp.buf.selection_range()` when a client advertises
+  `textDocument/selectionRange` and fall back to the built-in maps otherwise.
+- Fixed `utils.key.get()`, which only searched `nvim_get_keymap()` and so never
+  found Neovim's own Visual+Select defaults. `key.amend()` silently replaced
+  built-in maps instead of wrapping them; it now consults `maparg()` and
+  `fallback_fn()` re-feeds the result of an `expr` mapping.
+- Implemented `data.enabled` in `lua/utils/pack.lua`. Four specs
+  (fluoride, nvterm, termite, themeswitcher) set `enabled = false` and loaded
+  anyway; the plan's count of seven also listed noice, sidekick, and which-key,
+  which only set `enabled` inside their own setup tables.
+- Converted the five inert lazy.nvim `dependencies` lists to `deps` with full
+  source URLs and dropped neogit's inert `branch`. lazydev's archived
+  `Bilal2453/luvit-meta` dependency became Neovim's bundled
+  `${3rd}/luv/library`.
+- `:packdel`'d nine lockfile entries with no spec: the six known orphans
+  (`lsp-timeout.nvim`, `mini.icons`, `nvim-lspconfig`, `smart-motion.nvim`,
+  `snacks.nvim`, `volt`), plus `oil.nvim` (replaced by the `canola.nvim` fork,
+  which ships the same `oil` module), `nvterm`, and
+  `nvim-treesitter-incremental-selection`. Lockfile and store are both 78.
+- Added `tools/check_pack_lock.lua` to `tools/verify.sh`, because `vim.pack`
+  reinstalls every lockfile entry on its first call, so a spec-less entry
+  otherwise returns after `:restart`.
+
+Automated status: `tools/verify.sh` and `make lint` pass; `make format-check`
+still reports the two pre-existing diffs in `lua/plugin/agent-prompt.lua` and
+`tests/agent_prompt_spec.lua`, unchanged by this phase. Headless checks confirm
+`an` expands and `in` shrinks the selection, `aN` is mini.ai's around-next,
+themeswitcher and nvterm no longer load, and diffview still pulls plenary
+through the converted `deps`. No real-TTY QA yet.
