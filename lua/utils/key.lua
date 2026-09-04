@@ -188,7 +188,7 @@ function M.get_conflicts()
   vim.api.nvim_set_option_value("number", false, { win = win })
   vim.api.nvim_set_option_value("relativenumber", false, { win = win })
   vim.api.nvim_set_option_value("winfixheight", true, { win = win })
-  vim.api.nvim_win_set_height(win, 15) -- Adjust height as needed
+  vim.api.nvim_win_resize(win, -1, 15) -- Adjust height as needed
 
   -- Set buffer to scratch type so it's not saved
   vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
@@ -341,7 +341,7 @@ function M.report_warned()
   vim.api.nvim_set_option_value("number", false, { win = win })
   vim.api.nvim_set_option_value("relativenumber", false, { win = win })
   vim.api.nvim_set_option_value("winfixheight", true, { win = win })
-  vim.api.nvim_win_set_height(win, 15)
+  vim.api.nvim_win_resize(win, -1, 15)
   vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
   vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
 end

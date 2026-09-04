@@ -111,7 +111,7 @@ return {
       local function lock_opencode_heights()
         for win, _ in pairs(saved_heights) do
           if vim.api.nvim_win_is_valid(win) then
-            pcall(vim.api.nvim_win_set_height, win, saved_heights[win])
+            pcall(vim.api.nvim_win_resize, win, -1, saved_heights[win])
           end
         end
       end

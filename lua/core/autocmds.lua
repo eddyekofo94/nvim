@@ -329,7 +329,7 @@ do
       desc = "Set quickfix window initial height.",
       pattern = "qf",
       callback = function(args)
-        vim.api.nvim_win_set_height(vim.fn.bufwinid(args.buf), 10)
+        vim.api.nvim_win_resize(vim.fn.bufwinid(args.buf), -1, 10)
       end,
     },
   })

@@ -287,8 +287,13 @@ local function keep_share(prompt_win, closeout_win)
   local vertical = vim.w[closeout_win].agent_prompt_placement == "right"
   local get = vertical and vim.api.nvim_win_get_width
     or vim.api.nvim_win_get_height
-  local set = vertical and vim.api.nvim_win_set_width
-    or vim.api.nvim_win_set_height
+  local set = vertical
+      and function(win, n)
+        vim.api.nvim_win_resize(win, n, -1)
+      end
+    or function(win, n)
+      vim.api.nvim_win_resize(win, -1, n)
+    end
 
   local closeout_buf = vim.api.nvim_win_get_buf(closeout_win)
   local total = get(closeout_win) + get(prompt_win)

@@ -368,7 +368,7 @@ describe("agent prompt editor", function()
 
     -- Stands in for the squeeze a Herdr split forces on a pane too short to
     -- honour `winfixheight`: the closeout loses rows it never gets back.
-    vim.api.nvim_win_set_height(closeout_win, 2)
+    vim.api.nvim_win_resize(closeout_win, -1, 2)
     assert.are_not.equal(want, vim.api.nvim_win_get_height(closeout_win))
 
     vim.cmd("doautocmd VimResized")
