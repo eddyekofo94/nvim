@@ -46,11 +46,26 @@ cat >"$tmpdir/bin/nvim" <<'STUB'
 STUB
 chmod +x "$tmpdir/bin/nvim"
 
-# `herdr` stub: `pane read` emits whichever capture the case selected.
+# `herdr` stub: `pane read` emits whichever capture the case selected;
+# `pane get` names the pane's agent session when the case set one, the way the
+# agent-state integration reports it to the real Herdr.
 cat >"$tmpdir/bin/herdr" <<'STUB'
 #!/bin/sh
 [ "${1:-}" = pane ] || exit 2
-[ "${2:-}" = read ] || exit 2
+case "${2:-}" in
+  get)
+    if [ "${STUB_PANE_GET_ERROR:-0}" = 1 ]; then
+      printf '{"id":"cli:pane:get","error":{"code":"pane_not_found"}}\n'
+    elif [ -n "${STUB_AGENT_SESSION:-}" ]; then
+      printf '{"result":{"pane":{"agent":"%s","agent_session":{"agent":"%s","kind":"id","source":"herdr:%s","value":"%s"}}}}\n' \
+        "${STUB_AGENT_KIND:-claude}" "${STUB_AGENT_KIND:-claude}" "${STUB_AGENT_KIND:-claude}" "$STUB_AGENT_SESSION"
+    else
+      printf '{"result":{"pane":{"agent":"claude","pane_id":"%s"}}}\n' "${3:-}"
+    fi
+    exit 0 ;;
+  read) ;;
+  *) exit 2 ;;
+esac
 [ -n "${STUB_CAPTURE:-}" ] || exit 3
 [ "${STUB_HERDR_FAIL:-0}" = 1 ] && exit 4
 cat "$STUB_CAPTURE"
@@ -69,7 +84,7 @@ run_shim() {
   unsets=$(env | sed -n -E \
     's/^(AI_AGENT|CLAUDECODE|OPENCODE|CURSOR_AGENT|GEMINI_CLI|CLAUDE_CODE_[A-Za-z0-9_]*|CODEX_[A-Za-z0-9_]*|OPENCODE_[A-Za-z0-9_]*|PI_CODING_AGENT[A-Za-z0-9_]*|PI_PILOT_[A-Za-z0-9_]*|AIDER_[A-Za-z0-9_]*)=.*/-u \1/p')
   # shellcheck disable=SC2086 # the unset list is deliberately word-split
-  env $unsets -u HERDR_PANE_ID \
+  env $unsets -u HERDR_PANE_ID -u HERDR_SESSION \
     -u AGENT_CLOSEOUT_FILE -u AGENT_PROMPT_SEED_FILE \
     PATH="$tmpdir/bin:$PATH" \
     TMPDIR="$tmpdir" \
@@ -232,14 +247,136 @@ else
   fail "reused pane was shown [$(cat "$got" 2>/dev/null)]"
 fi
 
-# Without a session id there is no other identity to key on, so the pane's
-# newest record is still the best available answer.
+# With no session id in the environment and Herdr silent about the pane, there
+# is no other identity to key on, so the pane's newest record is still the best
+# available answer.
 out=$(STUB_TRANSCRIPT_READER="$reader" run_shim nosession \
   HERDR_PANE_ID=w7:p7 AI_AGENT=claude STUB_CAPTURE=/nonexistent)
 if grep -q 'DEAD session' "$(field "$out" CLOSEOUT)" 2>/dev/null; then
   pass "a pane with no session id falls back to that pane's newest record"
 else
   fail "no-session fallback found nothing: [$(field "$out" CLOSEOUT)]"
+fi
+
+# --- Herdr names the session when the environment does not -----------------
+# Claude Code does not pass CLAUDE_CODE_SESSION_ID to its $EDITOR, so the
+# shim asks Herdr which session the pane hosts. With that answer a record from
+# the pane's previous occupant -- even a newer one -- is never shown.
+printf '**Status:** DONE\n**Next move:** the LIVE session\n' >"$(turn_file w5_p5 live)"
+touch -t 202001010000 "$(turn_file w5_p5 live)"
+printf '**Status:** DONE\n**Next move:** the PREVIOUS occupant\n' >"$(turn_file w5_p5 prev)"
+herdr_log=$tmpdir/herdr-session.log
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim herdrsession \
+  HERDR_PANE_ID=w5:p5 AI_AGENT=claude STUB_AGENT_SESSION=live \
+  STUB_CAPTURE=/nonexistent AGENT_PROMPT_DEBUG="$herdr_log")
+got=$(field "$out" CLOSEOUT)
+if [ -n "$got" ] && grep -q 'LIVE session' "$got" 2>/dev/null; then
+  pass 'the session Herdr names for the pane selects its own record'
+else
+  fail "Herdr-named session was shown [$(cat "$got" 2>/dev/null)]"
+fi
+
+# A fresh session Herdr can name but which has recorded nothing yet: the
+# reader is told the session, so a project-wide transcript of some other pane
+# is never the answer. Eddy's screenshot: a new Claude pane showed the
+# neighbour's "restart the herdr server" closeout.
+cat >"$tmpdir/bin/reader-strict.py" <<'PY'
+import sys
+if len(sys.argv) > 2 and sys.argv[2]:
+    sys.stderr.write("no transcript for session %s\n" % sys.argv[2])
+    sys.exit(1)
+sys.stdout.write("**Status:** DONE\n**Next move:** from the PROJECT transcript\n")
+PY
+fresh_log=$tmpdir/fresh.log
+assert_bare 'a fresh Herdr-named session is never shown the project transcript' \
+  "$(STUB_TRANSCRIPT_READER="$tmpdir/bin/reader-strict.py" run_shim fresh \
+    HERDR_PANE_ID=w5:p6 AI_AGENT=claude STUB_AGENT_SESSION=fresh-sid \
+    STUB_CAPTURE=/nonexistent AGENT_PROMPT_DEBUG="$fresh_log")"
+if grep -q 'no transcript for session fresh-sid' "$fresh_log" 2>/dev/null; then
+  pass 'the reader was asked for exactly the session Herdr named'
+else
+  fail "reader was not given the Herdr session: $(cat "$fresh_log" 2>/dev/null)"
+fi
+
+# Herdr reporting a non-Claude agent for the pane is not a Claude session id.
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim herdrcodex \
+  HERDR_PANE_ID=w7:p7 AI_AGENT=claude STUB_AGENT_SESSION=thread-1 STUB_AGENT_KIND=codex \
+  STUB_CAPTURE=/nonexistent)
+if grep -q 'DEAD session' "$(field "$out" CLOSEOUT)" 2>/dev/null; then
+  pass "a non-Claude Herdr session is ignored and the place's newest record is used"
+else
+  fail "non-Claude Herdr session changed the lookup: [$(field "$out" CLOSEOUT)]"
+fi
+
+# Herdr answering with an error (pane unknown to this server, rc 0) is the same
+# as Herdr being silent: the place's newest record, not a plain editor.
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim herdrerror \
+  HERDR_PANE_ID=w7:p7 AI_AGENT=claude STUB_PANE_GET_ERROR=1 STUB_CAPTURE=/nonexistent)
+if grep -q 'DEAD session' "$(field "$out" CLOSEOUT)" 2>/dev/null; then
+  pass "a Herdr pane-get error degrades to the place's newest record"
+else
+  fail "Herdr error broke the lookup: [$(field "$out" CLOSEOUT)]"
+fi
+
+# The environment, when it does speak, outranks Herdr.
+printf '**Status:** DONE\n**Next move:** ENV says so\n' >"$(turn_file w5_p7 envsid)"
+printf '**Status:** DONE\n**Next move:** HERDR says so\n' >"$(turn_file w5_p7 herdrsid)"
+out=$(STUB_TRANSCRIPT_READER="$reader" run_shim envwins \
+  HERDR_PANE_ID=w5:p7 AI_AGENT=claude CLAUDE_CODE_SESSION_ID=envsid \
+  STUB_AGENT_SESSION=herdrsid STUB_CAPTURE=/nonexistent)
+if grep -q 'ENV says so' "$(field "$out" CLOSEOUT)" 2>/dev/null; then
+  pass 'CLAUDE_CODE_SESSION_ID in the environment outranks the Herdr answer'
+else
+  fail "env session id lost to Herdr: [$(cat "$(field "$out" CLOSEOUT)" 2>/dev/null)]"
+fi
+
+# --- two Herdr sessions at the same pane id ---------------------------------
+# Independent Ghostty windows are separate Herdr sessions that each number
+# their panes from w1:p1 and share one $TMPDIR. Without the session in the
+# name, two Claude panes at w1:p2 read -- and the Stop hook pruned -- each
+# other's record, which is the live hit-and-miss. The no-session-id path is
+# the one that took "the pane's newest record", so it is the path under test.
+printf '**Status:** DONE\n**Next move:** WINDOW FORTY-THREE work\n' \
+  >"$(turn_file window-43.w1_p2 sessC)"
+printf '**Status:** DONE\n**Next move:** WINDOW FORTY-FOUR work\n' \
+  >"$(turn_file window-44.w1_p2 sessD)"
+# Newer than both and named the pane-only way: the pre-scoping shape, which a
+# scoped shim must never pick up as "this pane's newest".
+touch -t 202001010000 "$(turn_file window-43.w1_p2 sessC)" "$(turn_file window-44.w1_p2 sessD)"
+printf '**Status:** DONE\n**Next move:** PANE-ONLY relic\n' >"$(turn_file w1_p2 sessE)"
+
+for window in 'window-43|FORTY-THREE' 'window-44|FORTY-FOUR'; do
+  id=${window%%|*}
+  want=${window#*|}
+  log=$tmpdir/$id.log
+  out=$(STUB_TRANSCRIPT_READER="$reader" run_shim "$id" \
+    HERDR_SESSION="$id" HERDR_PANE_ID=w1:p2 AI_AGENT=claude \
+    STUB_CAPTURE=/nonexistent AGENT_PROMPT_DEBUG="$log")
+  got=$(field "$out" CLOSEOUT)
+  if [ -n "$got" ] && grep -q "WINDOW $want" "$got" 2>/dev/null; then
+    pass "$id w1:p2 is shown its own window's closeout"
+  else
+    fail "$id w1:p2 was shown [$(cat "$got" 2>/dev/null)]"
+  fi
+  case "$got" in
+    "$tmpdir"/agent-prompt-turn-closeout."$id".w1_p2.*)
+      pass "$id read from its own session-scoped place" ;;
+    *) fail "$id read outside its session-scoped place: [$got]" ;;
+  esac
+  if grep -q "\[$id/w1:p2\]" "$log" 2>/dev/null; then
+    pass "$id's debug log names the Herdr session and the pane"
+  else
+    fail "$id's debug log lacks the session tag: $(cat "$log" 2>/dev/null)"
+  fi
+done
+
+# Guard, not a regression test: the shim never unlinks turn records, so this
+# holds on the old shim too. It exists so a future shim that "tidies" the
+# place cannot quietly start eating the neighbour window's record.
+if [ -s "$(turn_file window-43.w1_p2 sessC)" ] && [ -s "$(turn_file window-44.w1_p2 sessD)" ]; then
+  pass 'both windows keep their own record after the other reads'
+else
+  fail 'a window lost its record to the other window'
 fi
 
 # With no recorded closeout the transcript is still preferred over scraping,

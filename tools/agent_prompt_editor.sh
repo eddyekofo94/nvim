@@ -70,9 +70,50 @@ note() {
     # A reason the user can read beats one only a debug flag would have caught.
     export AGENT_PROMPT_REASON=$1
     # Logged unconditionally: gating this on a debug variable meant the sessions
-    # that actually failed were the ones that recorded nothing.
-    printf '%s [%s] %s\n' "$(date +%H:%M:%S)" "${HERDR_PANE_ID:-no-pane}" "$1" \
+    # that actually failed were the ones that recorded nothing. Tagged with the
+    # Herdr session as well as the pane, since every window has a `w1:p2`.
+    printf '%s [%s/%s] %s\n' "$(date +%H:%M:%S)" \
+        "${HERDR_SESSION:-no-session}" "${HERDR_PANE_ID:-no-pane}" "$1" \
         >>"${AGENT_PROMPT_DEBUG:-/tmp/agent-prompt-debug.log}" 2>/dev/null || true
+}
+
+# The place this pane occupies across every Herdr session on the machine.
+# `HERDR_PANE_ID` is only unique inside one session, and each independent
+# Ghostty window is its own session sharing the same $TMPDIR, so the Herdr
+# session is prefixed whenever it is known. Mirror of `place()` in
+# agent-config/claude/closeout_capture.py: both derive the same name from the
+# same environment, or the hook's record is invisible to this shim.
+pane_place() {
+    pane=$(printf '%s' "${HERDR_PANE_ID:-}" | tr -c '[:alnum:]._-' '_')
+    if [ -n "${HERDR_SESSION:-}" ]; then
+        printf '%s.%s' "$(printf '%s' "$HERDR_SESSION" | tr -c '[:alnum:]._-' '_')" "$pane"
+    else
+        printf '%s' "$pane"
+    fi
+}
+
+# Which agent session this pane hosts. The environment is the cheap answer,
+# but Claude Code does not hand CLAUDE_CODE_SESSION_ID to its $EDITOR, so in
+# practice it is usually empty here. Herdr knows: the agent-state integration
+# reports every Claude session to its pane on SessionStart, and `herdr pane
+# get` returns it as `agent_session.value`. Asked of the pane itself, the
+# answer cannot be a neighbour's. Empty when nobody can say.
+agent_session_id() {
+    if [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then
+        printf '%s' "$CLAUDE_CODE_SESSION_ID"
+        return 0
+    fi
+    "$HERDR_BIN" pane get "${HERDR_PANE_ID:-}" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    session = json.load(sys.stdin)["result"]["pane"]["agent_session"]
+    value = session["value"]
+except (ValueError, KeyError, TypeError):
+    sys.exit(1)
+# The session object says whose id it is; the pane-level agent can lag it.
+if session.get("agent") == "claude" and value:
+    sys.stdout.write(value)
+' 2>/dev/null || true
 }
 
 capture_closeout() {
@@ -87,9 +128,10 @@ capture_closeout() {
 
     base=${TMPDIR:-/tmp}
     [ -d "$base" ] || { note "no temp dir: $base"; return 1; }
-    # Pane ids carry `:`; keep the slug filesystem-safe and pane-scoped so
-    # concurrent agents never read each other's closeout.
-    slug=$(printf '%s' "$HERDR_PANE_ID" | tr -c '[:alnum:]._-' '_')
+    # Pane ids carry `:`; keep the slug filesystem-safe and scoped to this
+    # Herdr session *and* pane so concurrent agents -- in one window or across
+    # windows -- never read each other's closeout.
+    slug=$(pane_place)
     capture_file=$base/agent-prompt-capture.$slug.txt
     closeout_file=$base/agent-prompt-closeout.$slug.md
     seed_file=$base/agent-prompt-seed.$slug.txt
@@ -97,23 +139,25 @@ capture_closeout() {
     rm -f -- "$closeout_file" "$seed_file"
 
     # Best source: the agent's own end-of-turn record -- the whole final
-    # message, closeout included -- written by the Stop hook under this pane's
-    # slug *and* its session id. The pane keeps two agents side by side apart;
-    # the session keeps a finished agent from handing its message to whoever
-    # inherits the pane id next.
+    # message, closeout included -- written by the Stop hook under this place's
+    # slug *and* its session id. The place keeps two agents side by side -- or
+    # in two windows -- apart; the session keeps a finished agent from handing
+    # its message to whoever inherits the pane id next.
     turn_file=
-    if [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then
-        # Knowing the session, accept nothing else. A record under this pane's
+    session_id=$(agent_session_id)
+    if [ -n "$session_id" ]; then
+        # Knowing the session, accept nothing else. A record under this place's
         # slug but another session id belongs to the pane's previous occupant,
         # which is precisely what must not be shown.
-        session_slug=$(printf '%s' "$CLAUDE_CODE_SESSION_ID" | tr -c '[:alnum:]._-' '_')
+        session_slug=$(printf '%s' "$session_id" | tr -c '[:alnum:]._-' '_')
         candidate=$base/agent-prompt-turn-closeout.$slug.$session_slug.md
         [ -s "$candidate" ] && turn_file=$candidate
     else
-        # No session id is normal -- ctrl+g can land in a pane that never
-        # inherited the agent's environment. Fall back to the newest record for
-        # this pane: the Stop hook drops the others when it claims the pane, and
-        # SessionEnd removes its own, so what remains is the live session's.
+        # Neither the environment nor Herdr names the session. Fall back to the
+        # newest record for this place: the Stop hook drops the others when it
+        # claims the pane, and SessionEnd removes its own, so what remains is
+        # the live session's. The place carries the Herdr session, so another
+        # window's agent at the same pane id is never a candidate.
         for candidate in "$base/agent-prompt-turn-closeout.$slug."*.md; do
             [ -s "$candidate" ] || continue
             [ -z "$turn_file" ] || [ "$candidate" -nt "$turn_file" ] || continue
@@ -138,11 +182,12 @@ capture_closeout() {
     elif [ ! -r "$TRANSCRIPT_READER" ]; then
         note "transcript reader unreadable: $TRANSCRIPT_READER"
     else
-        # No session id is normal, not fatal: ctrl+g can land in a pane that
-        # never inherited the agent's environment. The reader then falls back
+        # With a session id the reader opens that transcript and no other; a
+        # fresh session with no closeout yet reads as none, never as the
+        # neighbour's. Only when nobody can name the session does it fall back
         # to the project's newest transcript, keyed on this pane's cwd.
         reader_err=$(python3 "$TRANSCRIPT_READER" --print \
-            "${CLAUDE_CODE_SESSION_ID:-}" "$PWD" 2>&1 >"$transcript_file")
+            "$session_id" "$PWD" 2>&1 >"$transcript_file")
         if [ -s "$transcript_file" ]; then
             note "using the agent's transcript"
             source_file=$transcript_file
