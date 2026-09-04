@@ -13,7 +13,7 @@ local function autocorrect_normalzone(orig, correction)
         or correction
     end
     return orig
-  end, { buffer = true, expr = true })
+  end, { buf = true, expr = true })
 end
 
 -- Autocorrect lower-cased and misspelled booleans

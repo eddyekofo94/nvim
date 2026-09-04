@@ -230,7 +230,7 @@ local function attach(buf)
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.buf, {
       desc = "Update markdown heading symbols on buffer change.",
       group = groupid,
-      buffer = buf,
+      buf = buf,
       callback = function(args)
         parse_buf(args.buf)
       end,

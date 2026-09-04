@@ -152,17 +152,17 @@ function M.on_events(event_specs, name, load)
   -- and buffers are triggered once together
   ---@cast event_specs load.event.structured_spec[]
   for _, spec in ipairs(event_specs) do
-    if spec.buffer then
-      local loaders = event_loaders[spec.event].bufs[spec.buffer]
+    if spec.buf then
+      local loaders = event_loaders[spec.event].bufs[spec.buf]
       if vim.tbl_isempty(loaders) then
         vim.api.nvim_create_autocmd(spec.event, {
           once = true,
-          buffer = spec.buffer,
+          buf = spec.buf,
           group = vim.api.nvim_create_augroup(
             string.format(
               "load.on_events.event.%s.buf.%d",
               spec.event,
-              spec.buffer
+              spec.buf
             ),
             {}
           ),
@@ -352,7 +352,7 @@ function M.on_keys(key_specs, name, load)
 
       -- Delete all key triggers associated with the plugin
       for _, s in ipairs(keys[name] or {}) do
-        local buf = s.opts and (s.opts.buffer == true and 0 or s.opts.buffer)
+        local buf = s.opts and (s.opts.buf == true and 0 or s.opts.buf)
         if buf then
           for _, mode in
             ipairs(s.mode --[=[@as string[]]=])

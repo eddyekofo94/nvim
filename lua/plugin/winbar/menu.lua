@@ -466,10 +466,10 @@ function winbar_menu:make_buf()
   for key, mapping in pairs(configs.opts.menu.keymaps) do
     local mapping_type = type(mapping)
     if mapping_type == "function" or mapping_type == "string" then
-      vim.keymap.set("n", key, mapping, { buffer = self.buf })
+      vim.keymap.set("n", key, mapping, { buf = self.buf })
     elseif mapping_type == "table" then
       for mode, rhs in pairs(mapping) do
-        vim.keymap.set(mode, key, rhs, { buffer = self.buf })
+        vim.keymap.set(mode, key, rhs, { buf = self.buf })
       end
     end
   end
@@ -478,7 +478,7 @@ function winbar_menu:make_buf()
   vim.api.nvim_create_autocmd("WinClosed", {
     nested = true,
     group = groupid,
-    buffer = self.buf,
+    buf = self.buf,
     callback = function()
       -- Trigger self:close() when the popup window is closed
       -- to ensure the cursor is set to the correct previous window
@@ -487,7 +487,7 @@ function winbar_menu:make_buf()
   })
   vim.api.nvim_create_autocmd("CursorMoved", {
     group = groupid,
-    buffer = self.buf,
+    buf = self.buf,
     callback = function()
       local cursor = vim.api.nvim_win_get_cursor(self.win)
 
@@ -509,14 +509,14 @@ function winbar_menu:make_buf()
   })
   vim.api.nvim_create_autocmd("WinScrolled", {
     group = groupid,
-    buffer = self.buf,
+    buf = self.buf,
     callback = function()
       self:update_scrollbar()
     end,
   })
   vim.api.nvim_create_autocmd("BufLeave", {
     group = groupid,
-    buffer = self.buf,
+    buf = self.buf,
     callback = function()
       self:update_hover_hl()
 
@@ -689,7 +689,7 @@ function winbar_menu:open(opts)
       vim.api.nvim_win_set_cursor(self.win, self.prev_cursor)
     elseif self.cursor then
       vim.api.nvim_win_set_cursor(self.win, self.cursor)
-      vim.api.nvim_exec_autocmds("CursorMoved", { buffer = self.buf })
+      vim.api.nvim_exec_autocmds("CursorMoved", { buf = self.buf })
     end
   end
   self:update_scrollbar()

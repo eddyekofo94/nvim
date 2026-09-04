@@ -268,7 +268,7 @@ local function open_closeout(target)
 
   -- Read-only reference, but still a real window: yankable, searchable and
   -- scrollable on its own.
-  vim.keymap.set("n", "q", "<C-w>c", { buffer = buf, nowait = true })
+  vim.keymap.set("n", "q", "<C-w>c", { buf = buf, nowait = true })
 
   vim.w[win].agent_prompt_placement = placement
   return win

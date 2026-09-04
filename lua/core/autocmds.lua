@@ -150,7 +150,7 @@ augroup("last_pos_jmp", {
 
       vim.api.nvim_create_autocmd("FileType", {
         once = true,
-        buffer = args.buf,
+        buf = args.buf,
         callback = function(a)
           local ft = vim.bo[a.buf].ft
           if ft == "gitcommit" or ft == "gitrebase" then
@@ -231,7 +231,7 @@ augroup("prompt_keymaps", {
     desc = "Undo automatic <C-w> remap in prompt buffers.",
     callback = function(args)
       if vim.bo[args.buf].buftype == "prompt" then
-        vim.keymap.set("i", "<C-w>", "<C-S-W>", { buffer = args.buf })
+        vim.keymap.set("i", "<C-w>", "<C-S-W>", { buf = args.buf })
       end
     end,
   },
@@ -655,7 +655,7 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
         "n",
         "q",
         "<cmd>close<cr>",
-        { buffer = event.buf, silent = true }
+        { buf = event.buf, silent = true }
       )
     end
   end,

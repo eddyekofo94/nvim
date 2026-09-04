@@ -42,7 +42,7 @@ function M.get(mode, lhs)
       noremap = map.noremap == 1,
       silent = map.silent == 1,
       nowait = map.nowait == 1,
-      buffer = true, -- we adjust this based on 'is_buf' logic if needed
+      buf = true, -- we adjust this based on 'is_buf' logic if needed
       replace_keycodes = map.replace_keycodes == 1,
     }
   end
@@ -62,13 +62,14 @@ function M.get(mode, lhs)
       noremap = arg.noremap == 1,
       silent = arg.silent == 1,
       nowait = arg.nowait == 1,
-      buffer = arg.buffer == 1,
+      -- `maparg()` returns a Vimscript dict whose key stays `buffer`.
+      buf = arg.buffer == 1,
       replace_keycodes = arg.replace_keycodes == 1,
     }
   end
 
   -- Return default identity mapping (fallback to self)
-  return { lhs = lhs, rhs = lhs, noremap = true, buffer = false }
+  return { lhs = lhs, rhs = lhs, noremap = true, buf = false }
 end
 
 local warned_keys = {}
@@ -377,7 +378,7 @@ function Keymap.new(mode, lhs, rhs, opts)
 
     -- 3. Handle buffer-locality
     if bufnr then
-      nvim_opts.buffer = bufnr
+      nvim_opts.buf = bufnr
     end
 
     if self.mode == "!a" then
@@ -735,7 +736,7 @@ function M.amend(modes, lhs, rhs, opts)
     -- Use tbl_deep_extend to merge user opts with our logic
     local final_opts = vim.tbl_deep_extend("force", opts, {
       desc = opts.desc or ("Amended: " .. (key_def.desc or lhs)),
-      buffer = opts.buffer or key_def.buffer,
+      buf = opts.buf or key_def.buf,
     })
 
     vim.keymap.set(mode, lhs, rhs_fn, final_opts)

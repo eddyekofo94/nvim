@@ -596,12 +596,12 @@ return {
           "n",
           "<CR>",
           preview_edit,
-          { buffer = preview_buf, desc = "Open file from preview" }
+          { buf = preview_buf, desc = "Open file from preview" }
         )
         vim.api.nvim_create_autocmd("BufReadCmd", {
           desc = "Edit corresponding file in oil preview buffers.",
           group = vim.api.nvim_create_augroup("oil.preview_edit", {}),
-          buffer = preview_buf,
+          buf = preview_buf,
           callback = vim.schedule_wrap(preview_edit),
         })
 

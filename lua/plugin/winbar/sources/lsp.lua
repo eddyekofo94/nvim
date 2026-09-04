@@ -314,7 +314,7 @@ local function attach(buf)
   vim.b[buf].winbar_lsp_attached =
     vim.api.nvim_create_autocmd(configs.opts.bar.update_events.buf, {
       group = groupid,
-      buffer = buf,
+      buf = buf,
       callback = function(args)
         update_symbols(args.buf)
       end,

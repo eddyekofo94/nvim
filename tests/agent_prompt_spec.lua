@@ -265,13 +265,13 @@ describe("agent prompt editor", function()
     assert.is_true(agent_prompt.is_prompt_buf(buf))
 
     -- auto_cwd would otherwise lcd this window into $TMPDIR on re-entry
-    vim.api.nvim_exec_autocmds("BufEnter", { buffer = buf })
+    vim.api.nvim_exec_autocmds("BufEnter", { buf = buf })
     assert.are.equal(repo, vim.fn.getcwd(win))
 
     -- change_to_cur_dir is the other rooting autocmd, and it defers its lcd
     -- with vim.schedule — it lands after the prompt editor has laid out, so
     -- drain the scheduler before believing the cwd survived
-    vim.api.nvim_exec_autocmds("BufWinEnter", { buffer = buf })
+    vim.api.nvim_exec_autocmds("BufWinEnter", { buf = buf })
     vim.wait(50)
     assert.are.equal(repo, vim.fn.getcwd(win))
   end)
