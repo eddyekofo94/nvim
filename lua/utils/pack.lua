@@ -297,8 +297,19 @@ function M.register(specs, default)
       and spec.data
       and spec.data.asdeps
 
-    specs_registry[spec.src] =
+    local merged =
       vim.tbl_deep_extend("force", existing_spec or default or {}, spec)
+
+    -- `vim.tbl_deep_extend` recurses into a table that both sides define and
+    -- rebuilds it without its metatable. A `vim.version.range()` result loses
+    -- `has()` that way, and `vim.pack` then rejects it as a plain table. Specs
+    -- are registered more than once (startup, deferred `opt` load,
+    -- `:PackInstallAll`), so keep the range object by reference.
+    merged.version = spec.version
+      or (existing_spec and existing_spec.version)
+      or merged.version
+
+    specs_registry[spec.src] = merged
 
     -- `asdeps` in the existing and new spec should be `AND`ed together
     if specs_registry[spec.src].data then
