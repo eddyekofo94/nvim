@@ -1,6 +1,6 @@
 ---@type pack.spec
 return {
-  src = "https://github.com/echasnovski/mini.ai",
+  src = "https://github.com/nvim-mini/mini.ai",
   data = {
     enabled = true,
     postload = function()

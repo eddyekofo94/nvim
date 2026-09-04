@@ -4,7 +4,7 @@ return {
   data = {
     deps = {
       {
-        src = "https://github.com/kyazdani42/nvim-web-devicons",
+        src = "https://github.com/nvim-tree/nvim-web-devicons",
         data = { optional = false },
       },
       {

@@ -66,7 +66,7 @@
     },
     "focus.nvim": {
       "rev": "36ebedeebe82ebea250c9d671769194caa033902",
-      "src": "https://github.com/beauwilliams/focus.nvim"
+      "src": "https://github.com/nvim-focus/focus.nvim"
     },
     "fugitive-gitlab.vim": {
       "rev": "3584cf7e607ba7822f991d407a8d780e05aae287",
@@ -114,15 +114,15 @@
     },
     "mason.nvim": {
       "rev": "2a6940af80375532e5e9e7c1f2fc6319a1b7a69d",
-      "src": "https://github.com/williamboman/mason.nvim"
+      "src": "https://github.com/mason-org/mason.nvim"
     },
     "mini.ai": {
       "rev": "25248c6aa002391936a6200f12d1466015987133",
-      "src": "https://github.com/echasnovski/mini.ai"
+      "src": "https://github.com/nvim-mini/mini.ai"
     },
     "mini.nvim": {
-      "rev": "05a80b0340a92136a93ab04346cf97de3f165948",
-      "src": "https://github.com/echasnovski/mini.nvim"
+      "rev": "9d01f392b33fb2ba36fbc87fc0bf4453e63ffb0a",
+      "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "molten-nvim": {
       "rev": "bedea63819c618e007e7c40059fc6e72d598c8df",
@@ -158,7 +158,7 @@
     },
     "nvim-colorizer.lua": {
       "rev": "72a05f62c52241bc7441c820eb53946f92b2e6a4",
-      "src": "https://github.com/NvChad/nvim-colorizer.lua"
+      "src": "https://github.com/catgoose/nvim-colorizer.lua"
     },
     "nvim-dap": {
       "rev": "9e848e09a697ee95302a3ef2dd43fd6eb709e570",
@@ -207,8 +207,8 @@
       "version": "'main'"
     },
     "nvim-web-devicons": {
-      "rev": "0ca28b61a04fe7426cefbdd52c2647ef0e335b5f",
-      "src": "https://github.com/kyazdani42/nvim-web-devicons"
+      "rev": "5f032a85be210cd1c6ac98861eb3b187ff3bd5eb",
+      "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
     "one-small-step-for-vimkind": {
       "rev": "1af6ffb9b5229a856e8090fa2f690e0931a5aace",

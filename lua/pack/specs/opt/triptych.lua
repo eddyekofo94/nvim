@@ -6,7 +6,7 @@ return {
     enabled = true,
     deps = {
       "https://github.com/nvim-lua/plenary.nvim",
-      "https://github.com/kyazdani42/nvim-web-devicons",
+      "https://github.com/nvim-tree/nvim-web-devicons",
     },
     postload = function()
       local lmap = require("utils.key").lmap

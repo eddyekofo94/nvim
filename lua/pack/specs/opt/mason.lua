@@ -1,6 +1,6 @@
 ---@type pack.spec
 return {
-  src = "https://github.com/williamboman/mason.nvim",
+  src = "https://github.com/mason-org/mason.nvim",
   data = {
     cmds = { "Mason", "MasonInstall", "MasonInstallAll", "MasonUpdate" },
     init = function()

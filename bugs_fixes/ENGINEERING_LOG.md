@@ -200,3 +200,34 @@ still reports the two pre-existing diffs in `lua/plugin/agent-prompt.lua` and
 `an` expands and `in` shrinks the selection, `aN` is mini.ai's around-next,
 themeswitcher and nvterm no longer load, and diffview still pulls plenary
 through the converted `deps`. No real-TTY QA yet.
+
+## 2026-09-04 - Neovim 0.13 upgrade phase 3: moved plugin repositories
+
+Seven specs still pointed at repositories that had moved. Repointed in one
+commit with `nvim-pack-lock.json`:
+
+- `focus.nvim` `beauwilliams` -> `nvim-focus`.
+- `mini.nvim` and `mini.ai` `echasnovski` -> `nvim-mini`.
+- `nvim-web-devicons` `kyazdani42` -> `nvim-tree`, in the standalone spec and
+  the five `deps` entries (`fzf-lua`, `oil`, `blink-cmp`, `nvim-dap-ui`,
+  `triptych`); the plan listed four and missed `triptych.lua:9`.
+- `nvim-colorizer.lua` `NvChad` -> `catgoose`.
+- `mason.nvim` `williamboman` -> `mason-org`, in `mason.lua` and the
+  `mason-tool-installer.nvim` dep entry.
+
+Plan correction: `vim.pack` does **not** delete and re-clone when `src`
+changes. `vim.pack.get()` reported every new URL and `:PackInstallAll` was a
+no-op — the on-disk remotes and the lockfile kept the old owners, so a future
+`vim.pack.update()` would have fetched from the moved repositories. The
+re-clone has to be forced: `vim.pack.del()` the six directories, then
+`:PackInstallAll`. Only `mason-tool-installer.nvim` needed no store change,
+because just its dep entry moved.
+
+Two revisions advanced with the move: `mini.nvim` `05a80b03` -> `9d01f392` and
+`nvim-web-devicons` `0ca28b61` -> `5f032a85`. The other four re-cloned at the
+same revision.
+
+Automated status: `tools/verify.sh` passes, including `tools/check_pack_lock.lua`
+(no lockfile entry lacks a spec) and the dirty-checkout scan over all 78 plugin
+directories. `make format-check` and `make lint` not run in this phase. No
+real-TTY QA yet.

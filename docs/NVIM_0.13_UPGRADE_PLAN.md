@@ -89,12 +89,17 @@ decide in Phase 5 whether to `:packdel` them too.
 `vim.pack` deletes and re-clones a plugin when `src` changes, so batch these and
 commit `nvim-pack-lock.json` with them.
 
+Corrected 2026-09-04: it does not. Editing `src` alone leaves the on-disk
+remote and the lockfile on the old owner even though `vim.pack.get()` reports
+the new URL. Force the re-clone with `vim.pack.del()` on the six store
+directories, then `:PackInstallAll`.
+
 | Spec | New `src` |
 |---|---|
 | `lua/pack/specs/start/focus.lua:3` | `https://github.com/nvim-focus/focus.nvim` |
 | `lua/pack/specs/opt/mini.lua:3` | `https://github.com/nvim-mini/mini.nvim` |
 | `lua/pack/specs/opt/mini_ai.lua:3` | `https://github.com/nvim-mini/mini.ai` |
-| `lua/pack/specs/opt/nvim-web-devicons.lua:3` and dep entries in `fzf-lua.lua:8`, `oil.lua:7`, `blink-cmp.lua:17`, `nvim-dap-ui.lua:10` | `https://github.com/nvim-tree/nvim-web-devicons` |
+| `lua/pack/specs/opt/nvim-web-devicons.lua:3` and dep entries in `fzf-lua.lua:8`, `oil.lua:7`, `blink-cmp.lua:17`, `nvim-dap-ui.lua:10`, `triptych.lua:9` | `https://github.com/nvim-tree/nvim-web-devicons` |
 | `lua/pack/specs/opt/nvim-colorizer.lua:3` | `https://github.com/catgoose/nvim-colorizer.lua` |
 | `lua/pack/specs/opt/mason.lua:3`, `mason-tool-installer.lua:6` | `https://github.com/mason-org/mason.nvim` |
 

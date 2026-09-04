@@ -7,7 +7,7 @@ return {
       { src = "https://github.com/mfussenegger/nvim-dap" },
       { src = "https://github.com/nvim-neotest/nvim-nio" },
       {
-        src = "https://github.com/kyazdani42/nvim-web-devicons",
+        src = "https://github.com/nvim-tree/nvim-web-devicons",
         data = { optional = true },
       },
     },

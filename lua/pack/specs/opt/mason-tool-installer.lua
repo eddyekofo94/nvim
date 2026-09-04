@@ -3,7 +3,7 @@ return {
   src = "https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim",
   data = {
     deps = {
-      { src = "https://github.com/williamboman/mason.nvim" },
+      { src = "https://github.com/mason-org/mason.nvim" },
     },
     cmds = { "MasonToolsInstall", "MasonToolsUpdate", "MasonToolsClean" },
     postload = function()
