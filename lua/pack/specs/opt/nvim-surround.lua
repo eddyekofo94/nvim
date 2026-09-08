@@ -1,6 +1,9 @@
 ---@type pack.spec
 return {
   src = "https://github.com/kylechui/nvim-surround",
+  -- The author ships breaking changes across majors, so stay inside 4.x.
+  -- `vim.pack` resolves this to the greatest semver tag in range.
+  version = vim.version.range("4.x"),
   data = {
     keys = {
       { lhs = "ys", opts = { desc = "Surround" } },

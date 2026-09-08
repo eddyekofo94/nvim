@@ -298,6 +298,35 @@ require("utils.load").on_events(
       vim.api.nvim_feedkeys("y", "n", false)
     end
 
+    -- Neovim 0.12 replaced nvim-treesitter-incremental-selection with the
+    -- built-in |v_an| / |v_in| maps, which use treesitter and only fall back
+    -- to LSP when the buffer has no parser. Keep the removed plugin's
+    -- preference instead: use `textDocument/selectionRange` whenever a client
+    -- advertises it, and fall back to the built-in treesitter maps otherwise.
+    ---@param direction 1|-1 expand (1) or shrink (-1) the selection
+    local function lsp_selection_range(direction)
+      ---@param fallback function built-in `an`/`in` mapping
+      return function(fallback)
+        if
+          vim.tbl_isempty(vim.lsp.get_clients({
+            bufnr = 0,
+            method = "textDocument/selectionRange",
+          }))
+        then
+          fallback()
+          return
+        end
+        vim.lsp.buf.selection_range(direction * vim.v.count1)
+      end
+    end
+
+    key.amend("x", "an", lsp_selection_range(1), {
+      desc = "Expand selection to parent node",
+    })
+    key.amend("x", "in", lsp_selection_range(-1), {
+      desc = "Shrink selection to child node",
+    })
+
     -- Yank paragraphs as single lines, useful for yanking hard-wrapped
     -- paragraphs in nvim and paste it in browsers or other editors
     map({ "n", "x" }, "gy", yank_joined_paragraphs, {

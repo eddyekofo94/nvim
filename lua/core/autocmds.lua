@@ -43,24 +43,11 @@ do
     "FileType",
     {
       once = true,
-      desc = "Prevent treesitter from attaching to big files.",
+      desc = "Prevent treesitter folding in big files.",
       callback = function(args)
         vim.api.nvim_del_autocmd(args.id)
 
-        local ts_get_parser = vim.treesitter.get_parser
         local ts_foldexpr = vim.treesitter.foldexpr
-
-        ---@diagnostic disable-next-line: duplicate-set-field
-        function vim.treesitter.get_parser(buf, ...)
-          buf = vim._resolve_bufnr(buf)
-          if vim.api.nvim_buf_is_valid(buf) and vim.b[buf].bigfile then
-            return vim.treesitter._create_parser(
-              vim.api.nvim_create_buf(false, true),
-              vim.treesitter.language.get_lang(vim.bo.ft) or vim.bo.ft
-            )
-          end
-          return ts_get_parser(buf, ...)
-        end
 
         ---@diagnostic disable-next-line: duplicate-set-field
         function vim.treesitter.foldexpr(...)
@@ -109,7 +96,7 @@ augroup("yank_highlight", {
   {
     desc = "Highlight the selection on yank.",
     callback = function()
-      pcall(vim.highlight.on_yank, {
+      pcall(vim.hl.hl_op, {
         higroup = "Visual",
         timeout = 250,
       })
@@ -163,7 +150,7 @@ augroup("last_pos_jmp", {
 
       vim.api.nvim_create_autocmd("FileType", {
         once = true,
-        buffer = args.buf,
+        buf = args.buf,
         callback = function(a)
           local ft = vim.bo[a.buf].ft
           if ft == "gitcommit" or ft == "gitrebase" then
@@ -244,7 +231,7 @@ augroup("prompt_keymaps", {
     desc = "Undo automatic <C-w> remap in prompt buffers.",
     callback = function(args)
       if vim.bo[args.buf].buftype == "prompt" then
-        vim.keymap.set("i", "<C-w>", "<C-S-W>", { buffer = args.buf })
+        vim.keymap.set("i", "<C-w>", "<C-S-W>", { buf = args.buf })
       end
     end,
   },
@@ -342,7 +329,7 @@ do
       desc = "Set quickfix window initial height.",
       pattern = "qf",
       callback = function(args)
-        vim.api.nvim_win_set_height(vim.fn.bufwinid(args.buf), 10)
+        vim.api.nvim_win_resize(vim.fn.bufwinid(args.buf), -1, 10)
       end,
     },
   })
@@ -668,7 +655,7 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
         "n",
         "q",
         "<cmd>close<cr>",
-        { buffer = event.buf, silent = true }
+        { buf = event.buf, silent = true }
       )
     end
   end,

@@ -1,5 +1,73 @@
 # Engineering log
 
+## 2026-09-08 - Neovim 0.13 upgrade, phase 6 (manual QA and gates)
+
+Branch `chore/nvim-0.13-upgrade`, phase 6 of `docs/NVIM_0.13_UPGRADE_PLAN.md`.
+No plugin versions changed. Full record in `docs/MANUAL_QA.md`.
+
+- Walked `docs/MANUAL_QA.md` plus the research's unverified items in a real pty
+  (200x50, `TERM_PROGRAM=ghostty`) driving the rebuilt
+  `NVIM v0.13.0-dev-1561+gb3bd442c5c-Homebrew`. No 0.13 regression found.
+- Closed three of the four unverified rows in
+  `docs/NVIM_0.13_MIGRATION_RESEARCH.md` §4: `'statusline'` and
+  `'statuscolumn'` `%=` alignment is correct under the 0.13 item-group change,
+  noice consumes the 0.13 message events, and `blink-cmp-rg.nvim` still
+  produces items against blink `v1.10.0-233-g49d39fda` (33 of 35 items).
+- `vim.ui.img` under Ghostty stays unverified: the harness pty answers no kitty
+  APC query, so `vim.ui.img._supported()` is `false` by construction. This
+  build also has no `vim.ui.img` healthcheck, so the research's
+  `:checkhealth vim.ui.img` line is stale.
+- fzf-lua pickers stay unverified: the picker float opens but the `fzf` process
+  never attaches under the harness (`channel = 0`), and `<C-g>` stalls the
+  driver. Their headless specs still pass.
+- `make format-check` failed on `lua/plugin/agent-prompt.lua` and
+  `tests/agent_prompt_spec.lua`. Both files fail the same way on `master`, so
+  the drift is stylua 2.5.2 behaviour that predates the upgrade. Fixed with
+  `make format`; `tools/verify.sh` and `make lint` were already green.
+
+## 2026-09-04 - Neovim 0.13 upgrade, phase 1 (config-owned deprecations)
+
+Branch `chore/nvim-0.13-upgrade`, phase 1 of `docs/NVIM_0.13_UPGRADE_PLAN.md`.
+No plugin versions changed.
+
+- Replaced the removed `BufModifiedSet` event with `OptionSet` matching the
+  `modified` option in `plugin/intro.lua`. This was a hard `Invalid 'event'`
+  error on every interactive no-argument start. Applied the same swap in the
+  disabled `lua/plugin/winbar/` fork through a new `update_events.buf_options`
+  list, so the winbar keeps a filtered `OptionSet` autocmd instead of an
+  unfiltered one on every option write.
+- Renamed the `vim.diagnostic.config()` jump field `callback` to the documented
+  `on_jump(diagnostic, bufnr)`. `]d` / `[d` never opened the float before this.
+- `vim.F.npcall` -> `vim.npcall` in 8 files (deprecated 0.13, removed 0.15).
+- `vim.highlight.on_yank` -> `vim.hl.hl_op` (deprecated, removal in 0.14).
+- `vim.loop.os_uname` -> `vim.uv.os_uname` in `after/lsp/eslint.lua`.
+- Rebuilt the `:Lsp` subcommands on the 0.13 capability API:
+  `semantic_tokens.start/stop` and `codelens.clear/display/save/on_codelens/
+  refresh` are gone, replaced by `*_enable`, `*_disable`, `*_toggle`, and
+  `*_is_enabled` over `enable(bool, filter)`. `codelens_get` now takes a filter
+  table and prints its result.
+- Deleted the `vim.treesitter.get_parser` monkey patch in `lua/core/autocmds.lua`
+  that called the private `vim.treesitter._create_parser`. Big-file protection
+  still comes from the existing `vim.treesitter.stop()` autocmd and the
+  `foldexpr` guard, which were kept.
+- Fixed the two callers that relied on `get_parser` throwing. On 0.13 it returns
+  `nil, err`, so a bare `pcall` always succeeded: `lua/plugin/statusline.lua`
+  showed the ` TS` indicator for every buffer and
+  `lua/pack/specs/start/dropbar.nvim.lua` attached Dropbar to every buffer.
+  Both now test the returned parser, and the statusline also skips big files.
+- Added two checks to `tools/verify.sh`: a UI-less probe that sources
+  `plugin/intro.lua` with `vim.g.has_ui` stubbed (the existing headless runs
+  never reached its autocmds), and a `:checkhealth vim.deprecated` gate that
+  fails on any traceback pointing back into this repository.
+
+Automated status: `tools/verify.sh` passes. `:checkhealth vim.deprecated`
+reports no deprecated functions. The intro probe was negative-tested by
+re-adding `BufModifiedSet` and confirming it fails.
+
+Known baseline, unchanged: whole-repository `make format-check` fails on
+pre-existing drift in `lua/plugin/agent-prompt.lua`. `stylua --check` is clean
+on every file this phase touched.
+
 ## 2026-07-15 - Neovim HEAD and plugin compatibility refresh
 
 - Updated Neovim from `v0.13.0-dev-3729+g0bb2f5cc08` to
@@ -119,3 +187,151 @@ startup, and repeated Copilot process-lifecycle checks pass. Real-TTY QA showed
 Copilot `Online` and attached with an inline suggestion and `<C-j>` mapping;
 Sidekick's live 18-entry CLI selector opened normally. Every QA exit left zero
 Copilot language-server orphans.
+
+## 2026-09-04 - Neovim 0.13 upgrade phase 2: plugin and lockfile removals
+
+- Deleted `nvim-treesitter-incremental-selection` (archived upstream) and
+  `nvterm` (unmaintained; `lua/plugin/term.lua` already owns terminals).
+- Gave Neovim's built-in |v_an| / |v_in| ownership of visual `an` / `in`, and
+  moved mini.ai's next/last textobjects to `aN`/`iN`/`aL`/`iL` as
+  |MiniAi-default-an-in| recommends, freeing 0.13's `al`/`il` as well.
+- Kept the removed plugin's LSP preference in `lua/core/keymaps.lua`:
+  `an`/`in` call `vim.lsp.buf.selection_range()` when a client advertises
+  `textDocument/selectionRange` and fall back to the built-in maps otherwise.
+- Fixed `utils.key.get()`, which only searched `nvim_get_keymap()` and so never
+  found Neovim's own Visual+Select defaults. `key.amend()` silently replaced
+  built-in maps instead of wrapping them; it now consults `maparg()` and
+  `fallback_fn()` re-feeds the result of an `expr` mapping.
+- Implemented `data.enabled` in `lua/utils/pack.lua`. Four specs
+  (fluoride, nvterm, termite, themeswitcher) set `enabled = false` and loaded
+  anyway; the plan's count of seven also listed noice, sidekick, and which-key,
+  which only set `enabled` inside their own setup tables.
+- Converted the five inert lazy.nvim `dependencies` lists to `deps` with full
+  source URLs and dropped neogit's inert `branch`. lazydev's archived
+  `Bilal2453/luvit-meta` dependency became Neovim's bundled
+  `${3rd}/luv/library`.
+- `:packdel`'d nine lockfile entries with no spec: the six known orphans
+  (`lsp-timeout.nvim`, `mini.icons`, `nvim-lspconfig`, `smart-motion.nvim`,
+  `snacks.nvim`, `volt`), plus `oil.nvim` (replaced by the `canola.nvim` fork,
+  which ships the same `oil` module), `nvterm`, and
+  `nvim-treesitter-incremental-selection`. Lockfile and store are both 78.
+- Added `tools/check_pack_lock.lua` to `tools/verify.sh`, because `vim.pack`
+  reinstalls every lockfile entry on its first call, so a spec-less entry
+  otherwise returns after `:restart`.
+
+Automated status: `tools/verify.sh` and `make lint` pass; `make format-check`
+still reports the two pre-existing diffs in `lua/plugin/agent-prompt.lua` and
+`tests/agent_prompt_spec.lua`, unchanged by this phase. Headless checks confirm
+`an` expands and `in` shrinks the selection, `aN` is mini.ai's around-next,
+themeswitcher and nvterm no longer load, and diffview still pulls plenary
+through the converted `deps`. No real-TTY QA yet.
+
+## 2026-09-04 - Neovim 0.13 upgrade phase 3: moved plugin repositories
+
+Seven specs still pointed at repositories that had moved. Repointed in one
+commit with `nvim-pack-lock.json`:
+
+- `focus.nvim` `beauwilliams` -> `nvim-focus`.
+- `mini.nvim` and `mini.ai` `echasnovski` -> `nvim-mini`.
+- `nvim-web-devicons` `kyazdani42` -> `nvim-tree`, in the standalone spec and
+  the five `deps` entries (`fzf-lua`, `oil`, `blink-cmp`, `nvim-dap-ui`,
+  `triptych`); the plan listed four and missed `triptych.lua:9`.
+- `nvim-colorizer.lua` `NvChad` -> `catgoose`.
+- `mason.nvim` `williamboman` -> `mason-org`, in `mason.lua` and the
+  `mason-tool-installer.nvim` dep entry.
+
+Plan correction: `vim.pack` does **not** delete and re-clone when `src`
+changes. `vim.pack.get()` reported every new URL and `:PackInstallAll` was a
+no-op — the on-disk remotes and the lockfile kept the old owners, so a future
+`vim.pack.update()` would have fetched from the moved repositories. The
+re-clone has to be forced: `vim.pack.del()` the six directories, then
+`:PackInstallAll`. Only `mason-tool-installer.nvim` needed no store change,
+because just its dep entry moved.
+
+Two revisions advanced with the move: `mini.nvim` `05a80b03` -> `9d01f392` and
+`nvim-web-devicons` `0ca28b61` -> `5f032a85`. The other four re-cloned at the
+same revision.
+
+Automated status: `tools/verify.sh` passes, including `tools/check_pack_lock.lua`
+(no lockfile entry lacks a spec) and the dirty-checkout scan over all 78 plugin
+directories. `make format-check` and `make lint` not run in this phase. No
+real-TTY QA yet.
+
+## 2026-09-04 - Neovim 0.13 upgrade phase 4: plugin-side migrations
+
+- `nvim-treesitter`: dropped the `cmds` lazy trigger (README: "This plugin does
+  not support lazy-loading") and the inert `ft` field, deleted
+  `install.prefer_git` / `install.compilers` which no longer exist in
+  `install.lua`, and made `build` wait on the async
+  `require("nvim-treesitter").update()`. `:TSInstall` and friends now come
+  from the plugin's own `plugin/nvim-treesitter.lua`.
+- `nvim-treesitter-textobjects` needed no change. Rejected the plan's
+  conditional `vim.g.no_plugin_maps = true`: runtime `ftplugin/help.lua`,
+  `markdown.lua` and `checkhealth.lua` map `]]`/`[[` without consulting the
+  flag, so it fixes nothing there, while it silently drops `K` in `:Man` and
+  `<CR>`/`<C-]>` in `:help`. The `]m`/`[m` shadowing by 18 runtime ftplugins is
+  real but predates 0.13 and wants per-filetype `vim.g.no_<ft>_maps`.
+- LuaSnip: removed the `vimversion.ge` memoization. Upstream `ge()` is now
+  arithmetic over a module-level `vim.version()` table, so the wrapper was pure
+  overhead. Expansion retested: `snip_expand` inserts the node text and
+  `in_snippet()` / `jumpable(1)` are true.
+- `nvim-surround` pinned to `vim.version.range("4.x")`. This exposed a wrapper
+  bug: `utils.pack.register` merges with `vim.tbl_deep_extend`, which rebuilds
+  a table both sides define and loses its metatable, so the second registration
+  of a spec turned the range into a plain table and `vim.pack` rejected it
+  ("spec.version: expected string or vim.VersionRange, got table"). `version`
+  is now carried by reference.
+- Renamed 81 `buffer =` keys to `buf =` in keymap and autocmd opts. Kept
+  `buffer` where it is not Neovim's: blink-cmp's source name, oil's keymap
+  schema (`tbl_extend('keep', { buffer = bufnr }, opts)` in the plugin), and
+  `maparg()`'s Vimscript return dict. Found and fixed a latent bug on the way:
+  `core/lsp.lua:241` filtered `vim.lsp.get_clients` on `buffer`, a key that API
+  ignores, so it matched every client instead of the attached ones; the
+  documented key is `bufnr`.
+- Migrated ten `nvim_win_set_height` / `nvim_win_set_width` calls to
+  `nvim_win_resize(win, width, height)` with `-1` for the unchanged axis. Two
+  sites passed the setter as a value and now wrap it.
+
+Automated status: `tools/verify.sh` passes after each of the six commits.
+`make format-check` still reports only the two pre-existing diffs in
+`lua/plugin/agent-prompt.lua` and `tests/agent_prompt_spec.lua`. `make lint`
+not run separately; `luacheck` runs inside `tools/verify.sh`. No real-TTY QA.
+
+## 2026-09-08 - Neovim 0.13 upgrade phase 5: rebuild HEAD and update every plugin
+
+- `brew reinstall neovim --HEAD` is not a valid Homebrew invocation — `reinstall`
+  has no `--HEAD` flag and exits with `Error: invalid option: --HEAD`. The
+  working refresh for a HEAD install is `brew upgrade --fetch-HEAD neovim`.
+  Build moved `HEAD-4b69d3f` -> `HEAD-b3bd442_1`, i.e.
+  `0.13.0-dev-998+g4b69d3fd2d` -> `0.13.0-dev-1561+gb3bd442c5c`.
+  `nvim-version.txt` refreshed; README line 91 now says Neovim 0.13.
+- `tools/verify.sh` passes on the rebuilt binary *before* any plugin update, so
+  the 563 upstream commits introduced no config-visible regression on their own.
+- `vim.pack.update()` advanced 29 of 78 plugins.
+- Breakage 1: `tools/verify.sh` failed with `blink native library unavailable`.
+  Root cause is in this config, not in blink.cmp. `lua/core/pack.lua` defers the
+  `opt` specs to `UIEnter` when Neovim starts with no file arguments, and
+  `utils.pack.add()` is what installs the `PackChanged` build hooks. An update
+  started before that registration fetches new revisions and silently skips
+  every `opt` plugin's build step, so blink.cmp landed at `49d39fda` without its
+  Rust fuzzy library. `PackInstallAll` and `PackUpdateAll` now share
+  `add_all_specs()`, which registers both spec directories first.
+- Breakage 2: `:checkhealth vim.pack` still reported the six off-lock checkouts
+  the plan expected the update to resolve (onedark.nvim, vim-fugitive,
+  triptych.nvim, termite.nvim, gruvbox-material, themeswitcher.nvim).
+  Plan correction: an update cannot fix them. All six are already at their
+  branch tip, so `vim.pack.update()` — including with `offline = true`, which
+  only computes — has nothing to apply and leaves the stale `rev` in place. The
+  documented remedy is the one checkhealth prints: delete the `rev` entry and
+  restart, which made vim.pack report `Repaired corrupted lock data for
+  plugins: ...` and rewrite all six.
+- Still open, deliberately: `fluoride` remains installed but inactive
+  (`enabled = false` from phase 2). Phase 2 left the `:packdel` decision to
+  phase 5; it is a preference, not a 0.13 correctness issue, so it stays.
+
+Automated status: `tools/verify.sh` passes on the rebuilt HEAD with every
+plugin updated, including `tools/check_pack_lock.lua` and the dirty-checkout
+scan. `:checkhealth vim.pack` reports zero errors; `:checkhealth
+vim.deprecated` reports no config-owned traceback (enforced inside
+`tools/verify.sh`). `make format-check` and `make lint` not run in this phase.
+No real-TTY QA — that is phase 6.

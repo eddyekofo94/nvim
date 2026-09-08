@@ -10,6 +10,12 @@ local M = {}
 ---Useful for optional dependencies and plugins that are only used under
 ---specific conditions
 ---@field optional? boolean
+---Whether the plugin is managed at all
+---
+---A spec with `enabled=false` is skipped entirely: `vim.pack` never installs
+---or updates it, it never loads, and it cannot be pulled in as another
+---plugin's dependency or extension
+---@field enabled? boolean
 ---@field deps? pack.spec|pack.spec[] Dependencies of the plugin, always loaded **before** the main plugin
 ---@field exts? pack.spec|pack.spec[] Extensions of the plugin, always loaded **after** the main plugin
 ---Build command for the plugin, useful for plugins that need
@@ -71,6 +77,7 @@ local structured_data_fields = {
   "cmd",
   "cmds",
   "deps",
+  "enabled",
   "event",
   "events",
   "exts",
@@ -115,7 +122,7 @@ function M.load(spec, path)
     spec = { src = spec }
   end
 
-  if spec.data and spec.data.optional then
+  if spec.data and (spec.data.optional or spec.data.enabled == false) then
     return
   end
 
@@ -135,7 +142,9 @@ function M.load(spec, path)
       ipairs(spec.data.deps --[=[@as pack.spec[]]=])
     do
       local dep_spec = specs_registry[type(dep) == "string" and dep or dep.src]
-      M.load(dep_spec, M.path(dep_spec))
+      if dep_spec then
+        M.load(dep_spec, M.path(dep_spec))
+      end
     end
   end
 
@@ -165,7 +174,9 @@ function M.load(spec, path)
       ipairs(spec.data.exts --[=[@as pack.spec[]]=])
     do
       local ext_spec = specs_registry[type(ext) == "string" and ext or ext.src]
-      M.load(ext_spec, M.path(ext_spec))
+      if ext_spec then
+        M.load(ext_spec, M.path(ext_spec))
+      end
     end
   end
 end
@@ -235,6 +246,12 @@ function M.register(specs, default)
     normalize_structured_data(specs[i])
   end
 
+  -- Disabled specs are dropped before registration so they never reach
+  -- `vim.pack.add()`, never load, and never resolve as a dependency
+  specs = vim.tbl_filter(function(spec)
+    return not (spec.data and spec.data.enabled == false)
+  end, specs) --[=[@as pack.structured_spec[]]=]
+
   -- Set default fields in the spec, prepare for merging and registration
   for _, spec in ipairs(specs) do
     local existing_spec = specs_registry[spec.src]
@@ -280,8 +297,19 @@ function M.register(specs, default)
       and spec.data
       and spec.data.asdeps
 
-    specs_registry[spec.src] =
+    local merged =
       vim.tbl_deep_extend("force", existing_spec or default or {}, spec)
+
+    -- `vim.tbl_deep_extend` recurses into a table that both sides define and
+    -- rebuilds it without its metatable. A `vim.version.range()` result loses
+    -- `has()` that way, and `vim.pack` then rejects it as a plain table. Specs
+    -- are registered more than once (startup, deferred `opt` load,
+    -- `:PackInstallAll`), so keep the range object by reference.
+    merged.version = spec.version
+      or (existing_spec and existing_spec.version)
+      or merged.version
+
+    specs_registry[spec.src] = merged
 
     -- `asdeps` in the existing and new spec should be `AND`ed together
     if specs_registry[spec.src].data then

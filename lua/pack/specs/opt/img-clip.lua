@@ -126,7 +126,7 @@ $INDENTcaption: [$LABEL$CURSOR],
         buf = vim._resolve_bufnr(buf)
         if filetypes[vim.bo[buf].ft] then
           vim.keymap.set("n", "<Leader>p", img_clip.paste_image, {
-            buffer = buf,
+            buf = buf,
             desc = "Paste image",
           })
         end

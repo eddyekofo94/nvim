@@ -2,7 +2,7 @@
 return {
   src = "https://github.com/folke/noice.nvim",
   data = {
-    dependencies = { "MunifTanjim/nui.nvim" },
+    deps = { "https://github.com/MunifTanjim/nui.nvim" },
     postload = function()
       require("noice").setup({
         cmdline = {

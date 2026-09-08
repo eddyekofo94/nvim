@@ -27,8 +27,8 @@ return {
                 emsg_silent = true,
               },
             })
-            vim.keymap.del("n", "}|", { buffer = buf })
-            vim.keymap.del("n", "{|", { buffer = buf })
+            vim.keymap.del("n", "}|", { buf = buf })
+            vim.keymap.del("n", "{|", { buf = buf })
             return
           end
 

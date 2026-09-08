@@ -1,6 +1,6 @@
 ---@type pack.spec
 return {
-  src = "https://github.com/beauwilliams/focus.nvim",
+  src = "https://github.com/nvim-focus/focus.nvim",
   data = {
     events = { event = "BufReadPre" },
     enabled = true,

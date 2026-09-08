@@ -78,7 +78,9 @@ describe("agent prompt editor", function()
     -- A live closeout autocmd outlasting its test would fire on the teardown
     -- below and quit the whole run, taking the remaining specs with it.
     for _, au in ipairs(vim.api.nvim_get_autocmds({ event = "WinClosed" })) do
-      if au.group_name and au.group_name:find("AgentPromptCloseout", 1, true) then
+      if
+        au.group_name and au.group_name:find("AgentPromptCloseout", 1, true)
+      then
         pcall(vim.api.nvim_del_augroup_by_id, au.group)
       end
     end
@@ -265,13 +267,13 @@ describe("agent prompt editor", function()
     assert.is_true(agent_prompt.is_prompt_buf(buf))
 
     -- auto_cwd would otherwise lcd this window into $TMPDIR on re-entry
-    vim.api.nvim_exec_autocmds("BufEnter", { buffer = buf })
+    vim.api.nvim_exec_autocmds("BufEnter", { buf = buf })
     assert.are.equal(repo, vim.fn.getcwd(win))
 
     -- change_to_cur_dir is the other rooting autocmd, and it defers its lcd
     -- with vim.schedule — it lands after the prompt editor has laid out, so
     -- drain the scheduler before believing the cwd survived
-    vim.api.nvim_exec_autocmds("BufWinEnter", { buffer = buf })
+    vim.api.nvim_exec_autocmds("BufWinEnter", { buf = buf })
     vim.wait(50)
     assert.are.equal(repo, vim.fn.getcwd(win))
   end)
@@ -368,7 +370,7 @@ describe("agent prompt editor", function()
 
     -- Stands in for the squeeze a Herdr split forces on a pane too short to
     -- honour `winfixheight`: the closeout loses rows it never gets back.
-    vim.api.nvim_win_set_height(closeout_win, 2)
+    vim.api.nvim_win_resize(closeout_win, -1, 2)
     assert.are_not.equal(want, vim.api.nvim_win_get_height(closeout_win))
 
     vim.cmd("doautocmd VimResized")
@@ -419,13 +421,14 @@ describe("agent prompt editor", function()
     assert.is_not_nil(closeout_win)
     ---@cast closeout_win integer
 
-    local float = vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), false, {
-      relative = "editor",
-      row = 1,
-      col = 1,
-      width = 10,
-      height = 3,
-    })
+    local float =
+      vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), false, {
+        relative = "editor",
+        row = 1,
+        col = 1,
+        width = 10,
+        height = 3,
+      })
 
     vim.api.nvim_win_close(prompt_win, true)
     vim.wait(200, function()

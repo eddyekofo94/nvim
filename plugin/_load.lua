@@ -94,7 +94,7 @@ load.on_events({ "TermOpen", "TermEnter" }, "plugin.term", function(args)
   local term = require("plugin.term")
   term.setup()
   vim.keymap.set("n", ".", term.rerun, {
-    buffer = args.buf,
+    buf = args.buf,
     desc = "Re-run terminal job",
   })
 end)

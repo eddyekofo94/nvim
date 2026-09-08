@@ -1057,14 +1057,16 @@ end
 function _G._statusline.treesitter_status()
   local buf = vim.api.nvim_get_current_buf()
 
-  if vim.bo[buf].buftype ~= '' or vim.bo[buf].filetype == '' then
+  if vim.bo[buf].buftype ~= '' or vim.bo[buf].filetype == '' or vim.b[buf].bigfile then
     return ''
   end
 
   local lang = vim.treesitter.language.get_lang(vim.bo[buf].filetype) or vim.bo[buf].filetype
   if lang then
-    local success = pcall(vim.treesitter.get_parser, buf, lang)
-    if success then
+    -- 0.13 `get_parser()` returns `nil, err` instead of throwing, so `pcall`
+    -- alone always succeeds; the parser itself is the signal.
+    local ok, parser = pcall(vim.treesitter.get_parser, buf, lang)
+    if ok and parser then
       return utils.stl.hl(' TS', 'StatusLineDimmed')
     end
   end

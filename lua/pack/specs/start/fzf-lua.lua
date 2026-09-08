@@ -5,7 +5,7 @@ return {
     lazy = false,
     deps = {
       {
-        src = "https://github.com/kyazdani42/nvim-web-devicons",
+        src = "https://github.com/nvim-tree/nvim-web-devicons",
         data = { optional = true },
       },
     },
@@ -1364,7 +1364,7 @@ return {
         local bufnr = vim.api.nvim_win_get_buf(winid)
         for _, lhs in ipairs({ "q", "<Esc>", "<M-q>", "<C-w>q", "<F5>" }) do
           vim.keymap.set("n", lhs, _G.FzfLuaPreviewClose, {
-            buffer = bufnr,
+            buf = bufnr,
             nowait = true,
             desc = "Close fzf preview",
           })
@@ -1545,7 +1545,7 @@ return {
         local _term_win = vim.g._fzf_win
         local _term_buf = args and args.bufnr or vim.api.nvim_get_current_buf()
         vim.api.nvim_create_autocmd("TermClose", {
-          buffer = _term_buf,
+          buf = _term_buf,
           once = true,
           callback = function()
             if
@@ -1562,7 +1562,7 @@ return {
           "<Cmd>lua _G.FzfLuaTogglePreviewWrap()<CR>",
           {
             nowait = true,
-            buffer = args and args.bufnr or true,
+            buf = _term_buf,
             desc = "Toggle preview wrap",
           }
         )
@@ -1572,13 +1572,13 @@ return {
           "<Cmd>lua _G.FzfLuaTogglePreviewMax()<CR>",
           {
             nowait = true,
-            buffer = args and args.bufnr or true,
+            buf = _term_buf,
             desc = "Toggle large preview",
           }
         )
         vim.keymap.set("t", "<F6>", "<Cmd>lua _G.FzfLuaFocusPreview()<CR>", {
           nowait = true,
-          buffer = args and args.bufnr or true,
+          buf = _term_buf,
           desc = "Focus preview",
         })
         vim.keymap.set(
@@ -1587,7 +1587,7 @@ return {
           [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']],
           {
             expr = true,
-            buffer = true,
+            buf = _term_buf,
             desc = "Insert contents in a register",
           }
         )
@@ -2606,12 +2606,12 @@ return {
         merged.winopts.on_create = function(args)
           fzf_on_create(args)
           local bufnr = args and args.bufnr or vim.api.nvim_get_current_buf()
-          pcall(vim.keymap.del, "t", "<C-r>", { buffer = bufnr })
+          pcall(vim.keymap.del, "t", "<C-r>", { buf = bufnr })
           vim.keymap.set(
             "t",
             "<C-y>",
             [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']],
-            { expr = true, buffer = bufnr, desc = "Insert contents in a register" }
+            { expr = true, buf = bufnr, desc = "Insert contents in a register" }
           )
         end
 

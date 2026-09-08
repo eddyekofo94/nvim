@@ -73,7 +73,7 @@ if vim.endswith(cmd, "language-server") then
         if not result then
           return
         end
-        local sysname = vim.loop.os_uname().sysname
+        local sysname = vim.uv.os_uname().sysname
         if sysname:match("Windows") then
           os.execute(string.format("start %q", result.url))
           return

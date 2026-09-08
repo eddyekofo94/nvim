@@ -42,13 +42,34 @@ function M.get(mode, lhs)
       noremap = map.noremap == 1,
       silent = map.silent == 1,
       nowait = map.nowait == 1,
-      buffer = true, -- we adjust this based on 'is_buf' logic if needed
+      buf = 0, -- 0.13 requires an integer buf; 0 = current buffer
       replace_keycodes = map.replace_keycodes == 1,
     }
   end
 
+  -- Neovim's own default maps (e.g. |v_an|) are registered under the merged
+  -- Visual+Select mode, so `nvim_get_keymap('x')` never lists them while
+  -- `maparg()` resolves them. Ask `maparg()` before giving up, otherwise
+  -- `M.amend()` silently replaces a built-in instead of wrapping it.
+  local arg = vim.fn.maparg(lhs, mode, false, true)
+  if not vim.tbl_isempty(arg) then
+    return {
+      lhs = arg.lhs,
+      rhs = arg.rhs or "",
+      expr = arg.expr == 1,
+      callback = arg.callback,
+      desc = arg.desc,
+      noremap = arg.noremap == 1,
+      silent = arg.silent == 1,
+      nowait = arg.nowait == 1,
+      -- `maparg()` returns a Vimscript dict whose key stays `buffer`.
+      buf = arg.buffer == 1 and 0 or nil,
+      replace_keycodes = arg.replace_keycodes == 1,
+    }
+  end
+
   -- Return default identity mapping (fallback to self)
-  return { lhs = lhs, rhs = lhs, noremap = true, buffer = false }
+  return { lhs = lhs, rhs = lhs, noremap = true }
 end
 
 local warned_keys = {}
@@ -167,7 +188,7 @@ function M.get_conflicts()
   vim.api.nvim_set_option_value("number", false, { win = win })
   vim.api.nvim_set_option_value("relativenumber", false, { win = win })
   vim.api.nvim_set_option_value("winfixheight", true, { win = win })
-  vim.api.nvim_win_set_height(win, 15) -- Adjust height as needed
+  vim.api.nvim_win_resize(win, -1, 15) -- Adjust height as needed
 
   -- Set buffer to scratch type so it's not saved
   vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
@@ -320,7 +341,7 @@ function M.report_warned()
   vim.api.nvim_set_option_value("number", false, { win = win })
   vim.api.nvim_set_option_value("relativenumber", false, { win = win })
   vim.api.nvim_set_option_value("winfixheight", true, { win = win })
-  vim.api.nvim_win_set_height(win, 15)
+  vim.api.nvim_win_resize(win, -1, 15)
   vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
   vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
 end
@@ -357,7 +378,7 @@ function Keymap.new(mode, lhs, rhs, opts)
 
     -- 3. Handle buffer-locality
     if bufnr then
-      nvim_opts.buffer = bufnr
+      nvim_opts.buf = bufnr
     end
 
     if self.mode == "!a" then
@@ -422,7 +443,16 @@ function M.fallback_fn(key_def)
   return function()
     if key_def.callback then
       -- It's a Lua function
-      key_def.callback()
+      local result = key_def.callback()
+      -- An `expr` mapping returns the keys to type rather than acting itself
+      if key_def.expr and type(result) == "string" then
+        vim.api.nvim_feedkeys(
+          key_def.replace_keycodes == false and result
+            or vim.api.nvim_replace_termcodes(result, true, true, true),
+          key_def.noremap and "n" or "m",
+          false
+        )
+      end
     elseif key_def.rhs then
       -- It's a string command/mapping
       local keys =
@@ -706,7 +736,7 @@ function M.amend(modes, lhs, rhs, opts)
     -- Use tbl_deep_extend to merge user opts with our logic
     local final_opts = vim.tbl_deep_extend("force", opts, {
       desc = opts.desc or ("Amended: " .. (key_def.desc or lhs)),
-      buffer = opts.buffer or key_def.buffer,
+      buf = opts.buf or key_def.buf,
     })
 
     vim.keymap.set(mode, lhs, rhs_fn, final_opts)

@@ -121,7 +121,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
       "t",
       "<M-.>",
       "<C-v><M-.>",
-      { buffer = args.buf, silent = true }
+      { buf = args.buf, silent = true }
     )
   end,
 })
@@ -369,7 +369,7 @@ vim.api.nvim_create_user_command("FTerm", function(opts)
   vim.w[win].term_fullscreen = true
   vim.keymap.set("t", "q", function()
     vim.api.nvim_buf_delete(buf, { force = true })
-  end, { buffer = buf, desc = "Close terminal" })
+  end, { buf = buf, desc = "Close terminal" })
 end, { nargs = "?", desc = "Open terminal fullscreen" })
 
 vim.api.nvim_create_user_command("LazyGit", function()
@@ -380,7 +380,7 @@ vim.api.nvim_create_user_command("LazyGit", function()
   vim.w[win].term_fullscreen = true
   vim.keymap.set("t", "q", function()
     vim.api.nvim_buf_delete(buf, { force = true })
-  end, { buffer = buf, desc = "Close terminal" })
+  end, { buf = buf, desc = "Close terminal" })
 end, { desc = "Open LazyGit fullscreen" })
 
 return M

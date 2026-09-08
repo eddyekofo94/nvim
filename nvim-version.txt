@@ -1,4 +1,4 @@
-NVIM v0.13.0-dev-998+g4b69d3fd2d-Homebrew
+NVIM v0.13.0-dev-1561+gb3bd442c5c-Homebrew
 Build type: Release
-LuaJIT 2.1.1783773675
+LuaJIT 2.1.1788460057
 Run "nvim -V1 -v" for more info

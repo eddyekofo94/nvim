@@ -4,7 +4,7 @@ return {
   data = {
     deps = {
       {
-        src = "https://github.com/kyazdani42/nvim-web-devicons",
+        src = "https://github.com/nvim-tree/nvim-web-devicons",
         data = { optional = false },
       },
       {
@@ -566,7 +566,7 @@ return {
         end
 
         -- Follow symlinks
-        local path = vim.F.npcall(
+        local path = vim.npcall(
           vim.uv.fs_realpath,
           vim.fs.joinpath(dir, fname)
         ) or ""
@@ -596,12 +596,12 @@ return {
           "n",
           "<CR>",
           preview_edit,
-          { buffer = preview_buf, desc = "Open file from preview" }
+          { buf = preview_buf, desc = "Open file from preview" }
         )
         vim.api.nvim_create_autocmd("BufReadCmd", {
           desc = "Edit corresponding file in oil preview buffers.",
           group = vim.api.nvim_create_augroup("oil.preview_edit", {}),
-          buffer = preview_buf,
+          buf = preview_buf,
           callback = vim.schedule_wrap(preview_edit),
         })
 

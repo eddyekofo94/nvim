@@ -1,6 +1,6 @@
 ---@type pack.spec
 return {
-  src = "https://github.com/kyazdani42/nvim-web-devicons",
+  src = "https://github.com/nvim-tree/nvim-web-devicons",
   data = {
     lazy = true,
     optional = not vim.g.has_nf,

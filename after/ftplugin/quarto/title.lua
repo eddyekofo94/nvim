@@ -140,7 +140,7 @@ vim.api.nvim_create_autocmd("TextChangedI", {
     string.format("ft.markdown.format_title.buf.%d", buf),
     {}
   ),
-  buffer = buf,
+  buf = buf,
   callback = format_title,
 })
 

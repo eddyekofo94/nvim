@@ -268,7 +268,7 @@ local function open_closeout(target)
 
   -- Read-only reference, but still a real window: yankable, searchable and
   -- scrollable on its own.
-  vim.keymap.set("n", "q", "<C-w>c", { buffer = buf, nowait = true })
+  vim.keymap.set("n", "q", "<C-w>c", { buf = buf, nowait = true })
 
   vim.w[win].agent_prompt_placement = placement
   return win
@@ -287,8 +287,13 @@ local function keep_share(prompt_win, closeout_win)
   local vertical = vim.w[closeout_win].agent_prompt_placement == "right"
   local get = vertical and vim.api.nvim_win_get_width
     or vim.api.nvim_win_get_height
-  local set = vertical and vim.api.nvim_win_set_width
-    or vim.api.nvim_win_set_height
+  local set = vertical
+      and function(win, n)
+        vim.api.nvim_win_resize(win, n, -1)
+      end
+    or function(win, n)
+      vim.api.nvim_win_resize(win, -1, n)
+    end
 
   local closeout_buf = vim.api.nvim_win_get_buf(closeout_win)
   local total = get(closeout_win) + get(prompt_win)
@@ -525,7 +530,10 @@ function M.setup()
       vim.schedule(function()
         vim.notify(
           "agent-prompt: no closeout — "
-            .. (reason ~= nil and reason ~= "" and reason or "the shim did not run"),
+            .. (
+              reason ~= nil and reason ~= "" and reason
+              or "the shim did not run"
+            ),
           vim.log.levels.INFO
         )
       end)

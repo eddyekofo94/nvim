@@ -25,7 +25,7 @@ function M.on_attach(client, buf)
   )
   vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
     group = group,
-    buffer = buf,
+    buf = buf,
     callback = function()
       local clients = vim.lsp.get_clients({ bufnr = buf })
       for _, c in ipairs(clients) do
@@ -38,12 +38,12 @@ function M.on_attach(client, buf)
   })
   vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
     group = group,
-    buffer = buf,
+    buf = buf,
     callback = vim.lsp.buf.clear_references,
   })
   vim.api.nvim_create_autocmd("LspDetach", {
     group = group,
-    buffer = buf,
+    buf = buf,
     callback = function(detach_args)
       if detach_args.data.client_id == client.id then
         vim.lsp.buf.clear_references()
@@ -238,7 +238,7 @@ do
     group = group,
     callback = function(args)
       local buf = args.buf
-      for _, lsp_client in ipairs(vim.lsp.get_clients({ buffer = buf })) do
+      for _, lsp_client in ipairs(vim.lsp.get_clients({ bufnr = buf })) do
         if timers[lsp_client.id] then
           timers[lsp_client.id]:close()
         end

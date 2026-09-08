@@ -61,7 +61,7 @@ return {
           local map = require("utils.key").map
           map("n", "q", function()
             quicker.close()
-          end, { buffer = buf, desc = "qf close" })
+          end, { buf = buf, desc = "qf close" })
 
           map("n", "<leader>qq", function()
             quicker.toggle()

@@ -84,9 +84,13 @@ return {
             return false
           end
 
+          -- 0.13 `get_parser()` returns `nil, err` instead of throwing, so
+          -- `pcall` alone always succeeds; the parser itself is the signal.
+          local ok, parser = pcall(vim.treesitter.get_parser, buf)
+
           return vim.bo[buf].bt == "terminal"
             or vim.bo[buf].ft == "markdown"
-            or pcall(vim.treesitter.get_parser, buf)
+            or (ok and parser ~= nil)
             or has_document_symbol_client(buf)
         end,
       },
