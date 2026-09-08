@@ -1562,7 +1562,7 @@ return {
           "<Cmd>lua _G.FzfLuaTogglePreviewWrap()<CR>",
           {
             nowait = true,
-            buf = args and args.bufnr or true,
+            buf = _term_buf,
             desc = "Toggle preview wrap",
           }
         )
@@ -1572,13 +1572,13 @@ return {
           "<Cmd>lua _G.FzfLuaTogglePreviewMax()<CR>",
           {
             nowait = true,
-            buf = args and args.bufnr or true,
+            buf = _term_buf,
             desc = "Toggle large preview",
           }
         )
         vim.keymap.set("t", "<F6>", "<Cmd>lua _G.FzfLuaFocusPreview()<CR>", {
           nowait = true,
-          buf = args and args.bufnr or true,
+          buf = _term_buf,
           desc = "Focus preview",
         })
         vim.keymap.set(
@@ -1587,7 +1587,7 @@ return {
           [['<C-\><C-N>"' . nr2char(getchar()) . 'pi']],
           {
             expr = true,
-            buf = true,
+            buf = _term_buf,
             desc = "Insert contents in a register",
           }
         )

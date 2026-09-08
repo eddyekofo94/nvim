@@ -110,10 +110,10 @@ return {
           local goto_next = [[<Cmd>silent! exe "if get(getloclist(0, {'winid':''}), 'winid', 0) | exe v:count.'lne' | else | exe v:count.'cn' | endif"<CR>]]
           local goto_prev = [[<Cmd>silent! exe "if get(getloclist(0, {'winid':''}), 'winid', 0) | exe v:count.'lpr' | else | exe v:count.'cp' | endif"<CR>]]
           -- stylua: ignore end
-          vim.keymap.set("n", "<C-n>", goto_next, { buf = true })
-          vim.keymap.set("n", "<C-p>", goto_prev, { buf = true })
-          vim.keymap.set("n", "<C-j>", goto_next, { buf = true })
-          vim.keymap.set("n", "<C-k>", goto_prev, { buf = true })
+          vim.keymap.set("n", "<C-n>", goto_next, { buf = 0 })
+          vim.keymap.set("n", "<C-p>", goto_prev, { buf = 0 })
+          vim.keymap.set("n", "<C-j>", goto_next, { buf = 0 })
+          vim.keymap.set("n", "<C-k>", goto_prev, { buf = 0 })
           vim.keymap.set("n", "<C-^>", function()
             if vim.g.fugitive_prevbuf then
               vim.cmd.cclose()
@@ -122,7 +122,7 @@ return {
               vim.g.fugitive_prevbuf = nil
               vim.cmd.bw({ "#", bang = true, mods = { emsg_silent = true } })
             end
-          end, { buf = true })
+          end, { buf = 0 })
         end,
       })
 

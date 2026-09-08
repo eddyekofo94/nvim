@@ -439,7 +439,7 @@ return {
             vim.fn["matchup#loader#bufwinenter"]()
           end
 
-          local opts = { buf = true, desc = "Exit cell output" }
+          local opts = { buf = 0, desc = "Exit cell output" }
           vim.keymap.set("n", "<C-k>", "<C-w>c", opts)
           vim.keymap.set("n", "<C-Up>", "<C-w>c", opts)
 

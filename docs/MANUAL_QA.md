@@ -110,22 +110,49 @@ Verified:
   `:TableModeToggle` toggled. `:terminal` opened, echoed and closed cleanly.
 - `tools/verify.sh` passed end to end (41 agent-prompt assertions included).
 
+### Ghostty session pass (2026-09-08)
+
+Run by Eddy in a real Ghostty window on `chore/nvim-0.13-upgrade`, closing the
+fzf-lua gap the pty harness could not reach.
+
+First attempt crashed on every picker:
+
+```
+[Fzf-lua] fn_selected threw an error: [string "vim/keymap"]:109:
+Invalid 'buf': Expected Lua number
+  .../lua/pack/specs/start/fzf-lua.lua:1584: in function 'fzf_on_create'
+```
+
+Cause: Neovim 0.13 added `buf` to `vim.keymap.set` and requires an **integer**;
+only the soft-deprecated `buffer` still accepts `true`. fzf-lua calls
+`on_create` without `args.bufnr`, so `buf = args and args.bufnr or true` passed
+a boolean. Fixed in four files — `lua/pack/specs/start/fzf-lua.lua:1565,1575,1581,1590`
+(now the `_term_buf` computed at `:1546`), `lua/pack/specs/opt/vim-fugitive.lua:113-125`
+(5 sites), `lua/pack/specs/opt/molten-nvim.lua:442`, and `lua/utils/key.lua:45,66,72`,
+where `M.get()` returned a boolean `buf` that `M.amend()` fed to `vim.keymap.set`
+at `:739`. `lua/utils/load.lua:355` already normalized `opts.buf == true and 0`.
+
+Verified after the fix:
+
+- `<Leader><Leader>` and Smart Files (`<Leader>.`) open and list recent files;
+  the `fzf` process attaches. No error.
+- `F4` / `F5` / `F6` preview controls all work.
+- `<C-g>` files/grep toggle works across three rounds.
+- `<C-r>` terminal-mode register insertion works.
+
+Gate commands after the fix: `tools/verify.sh` passed (41 agent-prompt
+assertions), `make lint` 0 warnings / 0 errors in 477 files, `make format-check`
+clean.
+
 Not verified here — needs a human in Ghostty:
 
-- fzf-lua pickers. Smart Files opens its float and
-  `fzf-lua.config.__resume_data` records the `files` picker, but the `fzf`
-  process never attaches under this harness (buffer stays `nofile`,
-  `channel = 0`), and the `<C-g>` files/grep toggle stalls the driver. Smart
-  Files entries, `F4`/`F5`/`F6` preview controls, `<C-g>` cumulative filtering
-  and the terminal-mode `<C-r>` register insertion all still need a real
-  session. `make test-smart-files` and `make test-cwd-files` still pass
-  headlessly.
 - `vim.ui.img` under Ghostty. `vim.ui.img._supported()` returns `false` in the
   harness because nothing answers the kitty APC query; `vim.ui.img.set()`
   returned an id without error. This build has no `vim.ui.img` healthcheck
   ("No healthcheck found for \"vim/ui/img\" plugin"), so the research's
   `:checkhealth vim.ui.img` expectation is stale. Confirm with
-  `:lua print(vim.ui.img._supported())` in a real Ghostty window.
+  `:lua print(vim.ui.img._supported())` in a real Ghostty window. Still open
+  after the 2026-09-08 Ghostty pass — the result was not reported back.
 - noice against a real `msg_show.progress` stream from a long LSP job; only
   synthetic messages were exercised.
 - Blink documentation and snippet keys, DAP, and Molten, as before.

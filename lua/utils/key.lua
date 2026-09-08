@@ -42,7 +42,7 @@ function M.get(mode, lhs)
       noremap = map.noremap == 1,
       silent = map.silent == 1,
       nowait = map.nowait == 1,
-      buf = true, -- we adjust this based on 'is_buf' logic if needed
+      buf = 0, -- 0.13 requires an integer buf; 0 = current buffer
       replace_keycodes = map.replace_keycodes == 1,
     }
   end
@@ -63,13 +63,13 @@ function M.get(mode, lhs)
       silent = arg.silent == 1,
       nowait = arg.nowait == 1,
       -- `maparg()` returns a Vimscript dict whose key stays `buffer`.
-      buf = arg.buffer == 1,
+      buf = arg.buffer == 1 and 0 or nil,
       replace_keycodes = arg.replace_keycodes == 1,
     }
   end
 
   -- Return default identity mapping (fallback to self)
-  return { lhs = lhs, rhs = lhs, noremap = true, buf = false }
+  return { lhs = lhs, rhs = lhs, noremap = true }
 end
 
 local warned_keys = {}
