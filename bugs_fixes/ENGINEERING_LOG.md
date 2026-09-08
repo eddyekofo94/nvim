@@ -271,3 +271,42 @@ Automated status: `tools/verify.sh` passes after each of the six commits.
 `make format-check` still reports only the two pre-existing diffs in
 `lua/plugin/agent-prompt.lua` and `tests/agent_prompt_spec.lua`. `make lint`
 not run separately; `luacheck` runs inside `tools/verify.sh`. No real-TTY QA.
+
+## 2026-09-08 - Neovim 0.13 upgrade phase 5: rebuild HEAD and update every plugin
+
+- `brew reinstall neovim --HEAD` is not a valid Homebrew invocation — `reinstall`
+  has no `--HEAD` flag and exits with `Error: invalid option: --HEAD`. The
+  working refresh for a HEAD install is `brew upgrade --fetch-HEAD neovim`.
+  Build moved `HEAD-4b69d3f` -> `HEAD-b3bd442_1`, i.e.
+  `0.13.0-dev-998+g4b69d3fd2d` -> `0.13.0-dev-1561+gb3bd442c5c`.
+  `nvim-version.txt` refreshed; README line 91 now says Neovim 0.13.
+- `tools/verify.sh` passes on the rebuilt binary *before* any plugin update, so
+  the 563 upstream commits introduced no config-visible regression on their own.
+- `vim.pack.update()` advanced 29 of 78 plugins.
+- Breakage 1: `tools/verify.sh` failed with `blink native library unavailable`.
+  Root cause is in this config, not in blink.cmp. `lua/core/pack.lua` defers the
+  `opt` specs to `UIEnter` when Neovim starts with no file arguments, and
+  `utils.pack.add()` is what installs the `PackChanged` build hooks. An update
+  started before that registration fetches new revisions and silently skips
+  every `opt` plugin's build step, so blink.cmp landed at `49d39fda` without its
+  Rust fuzzy library. `PackInstallAll` and `PackUpdateAll` now share
+  `add_all_specs()`, which registers both spec directories first.
+- Breakage 2: `:checkhealth vim.pack` still reported the six off-lock checkouts
+  the plan expected the update to resolve (onedark.nvim, vim-fugitive,
+  triptych.nvim, termite.nvim, gruvbox-material, themeswitcher.nvim).
+  Plan correction: an update cannot fix them. All six are already at their
+  branch tip, so `vim.pack.update()` — including with `offline = true`, which
+  only computes — has nothing to apply and leaves the stale `rev` in place. The
+  documented remedy is the one checkhealth prints: delete the `rev` entry and
+  restart, which made vim.pack report `Repaired corrupted lock data for
+  plugins: ...` and rewrite all six.
+- Still open, deliberately: `fluoride` remains installed but inactive
+  (`enabled = false` from phase 2). Phase 2 left the `:packdel` decision to
+  phase 5; it is a preference, not a 0.13 correctness issue, so it stays.
+
+Automated status: `tools/verify.sh` passes on the rebuilt HEAD with every
+plugin updated, including `tools/check_pack_lock.lua` and the dirty-checkout
+scan. `:checkhealth vim.pack` reports zero errors; `:checkhealth
+vim.deprecated` reports no config-owned traceback (enforced inside
+`tools/verify.sh`). `make format-check` and `make lint` not run in this phase.
+No real-TTY QA — that is phase 6.
