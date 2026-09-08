@@ -1,5 +1,30 @@
 # Engineering log
 
+## 2026-09-08 - Neovim 0.13 upgrade, phase 6 (manual QA and gates)
+
+Branch `chore/nvim-0.13-upgrade`, phase 6 of `docs/NVIM_0.13_UPGRADE_PLAN.md`.
+No plugin versions changed. Full record in `docs/MANUAL_QA.md`.
+
+- Walked `docs/MANUAL_QA.md` plus the research's unverified items in a real pty
+  (200x50, `TERM_PROGRAM=ghostty`) driving the rebuilt
+  `NVIM v0.13.0-dev-1561+gb3bd442c5c-Homebrew`. No 0.13 regression found.
+- Closed three of the four unverified rows in
+  `docs/NVIM_0.13_MIGRATION_RESEARCH.md` §4: `'statusline'` and
+  `'statuscolumn'` `%=` alignment is correct under the 0.13 item-group change,
+  noice consumes the 0.13 message events, and `blink-cmp-rg.nvim` still
+  produces items against blink `v1.10.0-233-g49d39fda` (33 of 35 items).
+- `vim.ui.img` under Ghostty stays unverified: the harness pty answers no kitty
+  APC query, so `vim.ui.img._supported()` is `false` by construction. This
+  build also has no `vim.ui.img` healthcheck, so the research's
+  `:checkhealth vim.ui.img` line is stale.
+- fzf-lua pickers stay unverified: the picker float opens but the `fzf` process
+  never attaches under the harness (`channel = 0`), and `<C-g>` stalls the
+  driver. Their headless specs still pass.
+- `make format-check` failed on `lua/plugin/agent-prompt.lua` and
+  `tests/agent_prompt_spec.lua`. Both files fail the same way on `master`, so
+  the drift is stylua 2.5.2 behaviour that predates the upgrade. Fixed with
+  `make format`; `tools/verify.sh` and `make lint` were already green.
+
 ## 2026-09-04 - Neovim 0.13 upgrade, phase 1 (config-owned deprecations)
 
 Branch `chore/nvim-0.13-upgrade`, phase 1 of `docs/NVIM_0.13_UPGRADE_PLAN.md`.

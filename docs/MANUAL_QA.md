@@ -57,3 +57,81 @@ against two throwaway git fixtures — a SwiftPM package and an `xcodegen`
   pass — it is the expected failure mode, not a config bug.
 
 Record any failure in `bugs_fixes/ENGINEERING_LOG.md` before another repair loop.
+
+## Neovim 0.13 upgrade — Phase 6 (2026-09-08)
+
+Driven on branch `chore/nvim-0.13-upgrade` against
+`NVIM v0.13.0-dev-1561+gb3bd442c5c-Homebrew` in a real pty
+(200x50, `TERM=xterm-256color`, `TERM_PROGRAM=ghostty`) spawned by a
+`pty.openpty` harness, with each step scheduled through the main loop
+(`vim.defer_fn`) so typed keys are processed, and the rendered grid read back
+with `screenstring()`. The only message in every session was
+`E1568: Terminal did not respond to DSR request for 'background' color`, which
+is the harness (no terminal answers queries), not the config.
+
+Verified:
+
+- Opening `lua/core/options.lua` and `docs/MANUAL_QA.md` produced no errors;
+  treesitter parser and highlighter active for `lua`; `catppuccin` with
+  `termguicolors`.
+- Dropbar rendered in the winbar; `<leader>ls` entered pick mode and showed its
+  accelerator letters, `<Esc>` left it.
+- `'statusline'` `%=` survives the 0.13 item-group change:
+  `nvim_eval_statusline` returns `width = 200 = &columns`, the left group stays
+  left and the right group is flush right on the drawn row; in a 40-column
+  window both the active and inactive statusline evaluate to exactly 40 with
+  the `%<` truncation marker. No group-internal `%=` was ignored.
+- `'statuscolumn'` `%=` alignment holds: every `use_statuscol_lnum` evaluation
+  is 7 cells wide, relative numbers right-aligned, the current absolute line
+  left-aligned, and the drawn columns match the evaluation.
+- blink.cmp (`v1.10.0-233-g49d39fda`) showed 10 insert-mode items, `<C-n>`
+  then `<CR>` accepted `local`, and the cmdline menu showed 80 items for `:ed`.
+- `blink-cmp-rg.nvim` works against blink 1.10: with the spec's `ripgrep`
+  provider options, 35 items came back, 33 of them from source `ripgrep`
+  (for example `statusline`). The research's `UNVERIFIED` row is now closed.
+- noice.nvim consumes 0.13 message events: `:Noice history` recorded
+  `msg_show` and `msg_show.echomsg` entries, the `cmdline` view rendered on the
+  bottom row, the `mini` view rendered notifications, `:lua error(...)` was
+  routed, and no error surfaced. `require('noice.view').get_views()` does not
+  exist — that is an API assumption in the QA script, not a noice fault.
+- LSP: `lua-language-server` attached, `vim.lsp.buf.hover()` opened a float,
+  four diagnostics were produced, and `]d` opened the diagnostic float, which
+  confirms the Phase 1 `jump.on_jump` fix. `:Lsp codelens_is_enabled`,
+  `codelens_enable`, `codelens_disable`, `semantic_tokens_enable` and
+  `semantic_tokens_disable` all ran clean on the rebuilt 0.13 API.
+- conform resolved `stylua` for Lua buffers.
+- Copilot stayed unloaded until Insert mode, then loaded with one LSP client
+  and its `<C-j>` "accept suggestion" insert mapping; exactly one Copilot
+  server ran during the session and zero survived exit. No inline suggestion
+  rendered inside the harness.
+- Sidekick loaded on `User VeryLazy` and `<leader>as` opened its selector
+  float (200x10); the float's contents did not render in this harness.
+- `:Mason` opened its `mason` buffer, `:Git` opened fugitive, and
+  `:TableModeToggle` toggled. `:terminal` opened, echoed and closed cleanly.
+- `tools/verify.sh` passed end to end (41 agent-prompt assertions included).
+
+Not verified here — needs a human in Ghostty:
+
+- fzf-lua pickers. Smart Files opens its float and
+  `fzf-lua.config.__resume_data` records the `files` picker, but the `fzf`
+  process never attaches under this harness (buffer stays `nofile`,
+  `channel = 0`), and the `<C-g>` files/grep toggle stalls the driver. Smart
+  Files entries, `F4`/`F5`/`F6` preview controls, `<C-g>` cumulative filtering
+  and the terminal-mode `<C-r>` register insertion all still need a real
+  session. `make test-smart-files` and `make test-cwd-files` still pass
+  headlessly.
+- `vim.ui.img` under Ghostty. `vim.ui.img._supported()` returns `false` in the
+  harness because nothing answers the kitty APC query; `vim.ui.img.set()`
+  returned an id without error. This build has no `vim.ui.img` healthcheck
+  ("No healthcheck found for \"vim/ui/img\" plugin"), so the research's
+  `:checkhealth vim.ui.img` expectation is stale. Confirm with
+  `:lua print(vim.ui.img._supported())` in a real Ghostty window.
+- noice against a real `msg_show.progress` stream from a long LSP job; only
+  synthetic messages were exercised.
+- Blink documentation and snippet keys, DAP, and Molten, as before.
+
+Gate commands: `tools/verify.sh` and `make lint` pass (0 warnings / 0 errors in
+477 files). `make format-check` failed on `lua/plugin/agent-prompt.lua` and
+`tests/agent_prompt_spec.lua`; the same two files also fail on `master`, so
+this is stylua 2.5.2 drift that predates the upgrade, not a 0.13 regression. It
+was fixed with `make format` in this branch.
