@@ -63,15 +63,22 @@ vim.api.nvim_create_autocmd("UIEnter", {
   desc = "Emit the post-startup VeryLazy user event",
 })
 
-vim.api.nvim_create_user_command("PackInstallAll", function()
+---Register every spec, including the `opt` ones that are otherwise deferred
+---to `UIEnter`. `utils.pack.add()` is what installs the `PackChanged` build
+---hooks, so an update started before the deferred registration would fetch new
+---revisions and skip their build steps (e.g. blink.cmp's Rust library).
+local function add_all_specs()
   utils.pack.add(
     vim.list_extend(
       collect_specs(specs_start_path, true),
       collect_specs(specs_opt_path, false)
     )
   )
-end, {})
+end
+
+vim.api.nvim_create_user_command("PackInstallAll", add_all_specs, {})
 
 vim.api.nvim_create_user_command("PackUpdateAll", function()
+  add_all_specs()
   vim.pack.update()
 end, {})
