@@ -144,7 +144,33 @@ Gate commands after the fix: `tools/verify.sh` passed (41 agent-prompt
 assertions), `make lint` 0 warnings / 0 errors in 477 files, `make format-check`
 clean.
 
+### `:checkhealth vim.pack` cleanup (2026-09-08)
+
+`:checkhealth vim.pack` reported 13 warnings / 0 errors, every one of them
+"Plugin X is not at state which is a result of `vim.pack` operation":
+`termite.nvim`, `themeswitcher.nvim`, `todo-comments.nvim`, `triptych.nvim`,
+`ultimate-autopair.nvim`, `vim-conjoin`, `vim-dispatch`, `vim-easy-align`,
+`vim-fugitive`, `vim-projectionist`, `vim-rhubarb`, `vim-sleuth`,
+`vim-table-mode`.
+
+`vim.pack.update({...}, { offline = true })` on all 13, after `PackInstallAll`
+registered every spec, reported `Nothing to update` — so each was already at the
+correct revision — and the 13 warnings survived it.
+
+The health check at
+`$VIMRUNTIME/lua/vim/pack/health.lua:260-273` only tests whether
+`git rev-parse --abbrev-ref HEAD` returns `HEAD`; `vim.pack` always leaves a
+plugin detached, so any named branch trips it. All 13 were on a branch (`main`,
+`master`, or `v0.6` for `ultimate-autopair.nvim`) with a clean worktree. Running
+`git checkout --detach` in each left every commit hash unchanged.
+
+After that: `:checkhealth vim.deprecated` and `:checkhealth vim.pack` are both
+✅ with 0 warnings / 0 errors, and `tools/verify.sh` passes (41 agent-prompt
+assertions). This is plugin-checkout state on disk, not a config change, so
+nothing in this repository changed for it.
+
 Not verified here — needs a human in Ghostty:
+
 
 - `vim.ui.img` under Ghostty. `vim.ui.img._supported()` returns `false` in the
   harness because nothing answers the kitty APC query; `vim.ui.img.set()`
