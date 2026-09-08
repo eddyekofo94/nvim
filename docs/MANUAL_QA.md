@@ -169,16 +169,19 @@ After that: `:checkhealth vim.deprecated` and `:checkhealth vim.pack` are both
 assertions). This is plugin-checkout state on disk, not a config change, so
 nothing in this repository changed for it.
 
+### `vim.ui.img` under Ghostty (2026-09-08)
+
+`:lua print(vim.ui.img._supported())` in a real Ghostty window printed
+`true nil` — supported, with no second return value. The pty harness reported
+`false` only because nothing there answers the kitty APC graphics query, so the
+harness result was an artifact, not a config problem.
+
+This build still has no `vim.ui.img` healthcheck ("No healthcheck found for
+\"vim/ui/img\" plugin"), so the research's `:checkhealth vim.ui.img`
+expectation in `docs/NVIM_0.13_MIGRATION_RESEARCH.md` remains stale.
+
 Not verified here — needs a human in Ghostty:
 
-
-- `vim.ui.img` under Ghostty. `vim.ui.img._supported()` returns `false` in the
-  harness because nothing answers the kitty APC query; `vim.ui.img.set()`
-  returned an id without error. This build has no `vim.ui.img` healthcheck
-  ("No healthcheck found for \"vim/ui/img\" plugin"), so the research's
-  `:checkhealth vim.ui.img` expectation is stale. Confirm with
-  `:lua print(vim.ui.img._supported())` in a real Ghostty window. Still open
-  after the 2026-09-08 Ghostty pass — the result was not reported back.
 - noice against a real `msg_show.progress` stream from a long LSP job; only
   synthetic messages were exercised.
 - Blink documentation and snippet keys, DAP, and Molten, as before.
