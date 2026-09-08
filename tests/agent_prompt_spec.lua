@@ -78,7 +78,9 @@ describe("agent prompt editor", function()
     -- A live closeout autocmd outlasting its test would fire on the teardown
     -- below and quit the whole run, taking the remaining specs with it.
     for _, au in ipairs(vim.api.nvim_get_autocmds({ event = "WinClosed" })) do
-      if au.group_name and au.group_name:find("AgentPromptCloseout", 1, true) then
+      if
+        au.group_name and au.group_name:find("AgentPromptCloseout", 1, true)
+      then
         pcall(vim.api.nvim_del_augroup_by_id, au.group)
       end
     end
@@ -419,13 +421,14 @@ describe("agent prompt editor", function()
     assert.is_not_nil(closeout_win)
     ---@cast closeout_win integer
 
-    local float = vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), false, {
-      relative = "editor",
-      row = 1,
-      col = 1,
-      width = 10,
-      height = 3,
-    })
+    local float =
+      vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), false, {
+        relative = "editor",
+        row = 1,
+        col = 1,
+        width = 10,
+        height = 3,
+      })
 
     vim.api.nvim_win_close(prompt_win, true)
     vim.wait(200, function()

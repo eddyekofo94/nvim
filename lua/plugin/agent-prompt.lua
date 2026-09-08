@@ -530,7 +530,10 @@ function M.setup()
       vim.schedule(function()
         vim.notify(
           "agent-prompt: no closeout — "
-            .. (reason ~= nil and reason ~= "" and reason or "the shim did not run"),
+            .. (
+              reason ~= nil and reason ~= "" and reason
+              or "the shim did not run"
+            ),
           vim.log.levels.INFO
         )
       end)
