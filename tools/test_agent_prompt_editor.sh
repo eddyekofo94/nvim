@@ -84,6 +84,7 @@ run_shim() {
   unsets=$(env | sed -n -E \
     's/^(AI_AGENT|CLAUDECODE|OPENCODE|CURSOR_AGENT|GEMINI_CLI|CLAUDE_CODE_[A-Za-z0-9_]*|CODEX_[A-Za-z0-9_]*|OPENCODE_[A-Za-z0-9_]*|PI_CODING_AGENT[A-Za-z0-9_]*|PI_PILOT_[A-Za-z0-9_]*|AIDER_[A-Za-z0-9_]*)=.*/-u \1/p')
   # shellcheck disable=SC2086 # the unset list is deliberately word-split
+  prompt_file=${STUB_PROMPT_FILE:-$tmpdir/prompt-$case_name.md}
   env $unsets -u HERDR_PANE_ID -u HERDR_SESSION \
     -u AGENT_CLOSEOUT_FILE -u AGENT_PROMPT_SEED_FILE \
     PATH="$tmpdir/bin:$PATH" \
@@ -93,7 +94,7 @@ run_shim() {
     AGENT_PROMPT_HERDR="$tmpdir/bin/herdr" \
     AGENT_PROMPT_READY_PROMPT="$ready_prompt" \
     AGENT_PROMPT_TRANSCRIPT_READER="${STUB_TRANSCRIPT_READER:-$tmpdir/missing-reader.py}" \
-    "$@" bash "$shim" "$tmpdir/prompt-$case_name.md"
+    "$@" bash "$shim" "$prompt_file"
   printf '%s' "$out"
 }
 
@@ -155,6 +156,19 @@ for marker in OPENCODE=1 CODEX_THREAD_ID=0199abcd PI_CODING_AGENT_DIR=/tmp/pi \
     fail "$name did not register as an agent launch"
   fi
 done
+
+# Codex 0.153.4 exports no CODEX_* marker to its editor. Its generated prompt
+# is a `.tmpXXXXXX.md` file in Codex's private editor directory.
+export AGENT_PROMPT_CODEX_EDITOR_DIR="$tmpdir/codex-editor"
+STUB_PROMPT_FILE="$AGENT_PROMPT_CODEX_EDITOR_DIR/.tmpaSTH7H.md"
+out=$(run_shim markerless-codex HERDR_PANE_ID=w4:p2 STUB_CAPTURE="$fixture")
+unset STUB_PROMPT_FILE
+unset AGENT_PROMPT_CODEX_EDITOR_DIR
+if [ -s "$(field "$out" CLOSEOUT)" ]; then
+  pass 'a markerless Codex temporary Markdown prompt identifies an agent launch'
+else
+  fail 'a markerless Codex temporary Markdown prompt fell through to plain nvim'
+fi
 
 # --- everything that must fall through to plain nvim ------------------------
 assert_bare() {

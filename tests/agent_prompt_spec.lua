@@ -133,6 +133,25 @@ describe("agent prompt editor", function()
     vim.fn.delete(claude_root, "rf")
   end)
 
+  it("detects closeout and seed with unset TMPDIR", function()
+    local saved_tmpdir = vim.env.TMPDIR
+    vim.env.TMPDIR = nil
+    local found = agent_prompt.detect({
+      args = { "/tmp/pi-editor-probe.md" },
+      closeout = closeout_file,
+      seed = seed_file,
+    })
+    vim.env.TMPDIR = saved_tmpdir
+
+    assert.is_not_nil(found, "unset TMPDIR hid the /tmp fallback")
+    assert.are.equal(
+      vim.fs.joinpath(vim.uv.fs_realpath("/tmp"), "pi-editor-probe.md"),
+      found.file
+    )
+    assert.are.equal(closeout_file, found.closeout)
+    assert.are.equal(seed_file, found.seed)
+  end)
+
   it("guards the cwd even when no closeout was captured", function()
     assert.is_nil(
       agent_prompt.detect({
@@ -157,6 +176,38 @@ describe("agent prompt editor", function()
     assert.is_nil(agent_prompt.detect_prompt_file({
       args = { prompt_file },
       tmpdir = tmproot,
+      agent = false,
+    }))
+  end)
+
+  it("recognises Codex's markerless temporary Markdown prompt", function()
+    local codex_editor = vim.fs.joinpath(tmproot, "codex-editor")
+    assert.are.equal(1, vim.fn.mkdir(codex_editor, "p"))
+    local codex_prompt = vim.fs.joinpath(codex_editor, ".tmpaSTH7H.md")
+    write(codex_prompt, {})
+
+    assert.are.equal(
+      vim.uv.fs_realpath(codex_prompt),
+      agent_prompt.detect_prompt_file({
+        args = { codex_prompt },
+        tmpdir = tmproot,
+        codex_editor_dir = codex_editor,
+        agent = false,
+      })
+    )
+  end)
+
+  it("rejects a matching Codex filename below the private editor root", function()
+    local codex_editor = vim.fs.joinpath(tmproot, "codex-editor")
+    local nested = vim.fs.joinpath(codex_editor, "nested")
+    assert.are.equal(1, vim.fn.mkdir(nested, "p"))
+    local codex_prompt = vim.fs.joinpath(nested, ".tmpaSTH7H.md")
+    write(codex_prompt, {})
+
+    assert.is_nil(agent_prompt.detect_prompt_file({
+      args = { codex_prompt },
+      tmpdir = tmproot,
+      codex_editor_dir = codex_editor,
       agent = false,
     }))
   end)

@@ -45,6 +45,18 @@ launched_by_agent() {
     return 1
 }
 
+# Codex 0.153.4 launches its external editor without a CODEX_* environment
+# marker. Its prompt is nevertheless a tightly-scoped temporary Markdown file:
+# `~/.codex/editor/.tmpXXXXXX.md`, with a six-character alphanumeric suffix.
+# Keep this as a second, shape-based signal rather than broadening agent
+# detection to every temporary file; ordinary editors still fall through.
+codex_prompt_file() {
+    [ "$#" -eq 1 ] || return 1
+    editor_dir=${AGENT_PROMPT_CODEX_EDITOR_DIR:-$HOME/.codex/editor}
+    [ "$(dirname -- "$1")" = "$editor_dir" ] || return 1
+    [[ "${1##*/}" =~ ^\.tmp[[:alnum:]]{6}\.md$ ]]
+}
+
 # Only Claude Code writes ~/.claude/projects transcripts, and the reader falls
 # back to the *project's* newest one when the pane carries no session id. In any
 # other runtime that fallback is guaranteed to be some Claude pane's work, so
@@ -118,7 +130,10 @@ if session.get("agent") == "claude" and value:
 
 capture_closeout() {
     [ -n "${HERDR_PANE_ID:-}" ] || { note "no HERDR_PANE_ID; not in a Herdr pane"; return 1; }
-    launched_by_agent || { note "no agent marker in env"; return 1; }
+    launched_by_agent || codex_prompt_file "$@" || {
+        note "no agent marker or Codex prompt-file shape in env"
+        return 1
+    }
     [ -r "$READY_PROMPT" ] || { note "parser unreadable: $READY_PROMPT"; return 1; }
     command -v "$HERDR_BIN" >/dev/null 2>&1 || { note "herdr not on PATH: $HERDR_BIN"; return 1; }
 
@@ -240,7 +255,7 @@ capture_closeout() {
 
 # The closeout is verbatim agent output; keep it readable only by its author.
 umask 077
-capture_closeout || true
+capture_closeout "$@" || true
 
 # Neovim resolves relative paths against its working directory, and `uv.cwd()`
 # fails outright once that directory is deleted underneath the pane -- a swept

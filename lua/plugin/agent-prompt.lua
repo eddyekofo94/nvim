@@ -137,7 +137,8 @@ local function tmp_roots(opts)
   -- detection to a scratch directory without the real temp trees leaking in.
   local roots = opts.tmpdirs or (opts.tmpdir and { opts.tmpdir })
   if not roots then
-    roots = { vim.env.TMPDIR, "/tmp" }
+    -- Keep the list dense: ipairs stops at nil when TMPDIR is unset.
+    roots = { vim.env.TMPDIR or "/tmp", "/tmp" }
   end
 
   local resolved = {}
@@ -147,6 +148,23 @@ local function tmp_roots(opts)
     end
   end
   return resolved
+end
+
+---Codex 0.153.4 launches its external editor without a CODEX_* environment
+---marker. Its prompt has a narrow, generated shape: `.tmpXXXXXX.md` under
+---Codex's private editor root. This is deliberately not a generic temp-file
+---allowance.
+---@param path string
+---@param opts? { codex_editor_dir?: string }
+---@return boolean
+local function is_codex_prompt_file(path, opts)
+  local root = resolve(
+    (opts and opts.codex_editor_dir)
+      or vim.env.AGENT_PROMPT_CODEX_EDITOR_DIR
+      or vim.fs.joinpath(vim.env.HOME, ".codex", "editor")
+  )
+  return vim.fs.dirname(path) == root
+    and vim.fs.basename(path):match("^%.tmp[%w][%w][%w][%w][%w][%w]%.md$") ~= nil
 end
 
 ---Resolve the lone prompt file this Neovim was launched to edit, if any.
@@ -159,10 +177,6 @@ end
 ---@return string? file Resolved path of the prompt file
 function M.detect_prompt_file(opts)
   opts = opts or {}
-
-  if not launched_by_agent(opts) then
-    return nil
-  end
 
   local args = opts.args or vim.fn.argv()
   if type(args) ~= "table" or #args ~= 1 or args[1] == "" then
@@ -178,10 +192,17 @@ function M.detect_prompt_file(opts)
   -- /tmp is a symlink to /private/tmp, so an unresolved compare would reject
   -- every real prompt file.
   local file = resolve(vim.fn.fnamemodify(args[1], ":p"))
+  local codex_prompt = is_codex_prompt_file(file, opts)
+  if not launched_by_agent(opts) and not codex_prompt then
+    return nil
+  end
   for _, root in ipairs(roots) do
     if is_under(root, file) then
       return file
     end
+  end
+  if codex_prompt then
+    return file
   end
   return nil
 end
