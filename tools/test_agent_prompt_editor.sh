@@ -94,9 +94,19 @@ run_shim() {
     AGENT_PROMPT_HERDR="$tmpdir/bin/herdr" \
     AGENT_PROMPT_READY_PROMPT="$ready_prompt" \
     AGENT_PROMPT_TRANSCRIPT_READER="${STUB_TRANSCRIPT_READER:-$tmpdir/missing-reader.py}" \
-    "$@" bash "$shim" "$prompt_file"
+    "$@" ${UNDER_CLAUDE:+"$tmpdir/bin/claude" "$tmpdir/as-claude.sh"} bash "$shim" "$prompt_file"
   printf '%s' "$out"
 }
+
+# A process named `claude` to launch the shim from, as Claude Code launches its
+# $EDITOR. The shim finds its agent by walking up to it.
+ln -s "$(command -v bash)" "$tmpdir/bin/claude"
+# Run as that process: make the Stop hook's claim for itself ($$), then launch
+# the shim as its child.
+cat >"$tmpdir/as-claude.sh" <<'CLAUDE'
+[ -z "${STUB_POINTER:-}" ] || printf '%s\n' "$STUB_POINTER" >"$TMPDIR/agent-prompt-agent.$$"
+"$@"
+CLAUDE
 
 field() {
   awk -F= -v key="$2" '$1 == key { print substr($0, length(key) + 2) }' "$1"
@@ -447,6 +457,26 @@ if [ -s "$(field "$out" CLOSEOUT)" ]; then
   pass 'a swept pane still gets its closeout'
 else
   fail "swept pane lost its closeout: $(cat "$swept_log" 2>/dev/null)"
+fi
+
+# --- the agent, not the tab ------------------------------------------------
+# An agent resumed in another tab, moved, or handed off to a new Herdr server
+# keeps its process but not the pane id it launched under. The Stop hook points
+# the Claude process at its session (`agent-prompt-agent.<pid>`); the shim walks
+# up to that process and shows the session's record from whichever place wrote
+# it, even with Herdr naming a different session for the pane.
+printf '**Status:** DONE\n**Next move:** the MOVED agent\n' >"$(turn_file window-86.w1_p2Q moved)"
+printf '**Status:** DONE\n**Next move:** the pane NEIGHBOUR\n' >"$(turn_file window-90.w1_p1 neighbour)"
+moved_log=$tmpdir/moved.log
+out=$(UNDER_CLAUDE=1 run_shim moved \
+  HERDR_SESSION=window-90 HERDR_PANE_ID=w1:p1 AI_AGENT=claude \
+  STUB_POINTER=moved STUB_AGENT_SESSION=neighbour STUB_CAPTURE=/nonexistent \
+  AGENT_PROMPT_DEBUG="$moved_log")
+got=$(field "$out" CLOSEOUT)
+if [ -n "$got" ] && grep -q 'MOVED agent' "$got" 2>/dev/null; then
+  pass "the agent's own session record is shown from the place it was written"
+else
+  fail "moved agent shown [$(cat "$got" 2>/dev/null)] log: $(cat "$moved_log" 2>/dev/null)"
 fi
 
 printf '1..%d\n' "$((passed + failed))"

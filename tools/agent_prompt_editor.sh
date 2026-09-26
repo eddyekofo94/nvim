@@ -110,10 +110,43 @@ pane_place() {
 # reports every Claude session to its pane on SessionStart, and `herdr pane
 # get` returns it as `agent_session.value`. Asked of the pane itself, the
 # answer cannot be a neighbour's. Empty when nobody can say.
+# The Claude Code process that launched this editor: the nearest ancestor named
+# `claude`. It is the agent itself, so it stays right when the agent was resumed
+# in another tab, moved, or handed off to a new Herdr server -- all of which
+# leave HERDR_PANE_ID naming where it *started*.
+agent_pid() {
+    pid=$PPID
+    for _ in 1 2 3 4 5 6 7 8 9 10 11 12; do
+        [ -n "$pid" ] && [ "$pid" -gt 1 ] 2>/dev/null || return 1
+        read -r ppid comm <<EOF_PS
+$(ps -o ppid=,comm= -p "$pid" 2>/dev/null)
+EOF_PS
+        [ -n "${comm:-}" ] || return 1
+        if [ "${comm##*/}" = claude ]; then
+            printf '%s' "$pid"
+            return 0
+        fi
+        pid=$ppid
+    done
+    return 1
+}
+
 agent_session_id() {
     if [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then
         printf '%s' "$CLAUDE_CODE_SESSION_ID"
         return 0
+    fi
+    # The Stop hook points each Claude process at the session it hosts
+    # (`agent-prompt-agent.<pid>`, closeout_capture.py `claim_agent`).
+    if pid=$(agent_pid); then
+        pointer=${TMPDIR:-/tmp}/agent-prompt-agent.$pid
+        if [ -s "$pointer" ]; then
+            read -r pointed <"$pointer"
+            if [ -n "${pointed:-}" ]; then
+                printf '%s' "$pointed"
+                return 0
+            fi
+        fi
     fi
     "$HERDR_BIN" pane get "${HERDR_PANE_ID:-}" 2>/dev/null | python3 -c '
 import json, sys
@@ -164,9 +197,15 @@ capture_closeout() {
         # Knowing the session, accept nothing else. A record under this place's
         # slug but another session id belongs to the pane's previous occupant,
         # which is precisely what must not be shown.
+        # The session is the agent, so its newest record counts wherever it was
+        # written: a resumed or moved agent recorded its last turn under the
+        # place it occupied then.
         session_slug=$(printf '%s' "$session_id" | tr -c '[:alnum:]._-' '_')
-        candidate=$base/agent-prompt-turn-closeout.$slug.$session_slug.md
-        [ -s "$candidate" ] && turn_file=$candidate
+        for candidate in "$base/agent-prompt-turn-closeout."*".$session_slug.md"; do
+            [ -s "$candidate" ] || continue
+            [ -z "$turn_file" ] || [ "$candidate" -nt "$turn_file" ] || continue
+            turn_file=$candidate
+        done
     else
         # Neither the environment nor Herdr names the session. Fall back to the
         # newest record for this place: the Stop hook drops the others when it
